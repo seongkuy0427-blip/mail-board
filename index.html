@@ -233,6 +233,22 @@
   .row .rmeta{font-size:10.5px; color:var(--ink-3); margin-top:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
   .row .rmeta b{color:var(--ink-2); font-weight:500}
   .row .rside{flex:none; display:flex; align-items:center; gap:4px}
+  /* 🟡 흐름 참고 · ⚪ 단순 공유 — 전체 선택 · 일괄 ✅ 확인 바 */
+  .bulkbar{display:flex; align-items:center; flex-wrap:wrap; gap:6px 8px; margin:0 0 7px; padding:7px 10px;
+    background:#f7f9fd; border:1px solid #e2e9f4; border-radius:10px}
+  .bulk-all{display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600; color:var(--ink-2); cursor:pointer; white-space:nowrap}
+  .bulk-all input{width:15px; height:15px; accent-color:var(--brand); cursor:pointer; margin:0}
+  .bulk-n{font-size:10.5px; color:var(--ink-3); white-space:nowrap}
+  .bulk-n b{color:var(--brand); font-weight:700}
+  .bulk-sp{flex:1 1 auto}
+  .bulk-btn{font-family:inherit; font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:8px; cursor:pointer;
+    border:1px solid #c9e7d5; background:var(--green-weak); color:var(--green); white-space:nowrap; transition:filter .12s, transform .06s}
+  .bulk-btn.ghost{background:#fff; border-color:var(--line); color:var(--ink-2); font-weight:600}
+  .bulk-btn:hover{filter:brightness(.97)}
+  .bulk-btn:active{transform:scale(.97)}
+  .bulk-btn:disabled{opacity:.45; cursor:default; filter:none; transform:none}
+  .selbox{flex:none; display:flex; align-items:center}
+  .selbox input{width:16px; height:16px; accent-color:var(--brand); cursor:pointer; margin:0}
   .badge{font-size:10px; padding:2px 7px; border-radius:999px; font-weight:600; white-space:nowrap; letter-spacing:-.1px}
   .b-due{background:var(--brand-weak); color:var(--brand)}
   .b-due.hot{background:var(--red); color:#fff}
@@ -432,6 +448,12 @@
     .row .rtitle{font-size:12.6px}
     .row .rmeta{font-size:10px}
     .row .rside{gap:3px}
+    .bulkbar{padding:6px 8px; gap:6px}
+    .bulk-all{flex:1 1 100%}
+    .bulk-sp{display:none}
+    .bulk-n{margin-right:auto}
+    .bulk-btn{padding:4px 9px; font-size:11px}
+    .selbox input{width:17px; height:17px}
     .badge{font-size:9.3px; padding:1.5px 5px}
     .badge.reply-tog{padding:3px 6px 3px 7px; gap:2px}
     .seg button{padding:6px 10px; font-size:11.8px}
@@ -908,6 +930,32 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     if (view.openId === id) $("drawerContent").innerHTML = drawerHtml(it);
     toast(done ? "✅ 확인 — 기본 목록에서 치었습니다 (검색·‘완료 포함’에서 다시 볼 수 있음)" : "↩ 완료를 취소해 목록으로 돌렸습니다");
   }
+  /* 🟡 흐름 참고 · ⚪ 단순 공유 — 보이는 항목을 한꺼번에 선택해 일괄 ✅ 확인 (행의 ✅ 확인과 같은 localStorage 상태) */
+  const bulkSel = { p2: new Set(), p3: new Set() };
+  const bulkTab = () => (view.tab === "p2" || view.tab === "p3" ? view.tab : null);
+  function bulkBarHtml(list) {
+    const key = bulkTab(); if (!key) return "";
+    const sel = bulkSel[key], ids = list.map((it) => it.id);
+    const n = ids.filter((id) => sel.has(id)).length;
+    const all = ids.length > 0 && n === ids.length;
+    return '<div class="bulkbar">' +
+      '<label class="bulk-all"><input type="checkbox" id="bulkAll"' + (all ? " checked" : "") + (ids.length ? "" : " disabled") + "> <span>전체 선택</span></label>" +
+      '<span class="bulk-n">' + (n ? "<b>" + n + "</b>건 선택 / " + ids.length + "건" : "보이는 " + ids.length + "건") + "</span>" +
+      '<span class="bulk-sp"></span>' +
+      '<button type="button" class="bulk-btn" id="bulkDone"' + (n ? "" : " disabled") + ">✅ 선택 확인" + (n ? " (" + n + ")" : "") + "</button>" +
+      '<button type="button" class="bulk-btn ghost" id="bulkAllDone"' + (ids.length ? "" : " disabled") + ">모두 확인</button>" +
+      (n ? '<button type="button" class="bulk-btn ghost" id="bulkClear">선택 해제</button>' : "") +
+      "</div>";
+  }
+  function bulkSetDone(ids) {
+    const list = (ids || []).filter((id) => byId(id));
+    if (!list.length) return;
+    list.forEach((id) => { itemState(id).status = "done"; });
+    saveState();
+    const key = bulkTab(); if (key) bulkSel[key].clear();
+    renderKpi(); renderSeg(); renderCalendar(); renderList();
+    toast("✅ " + list.length + "건 확인 처리 — 기본 목록에서 치웠습니다 (‘완료 포함’을 켜면 다시 볼 수 있어요)", 2800);
+  }
   function threadOf(it) { return it.thread && it.thread.length ? it.thread : [{ date: it.receivedAt, from: it.sender, gist: it.title, link: it.mailLink }]; }
 
   function human(ms) {
@@ -1295,7 +1343,10 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const replyCls = r === "needs_reply" ? "b-reply" : (r === "replied" ? "b-replied" : "b-noreply");
     const replyTitle = "클릭하면 회신 상태가 바뀝니다 (" + REPLY_LABEL[r] + " → " + REPLY_LABEL[NEXT_REPLY[r]] + ")" +
       (it.repliedNote && !stateOf(it).reply ? " · " + it.repliedNote : "");
+    const btab = bulkTab(), bsel = btab && !isArchived(it);
     return '<div class="' + cls + '" data-open="' + esc(it.id) + '" role="button" tabindex="0">' +
+      (bsel ? '<span class="selbox"><input type="checkbox" data-sel-tog="' + esc(it.id) + '"' + (bulkSel[btab].has(it.id) ? " checked" : "") +
+        ' aria-label="이 메일 선택 (한꺼번에 확인)" title="선택해서 한꺼번에 확인"></span>' : "") +
       '<span class="' + rankCls + '">' + esc(rankTxt) + "</span>" +
       '<span class="rmain"><span class="rt"><span class="rtitle">' + esc(it.title) + "</span>" +
         (thr > 1 ? '<span class="thr">+' + (thr - 1) + "</span>" : "") + "</span>" +
@@ -1343,6 +1394,9 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       return;
     }
     const q = view.q.trim(), main = currentList();
+    /* 선택 상태는 지금 보이는 행에만 유효 — 사라진 건은 조용히 정리 */
+    const bkey = bulkTab();
+    if (bkey) { const vis = new Set(main.map((it) => it.id)); [...bulkSel[bkey]].forEach((id) => { if (!vis.has(id)) bulkSel[bkey].delete(id); }); }
     let html = "";
     let extra = (q && view.tab !== "p3") ? sortList(p3Items().filter(matches)) : [];
     /* 검색어가 있을 때만 지난 메일(archived)을 '이전 기록'으로 함께 보여준다 */
@@ -1353,9 +1407,11 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       html += main.length ? rowsBlock(main) : '<div class="empty">' + (view.day ? "이 날짜에 마감인 즉시 확인 건이 없습니다." : (view.replyOnly ? "회신이 필요한 즉시 확인 건이 없습니다." : (q && history.length ? "오늘(11/19 이후) 즉시 확인에는 없습니다. 아래 ‘이전 기록’에서 " + history.length + "건 찾았습니다." : "지금은 본문에서 회원님을 직접 지목한 메일이 없습니다.<br>고객사·사내 이슈는 <b>🟡 흐름 참고</b> 탭에서 볼 수 있습니다."))) + "</div>";
     } else if (view.tab === "p2") {
       html += '<div class="banner">🟡 <div><b>흐름 참고</b> — 고객사(@gm.com)·MC↔GM 왕복, 사내 결품·PTR·조직 공지처럼 흐름을 알아야 하는 건. 내가 이름으로 지목된 건 아니면 여기로 옵니다.</div></div>';
+      if (main.length) html += bulkBarHtml(main);
       html += main.length ? rowsBlock(main) : '<div class="empty">조건에 맞는 흐름 참고 건이 없습니다.</div>';
     } else {
       html += '<div class="banner">⚪ <div><b>단순 공유</b> — 출하리스트·납입요청·재고실사·미상차현황 같은 현장 일상(수신인이어도). 평소엔 숨겨 두고 필요할 때만 봅니다.</div></div>';
+      if (main.length) html += bulkBarHtml(main);
       html += main.length ? rowsBlock(main) : '<div class="empty">조건에 맞는 단순 공유 건이 없습니다.</div>';
     }
     if (extra.length) {
@@ -1731,10 +1787,39 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   });
 
   $("listWrap").addEventListener("change", (e) => {
+    if (e.target.id === "bulkAll") {
+      const k = bulkTab(); if (!k) return;
+      const ids = currentList().map((it) => it.id);
+      if (e.target.checked) ids.forEach((id) => bulkSel[k].add(id)); else bulkSel[k].clear();
+      renderList(); return;
+    }
+    const sb = e.target.closest("[data-sel-tog]");
+    if (sb) {
+      const k = bulkTab(); if (!k) return;
+      if (e.target.checked) bulkSel[k].add(sb.dataset.selTog); else bulkSel[k].delete(sb.dataset.selTog);
+      renderList(); return;
+    }
     if (e.target.id === "cusChkInbox") { view.cusInbox = e.target.checked; renderList(); return; }
     if (e.target.id === "cusChkSent") { view.cusSent = e.target.checked; renderList(); return; }
   });
   $("listWrap").addEventListener("click", (e) => {
+    /* 선택 체크박스·일괄 확인 버튼은 행 클릭(상세 열기)으로 번지지 않게 */
+    if (e.target.closest("[data-sel-tog]")) { e.stopPropagation(); return; }
+    if (e.target.closest("#bulkDone")) {
+      e.preventDefault(); e.stopPropagation();
+      const k = bulkTab(); if (k) bulkSetDone([...bulkSel[k]]);
+      return;
+    }
+    if (e.target.closest("#bulkAllDone")) {
+      e.preventDefault(); e.stopPropagation();
+      bulkSetDone(currentList().map((it) => it.id));
+      return;
+    }
+    if (e.target.closest("#bulkClear")) {
+      e.preventDefault(); e.stopPropagation();
+      const k = bulkTab(); if (k) { bulkSel[k].clear(); renderList(); }
+      return;
+    }
     const bk = e.target.closest("[data-cus-back]");
     if (bk) { e.preventDefault(); e.stopPropagation(); view.cusId = null; view.day = null; renderCalendar(); renderList(); return; }
     const cd = e.target.closest("[data-cus-del]");
@@ -1756,7 +1841,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   });
   $("listWrap").addEventListener("keydown", (e) => {
     if (e.key !== "Enter" && e.key !== " ") return;
-    if (e.target.closest("[data-reply-tog]") || e.target.closest("[data-cal-tog]") || e.target.closest("[data-done-tog]")) return;
+    if (e.target.closest("[data-reply-tog]") || e.target.closest("[data-cal-tog]") || e.target.closest("[data-done-tog]") || e.target.closest("[data-sel-tog]")) return;
     const r = e.target.closest("[data-open]"); if (!r) return;
     e.preventDefault(); openDrawer(r.dataset.open);
   });
