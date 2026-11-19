@@ -1197,7 +1197,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         (it.attachmentSummary ? " · 📎 " + esc(it.attachmentSummary) : (it.attachments && it.attachments.length ? " · 📎 " + esc(it.attachments.length + "건") : "")) +
         (it.imageCount ? " · 🖼 " + it.imageCount + "장" : "") +
         "</span></span>" +
-      '<span class="rside">' + (isArchived(it) ? '<span class="badge b-arch">이전 기록</span>' : "") +
+      '<span class="rside">' + (isArchived(it) ? '<span class="badge b-arch">' + ((it.mailbox === "sent") ? "📤 보낸" : "📥 받은") + " · 이전 기록</span>" : "") +
         (d.text ? '<span class="badge b-due ' + d.cls + '">' + esc(d.text) + "</span>" : "") +
         '<button type="button" class="badge tog b-cal' + (calDate(it) ? " on" : "") + '" data-cal-tog="' + esc(it.id) + '" title="' +
           esc(calDate(it) ? "내 캘린더 등록됨 (" + calDate(it) + ") · 다시 누르면 해제" : "내 캘린더에 등록 (기본 " + calDefaultDate(it) + ") · 다시 누르면 해제") +
@@ -1268,8 +1268,12 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       html += '<div class="sec-title" style="margin-top:12px">검색 결과 · ⚪ 단순 공유 <span class="hint">' + extra.length + "건</span></div>" + rowsBlock(extra);
     }
     if (history.length) {
-      html += '<div class="sec-title" style="margin-top:12px">🗂 이전 기록 (11/19 이전 · 검색 전용) <span class="hint">' + history.length + "건</span></div>" +
-        '<div class="banner" style="margin-bottom:5px">ℹ️ <div>기본 화면에서는 빠져 있는 지난 메일입니다. 검색어를 지우면 다시 숨겨집니다.</div></div>' + rowsBlock(history);
+      const hIn = history.filter((it) => (it.mailbox || "inbox") !== "sent");
+      const hSent = history.filter((it) => it.mailbox === "sent");
+      html += '<div class="sec-title" style="margin-top:12px">🗂 이전 기록 <span class="hint">' + history.length + "건 · 검색 전용</span></div>" +
+        '<div class="banner" style="margin-bottom:5px">ℹ️ <div>기본 화면에서는 빠져 있는 지난 메일입니다. 검색어를 지우면 다시 숨겨집니다. <b>📥 받은편지함</b>과 <b>📤 보낸편지함</b>을 나눠 보여줍니다.</div></div>';
+      if (hIn.length) html += '<div class="sec-title">📥 받은편지함 <span class="hint">' + hIn.length + "건</span></div>" + rowsBlock(hIn);
+      if (hSent.length) html += '<div class="sec-title">📤 보낸편지함 <span class="hint">' + hSent.length + "건</span></div>" + rowsBlock(hSent);
     }
     $("listWrap").innerHTML = html;
     $("dayChip").classList.remove("on");
