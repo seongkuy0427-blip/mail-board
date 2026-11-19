@@ -1323,11 +1323,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     /* 1순위: 제목·태그·요약에 모든 키워드 포함(AND, 띄어쓰기 무시) + 일정 전후 45일 이내 */
     let list = all.filter((it) => isNearEvent(it) && low.every((k) => hasKw(titleBlob(it), k)));
     let mode = "and";
-    /* 2순위: 전체 기간에서 제목·태그·요약에 모든 키워드 포함(AND) */
-    if (!list.length) {
-      list = all.filter((it) => low.every((k) => hasKw(titleBlob(it), k)));
-    }
-    /* 3순위: '사장단 정례회의'처럼 앞 수식어가 메일 제목에 빠진 경우 — 45일 이내 + 해당 월 + 3자 이상 비일반 핵심어 일치 */
+    /* 2순위: '사장단 정례회의'처럼 앞 수식어가 메일 제목에 빠진 경우 — 45일 이내 + 해당 월 + 3자 이상 비일반 핵심어 일치 */
     if (!list.length && evDate) {
       const specific = low.filter((k) => k.length >= 3 && !CUS_GENERIC.has(k));
       if (specific.length) {
@@ -1335,6 +1331,11 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         list = all.filter((it) => isNearEvent(it) && hasEvMonth(it) && hasKw((it.title || "").toLowerCase(), lastKey));
         mode = "month";
       }
+    }
+    /* 3순위: 전체 기간에서 제목·태그·요약에 모든 키워드 포함(AND) */
+    if (!list.length) {
+      mode = "and";
+      list = all.filter((it) => low.every((k) => hasKw(titleBlob(it), k)));
     }
     if (phrase.length >= 3) {
       list.sort((a, b) => {
