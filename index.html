@@ -1465,10 +1465,10 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   const WXCODE = {
     0: ["☀️", "맑음"], 1: ["🌤️", "대체로 맑음"], 2: ["⛅", "구름 조금"], 3: ["☁️", "흐림"],
     45: ["🌫️", "안개"], 48: ["🌫️", "안개"],
-    51: ["🌨️", "약한 이슬비"], 53: ["🌨️", "이슬비"], 55: ["🌨️", "이슬비"],
-    56: ["🌨️", "어는 이슬비"], 57: ["🌨️", "어는 이슬비"],
-    61: ["🌨️", "약한 비"], 63: ["🌨️", "비"], 65: ["⛈️", "강한 비"],
-    66: ["🌨️", "어는 비"], 67: ["🌨️", "어는 비"],
+    51: ["🌦️", "약한 이슬비"], 53: ["🌦️", "이슬비"], 55: ["🌧️", "이슬비"],
+    56: ["🌧️", "어는 이슬비"], 57: ["🌧️", "어는 이슬비"],
+    61: ["🌦️", "약한 비"], 63: ["🌧️", "비"], 65: ["🌧️", "강한 비"],
+    66: ["🌧️", "어는 비"], 67: ["🌧️", "어는 비"],
     71: ["🌨️", "약한 눈"], 73: ["🌨️", "눈"], 75: ["❄️", "강한 눈"], 77: ["❄️", "싸락눈"],
     80: ["🌨️", "소나기"], 81: ["🌨️", "소나기"], 82: ["⛈️", "강한 소나기"],
     85: ["🌨️", "눈 소나기"], 86: ["❄️", "강한 눈 소나기"],
@@ -1543,9 +1543,9 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       const md = x.date.slice(5).replace("-", "/");
       const dow = WXDOW[new Date(x.date + "T12:00:00").getDay()];
       const when = md + "(" + dow + ")";
-      if (wxSnow(x.code) && (x.pop >= 50 || x.sum > 0)) alerts.push({ i: i, text: when + " 눈 " + x.pop + "%", cls: x.pop >= 70 ? "bad" : "snow", rank: x.pop });
-      else if (wxRain(x.code) && x.pop >= 50) alerts.push({ i: i, text: when + " 비 " + x.pop + "%", cls: x.pop >= 70 ? "bad" : "rain", rank: x.pop });
-      if (x.wind >= 10) alerts.push({ i: i, text: when + " 강풍 " + x.wind + "m/s", cls: "wind", rank: x.wind * 5 });
+      if (wxSnow(x.code) && (x.pop >= 50 || x.sum > 0)) alerts.push({ i: i, text: when + " 눈 " + x.pop + "% 예보", cls: x.pop >= 70 ? "bad" : "snow", rank: x.pop });
+      else if (wxRain(x.code) && x.pop >= 50) alerts.push({ i: i, text: when + " 비 " + x.pop + "% 예보", cls: x.pop >= 70 ? "bad" : "rain", rank: x.pop });
+      if (x.wind >= 10) alerts.push({ i: i, text: when + " 강풍 " + x.wind + "m/s 예보", cls: "wind", rank: x.wind * 5 });
     });
     alerts.sort((a, b) => (a.i - b.i) || (b.rank - a.rank));
     const badges = alerts.slice(0, 3).map((a) => '<span class="wx-badge ' + a.cls + '">⚠️ ' + esc(a.text) + "</span>").join("");
