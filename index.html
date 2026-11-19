@@ -716,7 +716,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         (it.attachmentSummary ? " · 📎 " + esc(it.attachmentSummary) : (it.attachments && it.attachments.length ? " · 📎 " + esc(it.attachments.length + "건") : "")) +
         "</span></span>" +
       '<span class="rside">' + (d.text ? '<span class="badge b-due ' + d.cls + '">' + esc(d.text) + "</span>" : "") +
-        '<span class="badge ' + replyCls + '">' + esc(REPLY_LABEL[r]) + "</span>" +
+        '<span class="badge ' + replyCls + '"' + (it.repliedNote ? ' title="' + esc(it.repliedNote) + '"' : "") + ">" + esc(REPLY_LABEL[r]) + "</span>" +
         '<span class="badge b-st">' + esc(ST_LABEL[st.status] || "대기") + "</span></span></button>";
   }
 
@@ -824,6 +824,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         '<button class="dr-close" id="drClose" aria-label="닫기">✕</button></div>' +
       '<div class="dr-body">' +
         '<div class="dr-sec"><p class="dr-summary">' + esc(it.summary || "") + "</p>" +
+          (it.repliedNote ? '<div class="att-sum" style="margin-top:6px">↩️ ' + esc(it.repliedNote) + "</div>" : "") +
           '<div class="dr-meta"><span><b>' + esc(it.sender) + "</b> &lt;" + esc(it.senderEmail) + "&gt;</span>" +
           "<span>수신 " + esc(it.receivedAt) + "</span><span>마감 " + esc(it.deadline || "-") + "</span>" +
           (it.priorityReason ? "<span>판정 " + esc(it.priorityReason) + "</span>" : "") + "</div></div>" +
