@@ -178,6 +178,8 @@
   .row .rank{flex:none; font-size:10px; font-weight:700; color:#5b4b8a; background:var(--violet-weak); border:1px solid #e2daf5;
     border-radius:6px; padding:2px 5px; min-width:24px; text-align:center}
   .row .rank.vip{background:linear-gradient(90deg,#f7e6b0,#fbf3d6); color:#7a5f12; border-color:#e8cf85}
+  .row .rank.p2{background:var(--brand-weak); color:var(--brand); border-color:#d3e1fb}
+  .row .rank.p3{background:var(--gray-weak); color:var(--ink-3); border-color:#e1e6ee}
   .row .rmain{flex:1 1 auto; min-width:0}
   .row .rt{display:flex; align-items:center; gap:5px; min-width:0}
   .row .rtitle{font-size:13.3px; font-weight:600; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
@@ -815,8 +817,8 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const p = priorityOf(it), d = dueInfo(it), r = replyOf(it), st = stateOf(it);
     const thr = threadOf(it).length;
     const cls = "row p" + p + (p === 1 && d.hot && !isDone(it) ? (d.past ? " over" : " hot") : "") + (st.status === "done" ? " done" : "");
-    const rankTxt = p === 1 ? "1-" + (Number(it.vipRank) || 3) : (p === 2 ? "2" : "3");
-    const rankCls = "rank" + (it.isVip && Number(it.vipRank) === 1 ? " vip" : "");
+    const rankTxt = p === 1 ? "1-" + (Number(it.vipRank) || 3) : (p === 2 ? "🟡" : "⚪");
+    const rankCls = "rank p" + p + (it.isVip && Number(it.vipRank) === 1 ? " vip" : "");
     const replyCls = r === "needs_reply" ? "b-reply" : (r === "replied" ? "b-replied" : "b-noreply");
     const replyTitle = "클릭하면 회신 상태가 바뀝니다 (" + REPLY_LABEL[r] + " → " + REPLY_LABEL[NEXT_REPLY[r]] + ")" +
       (it.repliedNote && !stateOf(it).reply ? " · " + it.repliedNote : "");
