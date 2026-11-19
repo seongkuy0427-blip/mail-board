@@ -240,6 +240,10 @@
   .dr-sec:last-child{border-bottom:none}
   .sec-h{display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; color:var(--ink-2); margin-bottom:6px}
   .sec-h .cnt{font-weight:500; color:var(--ink-3); font-size:10.5px}
+  .sub-h{display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:var(--ink-3);
+    margin:10px 0 6px; padding-top:8px; border-top:1px dashed #e9eef5}
+  .sub-h .cnt{font-weight:500; font-size:10.5px}
+  .dr-meta-top{margin:0 0 7px}
   .dr-summary{font-size:12.8px; color:var(--ink-2); line-height:1.6; margin:0}
   .dr-meta{font-size:10.8px; color:var(--ink-3); margin-top:5px; display:flex; flex-wrap:wrap; gap:2px 9px}
   .dr-meta b{color:var(--ink-2); font-weight:500}
@@ -965,7 +969,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const checks = rows.map((txt, i) => '<li class="' + (st.checks[i] ? "on" : "") + '"><input type="checkbox" data-check="' + it.id + '" data-i="' + i + '"' +
       (st.checks[i] ? " checked" : "") + "><span>" + esc(txt) + "</span></li>").join("");
     const d = it.replyDraft;
-    const draft = d ? '<div class="dr-sec"><div class="sec-h">✉️ 회신 초안 <span class="cnt">· ' + esc(d.to || "-") + "</span></div>" +
+    const draft = d ? '<div class="dr-sec"><div class="sec-h">✉️ 답장 메일 문구 제안 <span class="cnt">· ' + esc(d.to || "-") + "</span></div>" +
       '<div class="draft"><div class="draft-h"><div class="to">' + esc(d.subject || "") + "</div>" +
       '<button class="mini" data-copy="' + it.id + '">📋 복사</button>' +
       '<a class="mini" href="' + esc(mailtoHref(d)) + '" target="_blank" rel="noopener">메일로 열기</a></div>' +
@@ -976,9 +980,10 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       ? '<div class="att-list">' + atts.map((a) => '<span class="att">📎 <span class="nm">' + esc(a.name) + '</span><span class="sz">' + esc(a.size || "") + "</span></span>").join("") + "</div>"
       : (it.attachmentsUnverified ? '<div class="att-none">첨부 여부·파일명은 웹메일 원본에서 확인 (대시보드 미수집)</div>' : '<div class="att-none">첨부파일 없음 (본문 인라인 자료)</div>');
     const attSum = it.attachmentSummary ? '<div class="att-sum">📎 ' + esc(it.attachmentSummary) + "</div>" : "";
+    const attBlock = '<div class="sub-h">📎 첨부파일 <span class="cnt">· ' + atts.length + "건</span></div>" + attHtml + attSum;
 
     const threadHtml = thr.length > 1
-      ? '<div class="dr-sec"><details class="thread"' + (it.thread.length <= 4 ? " open" : "") + '><summary>이전 메일 ' + (thr.length - 1) + "건 타임라인 (총 " + thr.length + "건)</summary>" +
+      ? '<div class="dr-sec"><div class="sec-h">🕒 히스토리</div><details class="thread"' + (it.thread.length <= 4 ? " open" : "") + '><summary>이전 메일 ' + (thr.length - 1) + "건 타임라인 (총 " + thr.length + "건)</summary>" +
         '<ul class="thread-list">' + thr.slice().reverse().map((m) =>
           '<li><span class="th-date">' + esc(m.date) + '</span><span class="th-from">' + esc(m.from) + "</span>" +
           '<span class="th-gist">' + esc(m.gist) + "</span></li>").join("") + "</ul></details></div>"
@@ -997,12 +1002,12 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
 
     const imgs = it.images || [];
     const imgHtml = imgs.length
-      ? '<div class="dr-sec"><div class="sec-h">🖼️ 본문 사진 <span class="cnt">· ' + imgs.length + "장</span></div>" +
+      ? '<div class="sub-h">🖼️ 본문 사진 <span class="cnt">· ' + imgs.length + "장</span></div>" +
         '<div class="img-grid' + (imgs.length === 1 ? " single" : "") + '">' +
         imgs.map((im, i) => '<button type="button" class="img-cell" data-zoom="' + esc(it.id) + '" data-i="' + i + '" aria-label="' + esc((im.name || "사진") + " 크게 보기") + '">' +
           '<img src="' + esc(im.dataUrl) + '" alt="' + esc(im.name || "메일 본문 사진") + '" loading="lazy">' +
           '<span class="zoom">🔍 크게</span></button>').join("") + "</div>" +
-        '<div class="img-hint">사진을 누르면 원본 크기로 크게 볼 수 있습니다.</div></div>'
+        '<div class="img-hint">사진을 누르면 원본 크기로 크게 볼 수 있습니다.</div>'
       : "";
 
     return '<div class="dr-head"><div style="flex:1;min-width:0">' +
@@ -1010,16 +1015,20 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         "<h2>" + esc(it.title) + "</h2></div>" +
         '<button class="dr-close" id="drClose" aria-label="닫기">✕</button></div>' +
       '<div class="dr-body">' +
-        '<div class="dr-sec"><p class="dr-summary">' + esc(it.summary || "") + "</p>" +
-          (it.repliedNote && !stateOf(it).reply ? '<div class="att-sum" style="margin-top:6px">↩️ ' + esc(it.repliedNote) + "</div>" : "") +
-          '<div class="dr-meta"><span><b>' + esc(it.sender) + "</b> &lt;" + esc(it.senderEmail) + "&gt;</span>" +
+        /* 1. 메일 원문 — 본문 표 · 본문 텍스트 · 본문 사진 · 첨부파일 */
+        '<div class="dr-sec"><div class="sec-h">📄 메일 원문</div>' +
+          '<div class="dr-meta dr-meta-top"><span><b>' + esc(it.sender) + "</b> &lt;" + esc(it.senderEmail) + "&gt;</span>" +
           "<span>수신 " + esc(it.receivedAt) + "</span><span>마감 " + esc(it.deadline || "-") + "</span>" +
-          (it.priorityReason ? "<span>판정 " + esc(it.priorityReason) + "</span>" : "") + "</div></div>" +
+          (it.priorityReason ? "<span>판정 " + esc(it.priorityReason) + "</span>" : "") + "</div>" +
+          body + imgHtml + attBlock + "</div>" +
+        /* 2. 핵심 분석 */
+        '<div class="dr-sec"><div class="sec-h">📝 핵심 분석</div><p class="dr-summary">' + esc(it.summary || "") + "</p>" +
+          (it.repliedNote && !stateOf(it).reply ? '<div class="att-sum" style="margin-top:6px">↩️ ' + esc(it.repliedNote) + "</div>" : "") + "</div>" +
+        /* 3. 할 일 */
         (rows.length ? '<div class="dr-sec"><div class="sec-h">✅ 할 일 <span class="cnt" data-cnt="' + it.id + '">· ' + doneCount(it) + "/" + rows.length + "</span></div><ul class=\"todo\">" + checks + "</ul></div>" : "") +
-        '<div class="dr-sec"><div class="sec-h">📎 첨부 <span class="cnt">· ' + atts.length + "건</span></div>" + attHtml + attSum + "</div>" +
+        /* 4. 히스토리 */
         threadHtml +
-        '<div class="dr-sec"><div class="sec-h">📄 메일 본문</div>' + body + "</div>" +
-        imgHtml +
+        /* 5. 답장 메일 문구 제안 */
         draft +
         '<div class="dr-sec"><div class="sec-h">🗒️ 내 메모</div>' +
           '<textarea class="memo" data-memo="' + it.id + '" placeholder="처리 내용·연락한 사람·특이사항 (이 기기에만 저장)">' + esc(st.memo || "") + "</textarea></div>" +
