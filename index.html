@@ -984,7 +984,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         "<b>1-3</b> 본문 지목, 그 안에서 긴급도·마감순";
     } else if (view.tab === "fu") {
       note.style.display = "";
-      note.innerHTML = "보낸편지함(10/30~11/19)에서 <b>확인·자료·조치·회신을 요청</b>한 메일을 받은편지함과 대조한 결과입니다. " +
+      note.innerHTML = "보낸편지함(10/30~11/19)에서 <b>상대에게 회신이 필요한 요청</b>을 보낸 건을 받은편지함과 대조한 결과입니다. (업무 완료 보고·자료 제출은 제외) " +
         "회신이 확인된 건 <b>추적 완료</b>로 바꾸면 대기 건수에서 바로 빠집니다.";
     } else { note.style.display = "none"; note.innerHTML = ""; }
   }
@@ -1092,7 +1092,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const shown = q ? all.filter((f) => fuBlob(f).includes(q)) : all;
     const pend = shown.filter((f) => !fuDone(f));
     const done = shown.filter(fuDone);
-    let html = '<div class="banner" style="border-color:#f0d9bb;background:#fffaf2">⏳ <div><b>보낸 요청 미회신</b> — 내가 확인·자료·조치·회신을 부탁했는데 아직 답장이 없는 건입니다. 행을 누르면 <b>보낸 원문 → 요청 요약 → 독촉 문구</b>를 보고, 회신이 오면 하단에서 <b>회신 받음(추적 완료)</b>을 누르세요.</div></div>';
+    let html = '<div class="banner" style="border-color:#f0d9bb;background:#fffaf2">⏳ <div><b>보낸 요청 미회신</b> — 협력사·타 부서·고객사에 답변·자료·승인·조치를 요청했는데 아직 회신이 없는 건입니다. (상사 보고·자료 제출은 제외) 행을 누르면 <b>보낸 원문 → 요청 요약 → 독촉 문구</b>를 보고, 회신이 오면 하단에서 <b>회신 받음(추적 완료)</b>을 누르세요.</div></div>';
     html += '<div class="sec-title">⏳ 대기 중 <span class="hint">' + pend.length + "건 · 오래된 순</span></div>";
     html += pend.length ? '<div class="rows">' + pend.map(fuRowHtml).join("") + "</div>"
       : '<div class="empty">' + (q ? "검색어에 맞는 미회신 건이 없습니다." : "현재 회신을 기다리는 요청 메일이 없습니다.<br>(완료 보고·자료 제출 메일은 자동 제외)") + "</div>";
