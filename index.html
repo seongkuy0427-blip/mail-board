@@ -72,7 +72,15 @@
   .k4{border-left:3px solid var(--green)}
 
   /* ---------- 캘린더 ---------- */
-  .cal-panel{background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); margin:10px 0 14px; overflow:hidden}
+  .cal-panel{background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); margin:10px 0 12px; overflow:hidden}
+  .cal-bar{display:flex; align-items:center; gap:8px; width:100%; padding:10px 14px; background:#fbfcfe; border:0; cursor:pointer;
+    font-family:inherit; font-size:12.5px; font-weight:700; color:var(--ink-2); text-align:left}
+  .cal-bar:hover{background:#f5f8fd}
+  .cal-bar .chev{color:var(--violet); font-size:11px; transition:transform .15s}
+  .cal-bar.open .chev{transform:rotate(90deg)}
+  .cal-bar .cb-sum{margin-left:auto; font-weight:500; font-size:11.5px; color:var(--ink-3)}
+  .cal-bar .cb-sum b{color:var(--red); font-weight:700}
+  .cal-body{border-top:1px solid var(--line)}
   .cal-grid-wrap{display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
   .cal-main{padding:12px 14px; border-right:1px solid var(--line); min-width:0}
   .cal-side{padding:12px 14px; min-width:0; background:#fbfcfe}
@@ -336,6 +344,11 @@
     <div class="kpi" id="kpi"></div>
 
     <section class="cal-panel" aria-label="1순위 마감 캘린더">
+      <button class="cal-bar" id="calBar" aria-expanded="false" aria-controls="calBody">
+        <span class="chev">▸</span><span>📅 1순위 마감 캘린더</span>
+        <span class="cb-sum" id="calSummary"></span>
+      </button>
+      <div class="cal-body" id="calBody" hidden>
       <div class="cal-grid-wrap">
         <div class="cal-main">
           <div class="cal-top">
@@ -361,6 +374,7 @@
           <div class="side-h">이번 주 마감 <span class="n" id="sideWeekN"></span></div>
           <div class="side-list" id="sideWeek"></div>
         </div>
+      </div>
       </div>
     </section>
 
@@ -398,7 +412,7 @@
 (() => {
   "use strict";
 
-  const LS = { pin: "mb_pin_v1", state: "mb_state_v1" };
+  const LS = { pin: "mb_pin_v1", state: "mb_state_v1", cal: "mb_calopen_v1" };
   const AUTO_REFRESH_MS = 5 * 60 * 1000;
   const URG = { urgent: 0, high: 1, normal: 2 };
   const ST_LABEL = { todo: "대기", doing: "진행중", done: "완료" };
@@ -407,7 +421,8 @@
 
   let ENC = null, DATA = null, PIN = null;
   let STORE = loadState();
-  let view = { tab: "p1", q: "", sort: "urgency", day: null, ym: null, sender: "all", group: false, replyOnly: false, openId: null };
+  let view = { tab: "p1", q: "", sort: "urgency", day: null, ym: null, sender: "all", group: false, replyOnly: false, openId: null, calOpen: false };
+try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
 
   const $ = (id) => document.getElementById(id);
 
@@ -642,6 +657,16 @@
     $("sideWeekN").textContent = weekList.length ? weekList.length + "건" : "";
     $("sideToday").innerHTML = todayList.length ? todayList.map(sideItem).join("") : '<div class="side-empty">오늘 마감인 1순위가 없습니다.</div>';
     $("sideWeek").innerHTML = weekList.length ? weekList.map(sideItem).join("") : '<div class="side-empty">이번 주 남은 1순위 마감이 없습니다.</div>';
+    renderCalState(todayList.length, weekList.length);
+  }
+
+  function renderCalState(nToday, nWeek) {
+    const bar = $("calBar"), body = $("calBody");
+    bar.classList.toggle("open", view.calOpen);
+    bar.setAttribute("aria-expanded", view.calOpen ? "true" : "false");
+    body.hidden = !view.calOpen;
+    $("calSummary").innerHTML = "오늘 마감 <b>" + nToday + "건</b> · 이번 주 <b>" + nWeek + "건</b>" +
+      (view.calOpen ? "" : " · 눌러서 펼치기");
   }
 
   /* ---------------- 렌더: 탭 · 칩 ---------------- */
@@ -880,6 +905,11 @@
     if (e.target.id === "groupChk") { view.group = e.target.checked; renderList(); }
   });
 
+  $("calBar").addEventListener("click", () => {
+    view.calOpen = !view.calOpen;
+    try { localStorage.setItem(LS.cal, view.calOpen ? "1" : "0"); } catch (e) {}
+    renderCalendar();
+  });
   $("calPrev").addEventListener("click", () => { view.ym.m--; if (view.ym.m < 0) { view.ym.m = 11; view.ym.y--; } renderCalendar(); });
   $("calNext").addEventListener("click", () => { view.ym.m++; if (view.ym.m > 11) { view.ym.m = 0; view.ym.y++; } renderCalendar(); });
   $("calToday").addEventListener("click", () => { const n = new Date(); view.ym = { y: n.getFullYear(), m: n.getMonth() }; renderCalendar(); });
