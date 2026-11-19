@@ -1115,17 +1115,28 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const low = keys.map((k) => k.toLowerCase());
     const phrase = ((c && c.title) || "").trim().toLowerCase();
     const all = items();
-    /* 1순위: 제목·태그·요약에 모든 키워드 포함(AND) */
-    let list = all.filter((it) => { const b = titleBlob(it); return low.every((k) => b.indexOf(k) !== -1); });
+    const evDate = (c && c.date) ? parseYmd(c.date) : null;
+    const evMonth = (c && c.date) ? parseInt(c.date.slice(5, 7), 10) : null;
+    const isNearEvent = (it) => {
+      if (!evDate) return true;
+      const d = parseYmd((it.receivedAt || "").slice(0, 10));
+      if (!d) return false;
+      return Math.abs(d.getTime() - evDate.getTime()) <= 45 * 86400000;
+    };
+    const hasEvMonth = (it) => !evMonth || (it.title || "").indexOf(evMonth + "월") !== -1;
+
+    /* 1순위: 제목·태그·요약에 모든 키워드 포함(AND) + 일정 전후 45일 이내 */
+    let list = all.filter((it) => isNearEvent(it) && low.every((k) => titleBlob(it).indexOf(k) !== -1));
     let mode = "and";
-    /* 2순위: 본문 포함 전체에서 모든 키워드 포함(AND) */
-    if (!list.length && low.length > 1) {
-      list = all.filter((it) => { const b = searchBlob(it); return low.every((k) => b.indexOf(k) !== -1); });
+    /* 2순위: 일정 전후 45일 이내에서 제목에 핵심 키워드 포함 + 해당 월(예: 11월) 표기 일치 */
+    if (!list.length && evDate) {
+      list = all.filter((it) => isNearEvent(it) && hasEvMonth(it) && low.some((k) => (it.title || "").toLowerCase().indexOf(k) !== -1));
+      mode = "month";
     }
-    /* 3순위: 그래도 0건일 때만 제목·태그 기준 부분 일치(OR) */
+    /* 3순위: 전체 기간에서 제목·태그·요약에 모든 키워드 포함(AND) */
     if (!list.length) {
-      mode = "or";
-      list = all.filter((it) => { const b = titleBlob(it); return low.some((k) => b.indexOf(k) !== -1); });
+      mode = "and";
+      list = all.filter((it) => low.every((k) => titleBlob(it).indexOf(k) !== -1));
     }
     if (phrase.length >= 3) {
       list.sort((a, b) => {
@@ -1135,7 +1146,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         return 0;
       });
     }
-    return { keys: keys, list: mode === "and" ? list : sortList(list), mode: mode };
+    return { keys: keys, list: sortList(list), mode: mode };
   }
   function cusMatchHtml(c) {
     const r = relatedMails(c), list = r.list;
