@@ -686,9 +686,9 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   /* 상단 '알림 테스트' — OS 팝업이 막혀 있어도 상단 카드·탭 제목 깜빡임이 뜨는지 바로 확인 */
   async function testNotification() {
     /* 1) OS 알림과 무관하게 항상 뜨는 알림 */
-    startTitleFlash("테스트 — 이 탭 제목이 깜박이면 정상입니다");
+    startTitleFlash("테스트 — 이 탭 제목이 깜빡이면 정상입니다");
     showAlertBanner("🔔 알림 테스트",
-      "이 상단 카드와 탭 제목 깜박임은 Windows 알림이 차단되어도 항상 뜼니다. 실제 새 메일이 오면 같은 방식으로 알려드립니다.", null);
+      "이 상단 카드와 탭 제목 깜빡임은 Windows 알림이 차단되어도 항상 뜹니다. 실제 새 메일이 오면 같은 방식으로 알려드립니다.", null);
     /* 2) 브라우저 팝업(지원·허용되는 경우에만) */
     let why = "";
     let popupOk = false;
@@ -711,7 +711,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       const turnedOn = !bellOn();
       if (turnedOn) { try { localStorage.setItem(LS.bell, "1"); } catch (e) {} }
       paintBell();
-      toast("테스트 알림을 보냈습니다 · 상단 카드와 탭 제목 깜박임도 함께 뜼니다" + (turnedOn ? " · 새 메일 알림도 켜 두었습니다" : ""), 3600);
+      toast("테스트 알림을 보냈습니다 · 상단 카드와 탭 제목 깜빡임도 함께 뜹니다" + (turnedOn ? " · 새 메일 알림도 켜 두었습니다" : ""), 3600);
     } else {
       paintBell();
       toast("팝업은 " + why + " — 대신 상단 카드·탭 제목으로 알려드립니다", 4200);
@@ -1176,7 +1176,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   $("abClose").addEventListener("click", hideAlertBanner);
   $("abOk").addEventListener("click", hideAlertBanner);
   $("abShow").addEventListener("click", () => { const id = alertTargetId; hideAlertBanner(); if (id) openDrawer(id); });
-  /* 사용자가 화면을 클릭하거나 키를 누르면 탭 제목 깜박임을 원래 제목으로 복구 */
+  /* 사용자가 화면을 클릭하거나 키를 누르면 탭 제목 깜빡임을 원래 제목으로 복구 */
   document.addEventListener("pointerdown", () => { if (titleTimer) stopTitleFlash(); }, true);
   document.addEventListener("keydown", () => { if (titleTimer) stopTitleFlash(); }, true);
   document.addEventListener("visibilitychange", () => { if (!document.hidden && titleTimer) stopTitleFlash(); });
