@@ -142,21 +142,29 @@
   @media (max-width:760px){ .badge.b-pin .pin-txt{display:none} }
 
   /* ---------- 캘린더 ---------- */
-  /* ---------- 🌤️ 날씨 (인천 부평) ---------- */
-  .wx{background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); margin:10px 0 4px; overflow:hidden}
-  .wx-bar{display:flex; align-items:center; gap:8px; width:100%; padding:9px 14px; background:#fbfcfe; border:0; cursor:pointer;
-    font-family:inherit; font-size:12.5px; font-weight:700; color:var(--ink-2); text-align:left; flex-wrap:wrap}
-  .wx-bar:hover{background:#f5f8fd}
-  .wx-bar .chev{color:var(--brand); font-size:11px; transition:transform .15s}
-  .wx-bar.open .chev{transform:rotate(90deg)}
-  .wx-bar .wx-sum{margin-left:auto; font-weight:500; font-size:11.5px; color:var(--ink-3); display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end}
-  .wx-bar .wx-sum .wx-t{font-size:13px; font-weight:700; color:var(--ink)}
-  .wx-badge{display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:999px; font-size:10.5px; font-weight:700; border:1px solid; white-space:nowrap}
+  /* ---------- 🌤️ 날씨 (헤더 우측 칩 + 드롭다운) ---------- */
+  .hd-sub{display:flex; justify-content:flex-end; position:relative; padding:0 16px 7px}
+  .wx-chip{display:inline-flex; align-items:center; gap:5px; padding:4px 10px 4px 8px; border-radius:999px;
+    border:1px solid var(--line); background:#fff; cursor:pointer; font-family:inherit; font-size:11.5px; color:var(--ink-2);
+    white-space:nowrap; box-shadow:0 1px 2px rgba(16,32,64,.05); transition:border-color .12s, background .12s}
+  .wx-chip:hover{border-color:#cfd9e8; background:#f8fbff}
+  .wx-chip[aria-expanded="true"]{border-color:var(--brand); background:#f2f7ff}
+  .wx-chip .wx-ico{font-size:13px; line-height:1}
+  .wx-chip .wx-loc{font-weight:600; color:var(--ink-2)}
+  .wx-chip .wx-t{font-weight:700; color:var(--ink); font-size:12.5px}
+  .wx-chip .wx-al{font-weight:700; color:#b32b2b; display:inline-flex; align-items:center; gap:4px}
+  .wx-chip .wx-al:empty{display:none}
+  .wx-chip .wx-sep{color:#c3cbd6; margin:0 1px}
+  .wx-pop{position:absolute; right:16px; top:calc(100% - 2px); width:min(560px, calc(100vw - 24px)); z-index:36;
+    background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:0 12px 32px rgba(16,32,64,.16); padding:10px 12px 11px}
+  .wx-pop-h{display:flex; align-items:baseline; gap:8px; margin-bottom:7px}
+  .wx-pop-h b{font-size:12px; color:var(--ink)}
+  .wx-pop-sub{margin-left:auto; font-size:10px; color:var(--ink-3); font-weight:500}
+  .wx-badge{display:inline-flex; align-items:center; gap:3px; padding:1px 6px; border-radius:999px; font-size:10px; font-weight:700; border:1px solid; white-space:nowrap}
   .wx-badge.rain{background:var(--brand-weak); border-color:#c9daf7; color:#1f5fd0}
   .wx-badge.snow{background:#eef3ff; border-color:#c3d4f6; color:#1b4fae}
   .wx-badge.wind{background:var(--orange-weak); border-color:#f0d3a8; color:#a35c10}
   .wx-badge.bad{background:var(--red-weak); border-color:#f3c7c7; color:#b32b2b}
-  .wx-body{border-top:1px solid var(--line); padding:10px 12px 12px}
   .wx-sec-h{font-size:11px; font-weight:700; color:var(--ink-3); margin:2px 0 6px}
   .wx-hours{display:grid; grid-template-columns:repeat(8, minmax(0,1fr)); gap:5px}
   .wx-h{border:1px solid var(--line); border-radius:9px; padding:6px 4px; text-align:center; background:#fbfcfe}
@@ -179,7 +187,7 @@
   .wx-foot{margin-top:8px; font-size:10.5px; color:var(--ink-3); text-align:right}
   @media (max-width:1000px){ .wx-hours{grid-template-columns:repeat(4, minmax(0,1fr))} .wx-days{grid-template-columns:repeat(4, minmax(0,1fr))} }
   @media (max-width:640px){ .wx-hours{grid-template-columns:repeat(3, minmax(0,1fr))} .wx-days{grid-template-columns:repeat(2, minmax(0,1fr))}
-    .wx-bar{font-size:12px} .wx-bar .wx-sum{justify-content:flex-start; margin-left:0; margin-top:3px} }
+    .wx-pop{right:8px; width:calc(100vw - 16px)} }
 
   .cal-panel{background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); margin:10px 0 12px; overflow:hidden}
   .cal-bar{display:flex; align-items:center; gap:8px; width:100%; padding:10px 14px; background:#fbfcfe; border:0; cursor:pointer;
@@ -583,25 +591,24 @@
         <button class="icon-btn" id="lockBtn" title="잠금" aria-label="잠금">🔒</button>
       </div>
     </div>
+    <div class="wrap hd-sub">
+      <button type="button" class="wx-chip" id="wxBar" aria-expanded="false" aria-controls="wxBody" title="눌러서 시간별·7일 예보 보기">
+        <span class="wx-ico">🌤️</span><span class="wx-loc">인천 부평</span><span class="wx-t" id="wxTemp">—</span>
+        <span class="wx-al" id="wxAlert"></span>
+      </button>
+      <div class="wx-pop" id="wxBody" hidden>
+        <div class="wx-pop-h"><b id="wxCond">인천 부평</b><span id="wxFoot" class="wx-pop-sub">자료: Open-Meteo</span></div>
+        <div class="wx-sec-h">⏱️ 시간별 · 앞으로 24시간</div>
+        <div class="wx-hours" id="wxHours"></div>
+        <div class="wx-sec-h" style="margin-top:10px">📅 7일 주간 <span style="font-weight:500">(비·눈 올 때만 💧 확률 표시)</span></div>
+        <div class="wx-days" id="wxDays"></div>
+      </div>
+    </div>
   </header>
 
   <div class="wrap">
     <div class="kpi" id="kpi"></div>
     <div class="kpi-hint" id="kpiHint">카드를 <b>누르면</b> 그 건만 아래 목록에 모아 봅니다 · 다시 누르면 해제</div>
-
-    <section class="wx" aria-label="인천 부평 날씨 예보">
-      <button type="button" class="wx-bar" id="wxBar" aria-expanded="false" aria-controls="wxBody">
-        <span class="chev">▸</span><span>🌤️ 인천 부평 날씨</span>
-        <span class="wx-sum" id="wxSummary">불러오는 중…</span>
-      </button>
-      <div class="wx-body" id="wxBody" hidden>
-        <div class="wx-sec-h">⏱️ 시간별 · 앞으로 24시간</div>
-        <div class="wx-hours" id="wxHours"></div>
-        <div class="wx-sec-h" style="margin-top:12px">📅 7일 주간 <span style="font-weight:500">(비·눈 올 때만 💧 확률 표시)</span></div>
-        <div class="wx-days" id="wxDays"></div>
-        <div class="wx-foot" id="wxFoot">자료: Open-Meteo · 5분마다 자동 갱신</div>
-      </div>
-    </section>
 
     <section class="cal-panel" aria-label="즉시 확인 마감 캘린더">
       <button class="cal-bar" id="calBar" aria-expanded="false" aria-controls="calBody">
@@ -1504,13 +1511,14 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       wxRender();
     } catch (e) {
       if (!WX) {
-        if ($("wxSummary")) $("wxSummary").innerHTML = '<span style="color:var(--orange);font-weight:600">날씨를 불러오지 못했습니다 · 잠시 후 자동 재시도</span>';
-        if ($("wxFoot")) $("wxFoot").textContent = "자료: Open-Meteo · 연결 실패 (" + ((e && e.message) || "오류") + ")";
+        if ($("wxTemp")) $("wxTemp").textContent = "—";
+        if ($("wxAlert")) $("wxAlert").innerHTML = '<span style="color:var(--orange);font-weight:600">날씨 불러오기 실패</span>';
+        if ($("wxFoot")) $("wxFoot").textContent = "연결 실패 (" + ((e && e.message) || "오류") + ") · 잠시 후 자동 재시도";
       }
     } finally { WX_BUSY = false; }
   }
   function wxRender() {
-    if (!WX || !$("wxSummary")) return;
+    if (!WX || !$("wxTemp")) return;
     const cur = WX.current || {}, d = WX.daily || {}, h = WX.hourly || {};
     const cCode = wxNum(cur.weather_code, -1);
     const cTemp = Math.round(wxNum(cur.temperature_2m, 0));
@@ -1540,8 +1548,9 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     alerts.sort((a, b) => (a.i - b.i) || (b.rank - a.rank));
     const badges = alerts.slice(0, 2).map((a) => '<span class="wx-badge ' + a.cls + '">⚠️ ' + esc(a.text) + "</span>").join("");
 
-    $("wxSummary").innerHTML = '<span class="wx-t">' + cTemp + "°C</span>" +
-      "<span>· " + esc(wxName(cCode)) + "</span>" + badges;
+    $("wxTemp").textContent = cTemp + "°C";
+    $("wxAlert").innerHTML = badges ? '<span class="wx-sep">·</span>' + badges : "";
+    $("wxCond").textContent = "인천 부평 · " + wxName(cCode) + " (체감 " + cFeels + "°C)";
 
     /* 시간별 — 지금부터 24시간, 3시간 간격 */
     const now = new Date(), ht = h.time || [], cells = [];
@@ -1584,7 +1593,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         (x.wind >= 14 ? '<span class="d-w">💨 강풍</span>' : "") + "</div>";
     }).join("");
 
-    $("wxFoot").textContent = "자료: Open-Meteo · 체감 " + cFeels + "°C · 갱신 " + stamp(WX_AT || new Date()) + " · 5분마다 자동";
+    $("wxFoot").textContent = "Open-Meteo · 갱신 " + stamp(WX_AT || new Date()) + " · 5분마다 자동";
     paintWxOpen();
   }
 
@@ -2171,6 +2180,14 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     renderCalendar();
   });
   $("wxBar").addEventListener("click", wxToggle);
+  /* 칩·드롭다운 바깥을 누르면 접는다 */
+  document.addEventListener("click", (e) => {
+    if (!wxOpen()) return;
+    if (e.target.closest("#wxBar") || e.target.closest("#wxBody")) return;
+    try { localStorage.setItem(LS.wx, "0"); } catch (err) {}
+    paintWxOpen();
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && wxOpen()) { try { localStorage.setItem(LS.wx, "0"); } catch (err) {} paintWxOpen(); } });
   paintWxOpen();
   $("calPrev").addEventListener("click", () => { view.ym.m--; if (view.ym.m < 0) { view.ym.m = 11; view.ym.y--; } renderCalendar(); });
   $("calNext").addEventListener("click", () => { view.ym.m++; if (view.ym.m > 11) { view.ym.m = 0; view.ym.y++; } renderCalendar(); });
