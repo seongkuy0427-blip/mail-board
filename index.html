@@ -615,7 +615,7 @@
 
   let ENC = null, DATA = null, PIN = null;
   let STORE = loadState();
-  let view = { tab: "p1", q: "", sort: "urgency", day: null, ym: null, sender: "all", group: false, replyOnly: false, showDone: false, openId: null, calOpen: false, cusId: null };
+  let view = { tab: "p1", q: "", sort: "urgency", day: null, ym: null, sender: "all", group: false, replyOnly: false, showDone: false, openId: null, calOpen: false, cusId: null, cusInbox: true, cusSent: true };
 try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
 
   const $ = (id) => document.getElementById(id);
@@ -1106,27 +1106,61 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     if (view.day) { const cs = cusFor(view.day); if (cs.length) return cs[0]; }
     return null;
   }
+  function titleBlob(it) {
+    return [it.title, it.sender, it.summary, (it.tags || []).join(" ")].join("\n").toLowerCase();
+  }
   function relatedMails(c) {
     const keys = cusKeywords(c);
-    if (!keys.length) return { keys: keys, list: [] };
+    if (!keys.length) return { keys: keys, list: [], mode: "exact" };
     const low = keys.map((k) => k.toLowerCase());
-    const list = items().filter((it) => { const b = searchBlob(it); return low.some((k) => b.indexOf(k) !== -1); });
-    return { keys: keys, list: sortList(list) };
+    const phrase = ((c && c.title) || "").trim().toLowerCase();
+    const all = items();
+    /* 1순위: 제목·태그·요약에 모든 키워드 포함(AND) */
+    let list = all.filter((it) => { const b = titleBlob(it); return low.every((k) => b.indexOf(k) !== -1); });
+    let mode = "and";
+    /* 2순위: 본문 포함 전체에서 모든 키워드 포함(AND) */
+    if (!list.length && low.length > 1) {
+      list = all.filter((it) => { const b = searchBlob(it); return low.every((k) => b.indexOf(k) !== -1); });
+    }
+    /* 3순위: 그래도 0건일 때만 제목·태그 기준 부분 일치(OR) */
+    if (!list.length) {
+      mode = "or";
+      list = all.filter((it) => { const b = titleBlob(it); return low.some((k) => b.indexOf(k) !== -1); });
+    }
+    if (phrase.length >= 3) {
+      list.sort((a, b) => {
+        const ap = titleBlob(a).indexOf(phrase) !== -1 ? 0 : 1;
+        const bp = titleBlob(b).indexOf(phrase) !== -1 ? 0 : 1;
+        if (ap !== bp) return ap - bp;
+        return 0;
+      });
+    }
+    return { keys: keys, list: mode === "and" ? list : sortList(list), mode: mode };
   }
   function cusMatchHtml(c) {
     const r = relatedMails(c), list = r.list;
     const inbox = list.filter((it) => (it.mailbox || "inbox") !== "sent");
     const sent = list.filter((it) => it.mailbox === "sent");
+    const modeNote = r.keys.length > 1 ? (r.mode === "and" ? " · 모두 일치" : " · 부분 일치") : "";
     let html = '<div class="banner" style="margin-bottom:8px">🔗 <div><b>“' + esc(c.title) + '” 관련 메일 ' + list.length +
-      '건</b> <span class="hint">(받은편지함 ' + inbox.length + ' · 보낸편지함 ' + sent.length + ')</span>' +
-      '<div style="margin-top:3px; font-size:11.5px">검색어 ' + (r.keys.length ? r.keys.map((k) => "<b>" + esc(k) + "</b>").join(" · ") : "없음") + '</div>' +
-      '<div style="margin-top:7px"><button type="button" class="btn btn-sm" data-cus-back="1">← 전체 목록으로 돌아가기</button></div></div></div>';
+      '건</b> <span class="hint">(받은편지함 ' + inbox.length + ' · 보낸편지함 ' + sent.length + modeNote + ')</span>' +
+      '<div style="margin-top:3px; font-size:11.5px">검색어 ' + (r.keys.length ? r.keys.map((k) => "<b>" + esc(k) + "</b>").join(" + ") : "없음") + '</div>' +
+      '<div style="margin-top:7px; display:flex; flex-wrap:wrap; align-items:center; gap:10px">' +
+      '<label style="display:inline-flex; align-items:center; gap:4px; font-size:12px; cursor:pointer"><input type="checkbox" id="cusChkInbox"' + (view.cusInbox ? " checked" : "") + '> 📥 받은편지함 (' + inbox.length + ')</label>' +
+      '<label style="display:inline-flex; align-items:center; gap:4px; font-size:12px; cursor:pointer"><input type="checkbox" id="cusChkSent"' + (view.cusSent ? " checked" : "") + '> 📤 보낸편지함 (' + sent.length + ')</label>' +
+      '<button type="button" class="btn btn-sm" data-cus-back="1">← 전체 목록으로 돌아가기</button></div></div></div>';
     if (!list.length) {
       html += '<div class="empty">이 일정과 매칭되는 메일이 없습니다.<br>제목·메모에 낱말을 더 넣으면 더 잘 찾습니다.</div>';
       return html;
     }
-    if (inbox.length) html += '<div class="sec-title">📥 받은편지함 <span class="hint">' + inbox.length + '건</span></div>' + rowsBlock(inbox);
-    if (sent.length) html += '<div class="sec-title">📤 보낸편지함 <span class="hint">' + sent.length + '건</span></div>' + rowsBlock(sent);
+    if (!view.cusInbox && !view.cusSent) {
+      html += '<div class="empty">위에서 <b>📥 받은편지함</b> 또는 <b>📤 보낸편지함</b>을 체크하면 해당 메일이 표시됩니다.</div>';
+      return html;
+    }
+    if (view.cusInbox && inbox.length) html += '<div class="sec-title">📥 받은편지함 <span class="hint">' + inbox.length + '건</span></div>' + rowsBlock(inbox);
+    if (view.cusSent && sent.length) html += '<div class="sec-title">📤 보낸편지함 <span class="hint">' + sent.length + '건</span></div>' + rowsBlock(sent);
+    if (view.cusInbox && !inbox.length && !view.cusSent) html += '<div class="empty">받은편지함에 매칭된 메일이 없습니다.</div>';
+    if (view.cusSent && !sent.length && !view.cusInbox) html += '<div class="empty">보낸편지함에 매칭된 메일이 없습니다.</div>';
     return html;
   }
   function cusAdd(date, title, memo) {
@@ -1685,6 +1719,10 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const s = e.target.closest("[data-open]"); if (s) openDrawer(s.dataset.open);
   });
 
+  $("listWrap").addEventListener("change", (e) => {
+    if (e.target.id === "cusChkInbox") { view.cusInbox = e.target.checked; renderList(); return; }
+    if (e.target.id === "cusChkSent") { view.cusSent = e.target.checked; renderList(); return; }
+  });
   $("listWrap").addEventListener("click", (e) => {
     const bk = e.target.closest("[data-cus-back]");
     if (bk) { e.preventDefault(); e.stopPropagation(); view.cusId = null; view.day = null; renderCalendar(); renderList(); return; }
