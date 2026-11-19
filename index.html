@@ -103,6 +103,16 @@
   .cal-grid-wrap{display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
   .cal-main{padding:12px 14px; border-right:1px solid var(--line); min-width:0}
   .cal-side{padding:12px 14px; min-width:0; background:#fbfcfe}
+  .side-card{background:#fff; border:1px solid var(--line); border-radius:9px; padding:7px 9px; margin-bottom:6px}
+  .side-card.mail{cursor:pointer}
+  .side-card.mail:hover{border-color:#c9d6ea; background:#f8fbff}
+  .side-card .sc-top{display:flex; align-items:center; gap:5px}
+  .side-card .sc-t{flex:1; min-width:0; font-size:12px; font-weight:600; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .side-card .sc-m{font-size:10.5px; color:var(--ink-3); margin-top:3px; line-height:1.45; word-break:break-word}
+  .side-card .sc-x{flex:none; width:20px; height:20px; border-radius:6px; border:1px solid #efc9c9; background:#fff; color:var(--red); font-size:10px; line-height:1; cursor:pointer; padding:0}
+  .side-card .sc-x:hover{background:var(--red-weak)}
+  .side-card.mail{border-left:3px solid var(--violet)}
+  .side-card.cus{border-left:3px solid var(--orange)}
   .cal-top{display:flex; align-items:center; gap:8px; margin-bottom:8px}
   .cal-title{font-size:13.5px; font-weight:700}
   .cal-title .cap{font-size:10.5px; font-weight:500; color:var(--ink-3); margin-left:6px}
@@ -463,6 +473,8 @@
         <span class="cb-sum" id="calSummary"></span>
       </button>
       <div class="cal-body" id="calBody" hidden>
+      <div class="cal-grid-wrap">
+        <div class="cal-main">
       <div class="cal-add">
         <form id="cusForm" autocomplete="off">
           <span class="ca-lab">＋ 직접 일정 추가</span>
@@ -473,8 +485,6 @@
         </form>
         <div class="ca-hint">메일과 상관없는 개인·구두 일정을 직접 넣습니다. 이 기기에만 저장(`mb_cal_custom_v1`).</div>
       </div>
-      <div class="cal-grid-wrap">
-        <div class="cal-main">
           <div class="cal-top">
             <div class="cal-title" id="calTitle">2026년 11월<span class="cap">내가 등록한 메일</span></div>
             <div class="cal-nav">
@@ -493,10 +503,8 @@
           </div>
         </div>
         <div class="cal-side">
-          <div class="side-h">오늘 등록 <span class="n" id="sideTodayN"></span></div>
-          <div class="side-list" id="sideToday"></div>
-          <div class="side-h">이번 주 등록 <span class="n" id="sideWeekN"></span></div>
-          <div class="side-list" id="sideWeek"></div>
+          <div class="side-h">🗓️ <span id="calSideTitle">선택한 날짜</span> <span class="n" id="calSideN"></span></div>
+          <div class="side-list" id="calSideList"></div>
         </div>
       </div>
       </div>
@@ -510,6 +518,7 @@
       <label class="tog" id="doneTog"><input type="checkbox" id="doneChk"> 완료 포함</label>
       <label class="tog" id="replyTog"><input type="checkbox" id="replyChk"> 회신 필요만 보기</label>
       <div class="search"><span>🔍</span><input id="q" type="search" placeholder="제목 · 발신자 · 품번 · 내용 검색 (단순 공유 · 이전 기록도 검색)"></div>
+      <a class="tog" id="webmailSearch" href="https://mail.chunil.co.kr/mail_list.php?mb_id=inbox&page_size=100&sdp=A&s_date=365" target="_blank" rel="noopener" title="회사 웹메일에서 지난 1년 받은편지함을 직접 검색합니다">🔎 웹메일 1년 검색</a>
       <select class="sort" id="sort">
         <option value="urgency">긴급도 · 마감순</option>
         <option value="deadline">마감 임박순</option>
@@ -987,12 +996,30 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
      기존의 ‘dueDate 가 있으면 자동으로 채우기’를 없앴다. 캘린더는 오직 행·드로어의
      📅 캘린더 버튼으로 직접 등록한 메일만 보여준다 (localStorage mb_cal_items_v1). */
   function shortTitle(it) { const t = (it.title || "").replace(/\s*\(.*?\)\s*/g, " ").trim(); return t.length > 12 ? t.slice(0, 12) + "\u2026" : t; }
-  function sideItem(it) { return sideItemDated(it, calDate(it)); }
-  function sideItemDated(it, date) {
-    const d = dueInfo(it);
-    return '<div class="side-item' + (it.urgency === "urgent" || d.hot ? " urgent" : "") + '" data-open="' + esc(it.id) + '">' +
-      '<span class="t">' + esc(it.title) + "</span>" +
-      '<div class="m">' + (date ? "📅 <b>" + esc(date) + "</b>" : "") + (d.text ? " · " + esc(d.text.replace("⏰ ", "")) : "") + "</div></div>";
+  /* 오른쪽 상세 패널 — 선택한 날짜(없으면 오늘)의 메일 일정 + 직접 일정 */
+  function sideCardMail(it) {
+    return '<div class="side-card mail" data-open="' + esc(it.id) + '" role="button" tabindex="0" title="누르면 메일 상세 열기">' +
+      '<div class="sc-top"><span class="sc-t">' + esc(it.title) + '</span>' +
+      '<button type="button" class="sc-x" data-cal-tog="' + esc(it.id) + '" title="캘린더에서 빼기" aria-label="캘린더에서 빼기">✕</button></div>' +
+      '<div class="sc-m">' + esc(it.sender) + " · " + esc((it.receivedAt || "").slice(0, 10)) + '</div></div>';
+  }
+  function sideCardCus(c) {
+    return '<div class="side-card cus">' +
+      '<div class="sc-top"><span class="badge b-cus">📌 개인/구두</span><span class="sc-t">' + esc(c.title) + '</span>' +
+      '<button type="button" class="sc-x" data-cus-del="' + esc(c.id) + '" title="일정 삭제" aria-label="일정 삭제">✕</button></div>' +
+      (c.memo ? '<div class="sc-m">' + esc(c.memo) + "</div>" : "") + "</div>";
+  }
+  function renderCalSide() {
+    const date = view.day || todayY(), dd = parseYmd(date);
+    const mails = calItems().filter((x) => calDate(x) === date);
+    const cus = cusFor(date);
+    $("calSideTitle").textContent = date + (dd ? " (" + DOW[dd.getDay()] + ")" : "");
+    $("calSideN").textContent = (mails.length + cus.length) + "건";
+    let html = "";
+    if (cus.length) html += '<div class="sub-h" style="margin-top:0; border-top:none; padding-top:0">📌 개인/구두 일정 <span class="cnt">· ' + cus.length + "건</span></div>" + cus.map(sideCardCus).join("");
+    if (mails.length) html += '<div class="sub-h" style="margin-top:' + (cus.length ? "10px" : "0") + '; ' + (cus.length ? "" : "border-top:none; padding-top:0") + '">📅 등록한 메일 <span class="cnt">· ' + mails.length + "건</span></div>" + mails.map(sideCardMail).join("");
+    if (!html) html = '<div class="side-empty">' + (view.day ? "이 날짜에" : "오늘은") + " 등록한 일정이 없습니다.<br>달력에서 날짜를 누르면 그날 상세가 여기 나오고,<br>＋ 직접 일정 추가로 개인 일정을 넣을 수 있습니다.</div>";
+    $("calSideList").innerHTML = html;
   }
 
   let CAL = null;
@@ -1099,34 +1126,18 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     }
     $("calDays").innerHTML = cells.join("");
 
-    const today = todayY(), wr = weekRange(new Date()), wStart = ymd(wr.start), wEnd = ymd(wr.end);
-    const todayList = calItems().filter((i) => calDate(i) === today);
-    const weekList = calItems().filter((i) => { const d = calDate(i); return d && d > today && d >= wStart && d <= wEnd; })
-      .sort((a, b) => (calDate(a) || "").localeCompare(calDate(b) || ""));
-    const todayCus = cusFor(today), weekCus = cusLoad().filter((c) => c.date > today && c.date >= wStart && c.date <= wEnd)
-      .sort((a, b) => String(a.date).localeCompare(String(b.date)));
-    $("sideTodayN").textContent = (todayList.length + todayCus.length) ? (todayList.length + todayCus.length) + "건" : "";
-    $("sideWeekN").textContent = (weekList.length + weekCus.length) ? (weekList.length + weekCus.length) + "건" : "";
-    $("sideToday").innerHTML = (todayList.length + todayCus.length)
-      ? todayCus.map(cusSideItem).join("") + todayList.map((it) => sideItemDated(it, calDate(it))).join("")
-      : '<div class="side-empty">오늘 등록한 일정이 없습니다. 행의 📅 캘린더나 ＋ 직접 일정 추가를 쓰세요.</div>';
-    $("sideWeek").innerHTML = (weekList.length + weekCus.length)
-      ? weekCus.map(cusSideItem).join("") + weekList.map((it) => sideItemDated(it, calDate(it))).join("")
-      : '<div class="side-empty">이번 주에 등록한 일정이 없습니다.</div>';
-    renderCalState(todayList.length + todayCus.length, weekList.length + weekCus.length);
+    renderCalSide();
+    renderCalState();
   }
 
-  function cusSideItem(c) {
-    return '<div class="side-item urgent"><span class="t">📌 ' + esc(c.title) + '</span><div class="m">📅 <b>' + esc(c.date) + "</b>" + (c.memo ? " · " + esc(c.memo) : "") + "</div></div>";
-  }
-
-  function renderCalState(nToday, nWeek) {
-    const bar = $("calBar"), body = $("calBody");
+  function renderCalState() {
+    const bar = $("calBar"), body = $("calBody"), today = todayY();
+    const nToday = calItems().filter((i) => calDate(i) === today).length + cusFor(today).length;
     bar.classList.toggle("open", view.calOpen);
     bar.setAttribute("aria-expanded", view.calOpen ? "true" : "false");
     body.hidden = !view.calOpen;
     $("calSummary").innerHTML = "· 등록 <b>" + (calCount() + cusCount()) + "건</b>" +
-      (view.calOpen ? " · 오늘 <b>" + nToday + "건</b> · 이번 주 <b>" + nWeek + "건</b>" : " · 눌러서 펼치기");
+      (view.calOpen ? " · 오늘 <b>" + nToday + "건</b>" : " · 눌러서 펼치기");
   }
 
   /* ---------------- 렌더: 탭 · 칩 ---------------- */
@@ -1352,6 +1363,15 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         '<span class="sp">' + esc(f.id) + "</span></div>";
   }
 
+  /* 웹메일 1년 검색 링크 — 대시보드 색인에 없는 아주 오래된 메일도 회사 웹메일에서 바로 검색 */
+  function paintWebmailSearch() {
+    const el = $("webmailSearch"); if (!el) return;
+    const q = view.q.trim();
+    const base = "https://mail.chunil.co.kr/mail_list.php?mb_id=inbox&page_size=100&sdp=A&s_date=365";
+    el.href = q ? base + "&s_word=" + encodeURIComponent(q) : base;
+    el.title = q ? "웹메일에서 ‘" + q + "’ 지난 1년 검색 (로그인된 회사 웹메일)" : "웹메일 받은편지함 최근 1년 보기";
+  }
+
   function renderFoot() {
     $("foot").innerHTML = "데이터 갱신 " + esc((DATA && DATA.updatedAt) || "-") +
       ((DATA && DATA.criteria && DATA.criteria.verifiedAt) ? " · 판정 확인 " + esc(DATA.criteria.verifiedAt) : "") +
@@ -1359,6 +1379,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   }
   function renderAll() {
     $("who").textContent = (DATA.owner || DATA.account || "") + (DATA.source ? " · " + DATA.source : "");
+    paintWebmailSearch();
     renderKpi(); renderCalendar(); renderSeg(); renderList(); renderFoot();
     if (!$("sync").dataset.set) { $("sync").innerHTML = "마지막 동기화<br><b>" + stamp(new Date()) + "</b>"; $("sync").dataset.set = "1"; }
   }
@@ -1524,7 +1545,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   $("lightbox").addEventListener("click", (e) => { if (e.target.id !== "lbImg") closeLightbox(); });
   $("lbClose").addEventListener("click", closeLightbox);
   $("lockBtn").addEventListener("click", lock);
-  $("q").addEventListener("input", (e) => { view.q = e.target.value; renderList(); });
+  $("q").addEventListener("input", (e) => { view.q = e.target.value; paintWebmailSearch(); renderList(); });
   $("sort").addEventListener("change", (e) => { view.sort = e.target.value; renderList(); });
   $("replyChk").addEventListener("change", (e) => {
     view.replyOnly = e.target.checked;
@@ -1578,10 +1599,11 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   });
   $("dayClear").addEventListener("click", () => { view.day = null; renderCalendar(); renderList(); });
 
-  $("sideToday").addEventListener("click", (e) => {
-    const s = e.target.closest("[data-open]"); if (s) openDrawer(s.dataset.open);
-  });
-  $("sideWeek").addEventListener("click", (e) => {
+  $("calSideList").addEventListener("click", (e) => {
+    const cl = e.target.closest("[data-cus-del]");
+    if (cl) { e.preventDefault(); e.stopPropagation(); cusDel(cl.dataset.cusDel); return; }
+    const ct = e.target.closest("[data-cal-tog]");
+    if (ct) { e.preventDefault(); e.stopPropagation(); calToggle(ct.dataset.calTog); return; }
     const s = e.target.closest("[data-open]"); if (s) openDrawer(s.dataset.open);
   });
 
