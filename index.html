@@ -1102,16 +1102,20 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     view.day = null; view.cusId = null; view.sender = "all";
     view.q = ""; const qEl = $("q"); if (qEl) qEl.value = ""; paintWebmailSearch();
     let msg = "";
-    if (k === "p1") { view.kpi = ""; view.tab = "p1"; view.replyOnly = false; msg = "🔴 즉시 확인 목록으로 이동했습니다"; }
-    else if (k === "fu") { view.kpi = ""; view.tab = "fu"; msg = "⏳ 미회신 추적 탭으로 이동했습니다"; }
+    /* 카드를 누를 때마다 다른 카드가 남겨둔 필터는 같이 되돌린다 */
+    const reset = { replyOnly: false, showDone: false };
+    if (k === "p1") { view.kpi = ""; view.tab = "p1"; Object.assign(view, reset); msg = "🔴 즉시 확인 목록으로 이동했습니다"; }
+    else if (k === "fu") { view.kpi = ""; view.tab = "fu"; Object.assign(view, reset); msg = "⏳ 미회신 추적 탭으로 이동했습니다"; }
     else if (k === "today") {
-      view.kpi = view.kpi === "today" ? "" : "today"; view.replyOnly = false;
+      view.kpi = view.kpi === "today" ? "" : "today"; Object.assign(view, reset);
       msg = view.kpi ? "⏰ 오늘 마감 " + kpiTodayList().length + "건만 모아 봅니다" : "⏰ 오늘 마감 필터를 해제했습니다";
     } else if (k === "reply") {
-      view.kpi = view.kpi === "reply" ? "" : "reply"; view.replyOnly = !!view.kpi;
+      view.kpi = view.kpi === "reply" ? "" : "reply"; Object.assign(view, reset);
+      view.replyOnly = !!view.kpi;
       msg = view.kpi ? "✉️ 회신 필요 " + kpiReplyList().length + "건만 모아 봅니다" : "✉️ 회신 필요 필터를 해제했습니다";
     } else if (k === "done") {
-      view.kpi = view.kpi === "done" ? "" : "done"; view.showDone = !!view.kpi;
+      view.kpi = view.kpi === "done" ? "" : "done"; Object.assign(view, reset);
+      view.showDone = !!view.kpi;
       msg = view.kpi ? "✅ 완료 " + kpiDoneList().length + "건만 모아 봅니다" : "✅ 완료 필터를 해제했습니다";
     }
     syncTogs(); renderKpi(); renderSeg(); renderList();
