@@ -142,6 +142,45 @@
   @media (max-width:760px){ .badge.b-pin .pin-txt{display:none} }
 
   /* ---------- 캘린더 ---------- */
+  /* ---------- 🌤️ 날씨 (인천 부평) ---------- */
+  .wx{background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); margin:10px 0 4px; overflow:hidden}
+  .wx-bar{display:flex; align-items:center; gap:8px; width:100%; padding:9px 14px; background:#fbfcfe; border:0; cursor:pointer;
+    font-family:inherit; font-size:12.5px; font-weight:700; color:var(--ink-2); text-align:left; flex-wrap:wrap}
+  .wx-bar:hover{background:#f5f8fd}
+  .wx-bar .chev{color:var(--brand); font-size:11px; transition:transform .15s}
+  .wx-bar.open .chev{transform:rotate(90deg)}
+  .wx-bar .wx-sum{margin-left:auto; font-weight:500; font-size:11.5px; color:var(--ink-3); display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end}
+  .wx-bar .wx-sum .wx-t{font-size:13px; font-weight:700; color:var(--ink)}
+  .wx-badge{display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:999px; font-size:10.5px; font-weight:700; border:1px solid; white-space:nowrap}
+  .wx-badge.rain{background:var(--brand-weak); border-color:#c9daf7; color:#1f5fd0}
+  .wx-badge.snow{background:#eef3ff; border-color:#c3d4f6; color:#1b4fae}
+  .wx-badge.wind{background:var(--orange-weak); border-color:#f0d3a8; color:#a35c10}
+  .wx-badge.bad{background:var(--red-weak); border-color:#f3c7c7; color:#b32b2b}
+  .wx-body{border-top:1px solid var(--line); padding:10px 12px 12px}
+  .wx-sec-h{font-size:11px; font-weight:700; color:var(--ink-3); margin:2px 0 6px}
+  .wx-hours{display:grid; grid-template-columns:repeat(8, minmax(0,1fr)); gap:5px}
+  .wx-h{border:1px solid var(--line); border-radius:9px; padding:6px 4px; text-align:center; background:#fbfcfe}
+  .wx-h.warn{border-color:#eeb877; background:#fff9ef}
+  .wx-h .h-t{display:block; font-size:10.5px; color:var(--ink-3); font-weight:600}
+  .wx-h .h-i{display:block; font-size:17px; line-height:1.3}
+  .wx-h .h-tp{display:block; font-size:12.5px; font-weight:700; color:var(--ink)}
+  .wx-h .h-p{display:block; font-size:10px; color:#1f5fd0}
+  .wx-h .h-w{display:block; font-size:9.5px; color:var(--ink-3)}
+  .wx-days{display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:5px}
+  .wx-d{border:1px solid var(--line); border-radius:9px; padding:6px 4px; text-align:center; background:#fbfcfe}
+  .wx-d.warn{border-color:#eeb877; background:#fff9ef}
+  .wx-d.severe{border-color:#e9a9a9; background:#fdf1f1}
+  .wx-d .d-d{display:block; font-size:10px; color:var(--ink-3); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .wx-d .d-i{display:block; font-size:17px; line-height:1.3}
+  .wx-d .d-t{display:block; font-size:10.5px; color:var(--ink-2); white-space:nowrap}
+  .wx-d .d-t b{color:var(--ink); font-size:12px}
+  .wx-d .d-p{display:block; font-size:10px; color:#1f5fd0}
+  .wx-d .d-w{display:block; font-size:9.5px; color:var(--orange)}
+  .wx-foot{margin-top:8px; font-size:10.5px; color:var(--ink-3); text-align:right}
+  @media (max-width:1000px){ .wx-hours{grid-template-columns:repeat(4, minmax(0,1fr))} .wx-days{grid-template-columns:repeat(4, minmax(0,1fr))} }
+  @media (max-width:640px){ .wx-hours{grid-template-columns:repeat(3, minmax(0,1fr))} .wx-days{grid-template-columns:repeat(2, minmax(0,1fr))}
+    .wx-bar{font-size:12px} .wx-bar .wx-sum{justify-content:flex-start; margin-left:0; margin-top:3px} }
+
   .cal-panel{background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); margin:10px 0 12px; overflow:hidden}
   .cal-bar{display:flex; align-items:center; gap:8px; width:100%; padding:10px 14px; background:#fbfcfe; border:0; cursor:pointer;
     font-family:inherit; font-size:12.5px; font-weight:700; color:var(--ink-2); text-align:left}
@@ -550,6 +589,20 @@
     <div class="kpi" id="kpi"></div>
     <div class="kpi-hint" id="kpiHint">카드를 <b>누르면</b> 그 건만 아래 목록에 모아 봅니다 · 다시 누르면 해제</div>
 
+    <section class="wx" aria-label="인천 부평 날씨 예보">
+      <button type="button" class="wx-bar" id="wxBar" aria-expanded="false" aria-controls="wxBody">
+        <span class="chev">▸</span><span>🌤️ 인천 부평 날씨</span>
+        <span class="wx-sum" id="wxSummary">불러오는 중…</span>
+      </button>
+      <div class="wx-body" id="wxBody" hidden>
+        <div class="wx-sec-h">⏱️ 시간별 (앞으로 24시간 · 3시간 간격) — 시각 · 기온 · 강수확률 · 풍속</div>
+        <div class="wx-hours" id="wxHours"></div>
+        <div class="wx-sec-h" style="margin-top:12px">📅 7일 주간 — 최저/최고 · 강수확률 · 최대 풍속 <span style="font-weight:500">(비·눈 50%↑ 또는 바람 10m/s↑ 강조)</span></div>
+        <div class="wx-days" id="wxDays"></div>
+        <div class="wx-foot" id="wxFoot">자료: Open-Meteo · 5분마다 자동 갱신</div>
+      </div>
+    </section>
+
     <section class="cal-panel" aria-label="즉시 확인 마감 캘린더">
       <button class="cal-bar" id="calBar" aria-expanded="false" aria-controls="calBody">
         <span class="chev">▸</span><span>📅 내 캘린더</span>
@@ -647,7 +700,7 @@
 (() => {
   "use strict";
 
-  const LS = { pin: "mb_pin_v1", state: "mb_state_v1", cal: "mb_calopen_v1", bell: "mb_bell_v1", seen: "mb_seen_p1_v1", cal2: "mb_cal_items_v1", cus: "mb_cal_custom_v1", pinList: "mb_pinned_v1" };
+  const LS = { pin: "mb_pin_v1", state: "mb_state_v1", cal: "mb_calopen_v1", bell: "mb_bell_v1", seen: "mb_seen_p1_v1", cal2: "mb_cal_items_v1", cus: "mb_cal_custom_v1", pinList: "mb_pinned_v1", wx: "mb_wxopen_v1" };
   const AUTO_REFRESH_MS = 5 * 60 * 1000;
   const URG = { urgent: 0, high: 1, normal: 2 };
   const ST_LABEL = { todo: "대기", doing: "진행중", done: "완료" };
@@ -777,7 +830,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       DATA = await decryptData(ENC, pin); PIN = pin;
       if (remember) localStorage.setItem(LS.pin, b64enc(pin)); else localStorage.removeItem(LS.pin);
       $("gate").hidden = true; $("app").hidden = false;
-      renderAll(); scheduleAuto(); paintBell(); notifyNewP1();
+      renderAll(); scheduleAuto(); paintBell(); notifyNewP1(); wxLoad();
     } catch (e) {
       const msg = (e && e.name === "OperationError") ? "PIN이 맞지 않습니다." : (e && e.message ? e.message : "열지 못했습니다.");
       $("gateErr").textContent = msg;
@@ -802,6 +855,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       DATA = await decryptData(enc, PIN); ENC = enc;
       $("sync").innerHTML = "마지막 동기화<br><b>" + stamp(new Date()) + "</b>";
       renderAll();
+      wxLoad();
       if (view.openId) openDrawer(view.openId);
       const fresh = notifyNewP1();
       if (manual && !fresh) toast("최신 데이터로 갱신했습니다");
@@ -1399,6 +1453,151 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       '<span class="rside"><button type="button" class="badge tog b-del" data-cus-del="' + esc(c.id) + '" title="일정 삭제" aria-label="일정 삭제">✕</button></span></div>';
   }
 
+  /* ---------------- 🌤️ 인천 부평 날씨·예보 (Open-Meteo 무료 API · 키 없음) ----------------
+     잠금 해제 후 1회, 이후에는 5분 자동 갱신(refresh) 때마다 함께 받아 온다.
+     비·눈·강풍이 7일 안에 있으면 헤더에 주의 배지를 달고, 표는 시간별 24시간 + 7일 주간. */
+  const WX_URL = "https://api.open-meteo.com/v1/forecast?latitude=37.507&longitude=126.722"
+    + "&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m"
+    + "&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m"
+    + "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max"
+    + "&timezone=Asia%2FSeoul&wind_speed_unit=ms&forecast_days=7";
+  const WXDOW = ["일", "월", "화", "수", "목", "금", "토"];
+  const WXCODE = {
+    0: ["☀️", "맑음"], 1: ["🌤️", "대체로 맑음"], 2: ["⛅", "구름 조금"], 3: ["☁️", "흐림"],
+    45: ["🌫️", "안개"], 48: ["🌫️", "안개"],
+    51: ["🌨️", "약한 이슬비"], 53: ["🌨️", "이슬비"], 55: ["🌨️", "이슬비"],
+    56: ["🌨️", "어는 이슬비"], 57: ["🌨️", "어는 이슬비"],
+    61: ["🌨️", "약한 비"], 63: ["🌨️", "비"], 65: ["⛈️", "강한 비"],
+    66: ["🌨️", "어는 비"], 67: ["🌨️", "어는 비"],
+    71: ["🌨️", "약한 눈"], 73: ["🌨️", "눈"], 75: ["❄️", "강한 눈"], 77: ["❄️", "싸락눈"],
+    80: ["🌨️", "소나기"], 81: ["🌨️", "소나기"], 82: ["⛈️", "강한 소나기"],
+    85: ["🌨️", "눈 소나기"], 86: ["❄️", "강한 눈 소나기"],
+    95: ["⛈️", "천둥번개"], 96: ["⛈️", "천둥번개"], 99: ["⛈️", "천둥번개"]
+  };
+  const wxIcon = (c) => (WXCODE[Number(c)] || ["🌥️", "-"])[0];
+  const wxName = (c) => (WXCODE[Number(c)] || ["🌥️", "-"])[1];
+  const wxSnow = (c) => [71, 73, 75, 77, 85, 86].indexOf(Number(c)) !== -1;
+  const wxRain = (c) => { const n = Number(c) || 0; return (n >= 51 && n <= 67) || (n >= 80 && n <= 82) || n >= 95; };
+  const wxNum = (v, d) => { const n = Number(v); return Number.isFinite(n) ? n : (d || 0); };
+  let WX = null, WX_BUSY = false, WX_AT = null;
+
+  function wxOpen() { try { return localStorage.getItem(LS.wx) === "1"; } catch (e) { return false; } }
+  function paintWxOpen() {
+    const open = wxOpen(), body = $("wxBody"), bar = $("wxBar");
+    if (!body || !bar) return;
+    body.hidden = !open;
+    bar.classList.toggle("open", open);
+    bar.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  function wxToggle() {
+    try { localStorage.setItem(LS.wx, wxOpen() ? "0" : "1"); } catch (e) {}
+    paintWxOpen();
+  }
+  async function wxLoad() {
+    if (WX_BUSY) return;
+    WX_BUSY = true;
+    try {
+      const res = await fetch(WX_URL + "&t=" + Date.now(), { cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      WX = await res.json();
+      WX_AT = new Date();
+      wxRender();
+    } catch (e) {
+      if (!WX) {
+        if ($("wxSummary")) $("wxSummary").innerHTML = '<span style="color:var(--orange);font-weight:600">날씨를 불러오지 못했습니다 · 잠시 후 자동 재시도</span>';
+        if ($("wxFoot")) $("wxFoot").textContent = "자료: Open-Meteo · 연결 실패 (" + ((e && e.message) || "오류") + ")";
+      }
+    } finally { WX_BUSY = false; }
+  }
+  function wxRender() {
+    if (!WX || !$("wxSummary")) return;
+    const cur = WX.current || {}, d = WX.daily || {}, h = WX.hourly || {};
+    const cCode = wxNum(cur.weather_code, -1);
+    const cTemp = Math.round(wxNum(cur.temperature_2m, 0));
+    const cFeels = Math.round(wxNum(cur.apparent_temperature, 0));
+    const cWind = wxNum(cur.wind_speed_10m, 0);
+
+    const days = (d.time || []).map((t, i) => ({
+      date: t,
+      code: wxNum((d.weather_code || [])[i], 0),
+      max: Math.round(wxNum((d.temperature_2m_max || [])[i], 0)),
+      min: Math.round(wxNum((d.temperature_2m_min || [])[i], 0)),
+      pop: Math.round(wxNum((d.precipitation_probability_max || [])[i], 0)),
+      sum: wxNum((d.precipitation_sum || [])[i], 0),
+      wind: Math.round(wxNum((d.wind_speed_10m_max || [])[i], 0) * 10) / 10
+    }));
+
+    /* 오늘 비/눈 한 줄 */
+    const t0 = days[0];
+    let todayTxt = "오늘 비/눈 없음";
+    if (t0) {
+      const wet = wxSnow(t0.code) ? "눈" : (wxRain(t0.code) ? "비" : "");
+      if (wet) todayTxt = "오늘 " + wet + " " + t0.pop + "%";
+      else if (t0.pop >= 30) todayTxt = "오늘 비/눈 " + t0.pop + "% 가능";
+    }
+
+    /* 오늘 이후 7일 안 비·눈·강풍 주의 */
+    const alerts = [];
+    days.forEach((x, i) => {
+      if (i === 0) return;
+      const md = x.date.slice(5).replace("-", "/");
+      const dow = WXDOW[new Date(x.date + "T12:00:00").getDay()];
+      const when = md + "(" + dow + ")";
+      if (wxSnow(x.code) && (x.pop >= 50 || x.sum > 0)) alerts.push({ i: i, text: when + " 눈 " + x.pop + "%", cls: x.pop >= 70 ? "bad" : "snow", rank: x.pop });
+      else if (wxRain(x.code) && x.pop >= 50) alerts.push({ i: i, text: when + " 비 " + x.pop + "%", cls: x.pop >= 70 ? "bad" : "rain", rank: x.pop });
+      if (x.wind >= 10) alerts.push({ i: i, text: when + " 강풍 " + x.wind + "m/s", cls: "wind", rank: x.wind * 5 });
+    });
+    alerts.sort((a, b) => (a.i - b.i) || (b.rank - a.rank));
+    const badges = alerts.slice(0, 3).map((a) => '<span class="wx-badge ' + a.cls + '">⚠️ ' + esc(a.text) + "</span>").join("");
+
+    $("wxSummary").innerHTML = '<span class="wx-t">' + cTemp + "°C</span>" +
+      "<span>" + esc(wxName(cCode)) + " · " + esc(todayTxt) + "</span>" + badges;
+
+    /* 시간별 — 지금부터 24시간, 3시간 간격 */
+    const now = new Date(), ht = h.time || [], cells = [];
+    for (let i = 0; i < ht.length; i++) {
+      const t = new Date(ht[i]);
+      if (isNaN(t.getTime()) || t.getHours() % 3 !== 0) continue;
+      const diff = t.getTime() - now.getTime();
+      if (diff < -30 * 60000) continue;
+      if (diff > 24 * 3600000) break;
+      cells.push({
+        t: t,
+        code: wxNum((h.weather_code || [])[i], 0),
+        temp: Math.round(wxNum((h.temperature_2m || [])[i], 0)),
+        pop: Math.round(wxNum((h.precipitation_probability || [])[i], 0)),
+        wind: Math.round(wxNum((h.wind_speed_10m || [])[i], 0) * 10) / 10
+      });
+      if (cells.length >= 8) break;
+    }
+    $("wxHours").innerHTML = cells.map((c) =>
+      '<div class="wx-h' + (c.pop >= 50 || c.wind >= 10 ? " warn" : "") + '">' +
+        '<span class="h-t">' + String(c.t.getHours()).padStart(2, "0") + "시</span>" +
+        '<span class="h-i">' + wxIcon(c.code) + "</span>" +
+        '<span class="h-tp">' + c.temp + "°</span>" +
+        '<span class="h-p">💧 ' + c.pop + "%</span>" +
+        '<span class="h-w">🌬 ' + c.wind + "m/s</span></div>").join("")
+      || '<div style="font-size:11.5px;color:var(--ink-3)">시간별 자료가 없습니다.</div>';
+
+    /* 7일 주간 */
+    $("wxDays").innerHTML = days.map((x, i) => {
+      const dt = new Date(x.date + "T12:00:00");
+      const lab = i === 0 ? "오늘" : (i === 1 ? "내일" : WXDOW[dt.getDay()]);
+      const dd = x.date.slice(5).replace("-", "/");
+      const wetHeavy = (wxSnow(x.code) || wxRain(x.code)) && x.pop >= 70;
+      const cls = (x.wind >= 10 || wetHeavy) ? " severe" : ((x.pop >= 50 || x.wind >= 10) ? " warn" : "");
+      return '<div class="wx-d' + cls + '">' +
+        '<span class="d-d">' + esc(lab) + " · " + dd + "</span>" +
+        '<span class="d-i">' + wxIcon(x.code) + "</span>" +
+        '<span class="d-t"><b>' + x.min + "°</b> / " + x.max + "°</span>" +
+        '<span class="d-p">💧 ' + x.pop + "%</span>" +
+        '<span class="d-w">🌬 ' + x.wind + "m/s</span></div>";
+    }).join("");
+
+    $("wxFoot").textContent = "자료: Open-Meteo · 현재 체감 " + cFeels + "°C · 바람 " + cWind + "m/s · 갱신 " + stamp(WX_AT || new Date()) + " · 5분마다 자동";
+    paintWxOpen();
+  }
+
   function renderCalendar() {
     if (!view.ym) { const n = new Date(); view.ym = { y: n.getFullYear(), m: n.getMonth() }; }
     const y = view.ym.y, m = view.ym.m;
@@ -1981,6 +2180,8 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     try { localStorage.setItem(LS.cal, view.calOpen ? "1" : "0"); } catch (e) {}
     renderCalendar();
   });
+  $("wxBar").addEventListener("click", wxToggle);
+  paintWxOpen();
   $("calPrev").addEventListener("click", () => { view.ym.m--; if (view.ym.m < 0) { view.ym.m = 11; view.ym.y--; } renderCalendar(); });
   $("calNext").addEventListener("click", () => { view.ym.m++; if (view.ym.m > 11) { view.ym.m = 0; view.ym.y++; } renderCalendar(); });
   $("calToday").addEventListener("click", () => { const n = new Date(); view.ym = { y: n.getFullYear(), m: n.getMonth() }; renderCalendar(); });
@@ -2190,7 +2391,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         PIN = b64dec(saved);
         $("remember").checked = true;
         $("gate").hidden = true; $("app").hidden = false;
-        renderAll(); scheduleAuto(); paintBell(); notifyNewP1();
+        renderAll(); scheduleAuto(); paintBell(); notifyNewP1(); wxLoad();
         return;
       } catch (e) { localStorage.removeItem(LS.pin); }
     }
