@@ -948,7 +948,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     list.sort((a, b) => {
       const ra = rank(a), rb = rank(b);
       if (ra !== rb) return ra - rb;
-      if (view.sort === "recent") return (b.receivedAt || "").localeCompare(a.receivedAt || "");
+      if (view.sort === "recent") return ((b.lastAt || b.receivedAt) || "").localeCompare((a.lastAt || a.receivedAt) || "");
       if (view.sort === "deadline") {
         const da = dueOf(a) || "9999-99-99", db = dueOf(b) || "9999-99-99";
         return da.localeCompare(db);
