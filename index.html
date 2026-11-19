@@ -203,6 +203,7 @@
   .b-to{background:#e7f4ec; color:#177a4d; border:1px solid #c9e7d5}
   .b-cc{background:var(--gray-weak); color:var(--ink-2); border:1px solid #e1e6ee}
   .b-st{background:#fff; border:1px solid var(--line); color:var(--ink-2)}
+  .b-arch{background:#f4f2ec; color:#7d7259; border:1px dashed #d5cdb9}
   .b-p1{background:var(--violet); color:#fff}
   .b-p2{background:var(--brand); color:#fff}
   .b-p3{background:#dfe4ec; color:#5d6b7e}
@@ -392,7 +393,7 @@
 
     <div class="toolbar">
       <label class="tog" id="replyTog"><input type="checkbox" id="replyChk"> 회신 필요만 보기</label>
-      <div class="search"><span>🔍</span><input id="q" type="search" placeholder="제목 · 발신자 · 품번 · 내용 검색 (숨긴 3순위도 검색)"></div>
+      <div class="search"><span>🔍</span><input id="q" type="search" placeholder="제목 · 발신자 · 품번 · 내용 검색 (숨긴 3순위 · 이전 기록도 검색)"></div>
       <select class="sort" id="sort">
         <option value="urgency">긴급도 · 마감순</option>
         <option value="deadline">마감 임박순</option>
@@ -523,12 +524,16 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
 
   /* ---------------- 데이터 ---------------- */
   const items = () => (DATA && DATA.items) || [];
+  const isArchived = (it) => it.archived === true;
+  /* 기본 화면(목록·KPI·캘린더)은 11/19 이후 수신분만. 이전 기록은 검색에서만 나온다. */
+  const liveItems = () => items().filter((i) => !isArchived(i));
+  const archItems = () => items().filter(isArchived);
   const stateOf = (it) => itemState(it.id);
   const isDone = (it) => stateOf(it).status === "done";
   const priorityOf = (it) => Number(it.priority) || 3;
-  const p1Items = () => items().filter((i) => priorityOf(i) === 1);
-  const p2Items = () => items().filter((i) => priorityOf(i) === 2);
-  const p3Items = () => items().filter((i) => priorityOf(i) === 3);
+  const p1Items = () => liveItems().filter((i) => priorityOf(i) === 1);
+  const p2Items = () => liveItems().filter((i) => priorityOf(i) === 2);
+  const p3Items = () => liveItems().filter((i) => priorityOf(i) === 3);
   const byId = (id) => items().find((x) => x.id === id);
 
   function doneCount(it) { const st = stateOf(it); return (it.actionItems || []).filter((_, i) => st.checks[i]).length; }
@@ -735,7 +740,8 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         '<span class="rmeta"><b>' + esc(it.sender) + "</b> · " + esc(it.receivedAt) +
         (it.attachmentSummary ? " · 📎 " + esc(it.attachmentSummary) : (it.attachments && it.attachments.length ? " · 📎 " + esc(it.attachments.length + "건") : "")) +
         "</span></span>" +
-      '<span class="rside">' + (d.text ? '<span class="badge b-due ' + d.cls + '">' + esc(d.text) + "</span>" : "") +
+      '<span class="rside">' + (isArchived(it) ? '<span class="badge b-arch">이전 기록</span>' : "") +
+        (d.text ? '<span class="badge b-due ' + d.cls + '">' + esc(d.text) + "</span>" : "") +
         '<button type="button" class="badge reply-tog ' + replyCls + '" data-reply-tog="' + esc(it.id) + '" title="' + esc(replyTitle) + '" aria-label="' + esc(REPLY_LABEL[r] + " · 눌러서 회신 상태 바꾸기") + '">' +
           esc(REPLY_LABEL[r]) + '<span class="arw">▾</span></button>' +
         '<span class="badge b-st">' + esc(ST_LABEL[st.status] || "대기") + "</span></span></div>";
@@ -762,10 +768,12 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const q = view.q.trim(), main = currentList();
     let html = "";
     let extra = (q && view.tab !== "p3") ? sortList(p3Items().filter(matches)) : [];
+    /* 검색어가 있을 때만 지난 메일(archived)을 '이전 기록'으로 함께 보여준다 */
+    let history = q ? sortList(archItems().filter(matches).filter((it) => !view.replyOnly || replyOf(it) === "needs_reply")) : [];
 
     if (view.tab === "p1") {
       html += '<div class="sec-title">1순위 업무 <span class="hint">' + main.length + "건 · 행을 누르면 상세 · 회신 배지를 누르면 바로 전환</span></div>";
-      html += main.length ? rowsBlock(main) : '<div class="empty">' + (view.day ? "이 날짜에 마감인 1순위가 없습니다." : (view.replyOnly ? "회신이 필요한 1순위가 없습니다." : "조건에 맞는 1순위가 없습니다.")) + "</div>";
+      html += main.length ? rowsBlock(main) : '<div class="empty">' + (view.day ? "이 날짜에 마감인 1순위가 없습니다." : (view.replyOnly ? "회신이 필요한 1순위가 없습니다." : (q && history.length ? "오늘(11/19 이후) 1순위에는 없습니다. 아래 ‘이전 기록’에서 " + history.length + "건 찾았습니다." : "조건에 맞는 1순위가 없습니다."))) + "</div>";
     } else if (view.tab === "p2") {
       html += '<div class="banner">ℹ️ <div><b>2순위 · 고객사/참고</b> — 참조(CC)로 받았지만 고객사(GM 등)가 보냈거나 용기승인·결품·PTR처럼 대외 흐름을 알아야 하는 건.</div></div>';
       html += main.length ? rowsBlock(main) : '<div class="empty">조건에 맞는 2순위가 없습니다.</div>';
@@ -775,6 +783,10 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     }
     if (extra.length) {
       html += '<div class="sec-title" style="margin-top:12px">검색 결과 · 담당 아님(숨김) <span class="hint">' + extra.length + "건</span></div>" + rowsBlock(extra);
+    }
+    if (history.length) {
+      html += '<div class="sec-title" style="margin-top:12px">🗂 이전 기록 (11/19 이전 · 검색 전용) <span class="hint">' + history.length + "건</span></div>" +
+        '<div class="banner" style="margin-bottom:5px">ℹ️ <div>기본 화면에서는 빠져 있는 지난 메일입니다. 검색어를 지우면 다시 숨겨집니다.</div></div>' + rowsBlock(history);
     }
     $("listWrap").innerHTML = html;
 
@@ -807,6 +819,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         ? '<span class="badge b-vip">' + esc(it.vipLabel) + "</span>"
         : '<span class="badge b-to">1-' + (Number(it.vipRank) || 3) + "</span>");
     }
+    if (isArchived(it)) parts.push('<span class="badge b-arch">이전 기록</span>');
     parts.push('<span class="badge ' + (it.recipientRole === "To" ? "b-to" : "b-cc") + '">' + (it.recipientRole === "To" ? "수신인(To)" : it.recipientRole === "CC" ? "참조(CC)" : "기타") + "</span>");
     if (it.mentionedUser) parts.push('<span class="badge b-vip">본문 언급</span>');
     if (d.text) parts.push('<span class="badge b-due ' + d.cls + '">' + esc(d.text) + "</span>");
