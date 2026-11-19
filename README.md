@@ -49,6 +49,7 @@
 | `build_data.py` | ✅ | `data.json` → `data.enc.json` 암호화 스크립트 |
 | `publish.sh` | ✅ | main·gh-pages 동시 배포 스크립트 |
 | `data.json` | ❌ | **평문 데이터.** `.gitignore` 등록 |
+| `images_data.py` | ❌ | **본문 사진 base64.** `.gitignore` 등록 (웹메일 `.eml` → WebP 추출) |
 | `make_data.py` | ❌ | **메일 내용이 들어 있는 생성 스크립트.** `.gitignore` 등록 |
 
 > `data.json` 과 `make_data.py` 는 로컬에만 두세요. 한 번이라도 push 하면 암호화가 무의미해집니다.
@@ -58,8 +59,9 @@
 ```bash
 cd ~/mail-board
 
+# 0) (본문 사진이 있는 메일) 웹메일에서 .eml 로 내려받아 사진 추출 — work/build_images.py → images_data.py
 # 1) make_data.py 의 ITEMS 에 새 메일 항목을 추가·수정 (첨부는 파일명·크기만)
-python3 make_data.py                  # -> data.json
+python3 make_data.py                  # -> data.json (images 필드 포함, 사진은 WebP data URI)
 
 # 2) 암호화 (PIN은 인자 또는 환경변수로만)
 MAILBOARD_PIN=**** python3 build_data.py   # -> data.enc.json
