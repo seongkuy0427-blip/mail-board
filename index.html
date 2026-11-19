@@ -116,6 +116,8 @@
   .day{min-height:54px; border:1px solid var(--line); border-radius:8px; background:#fff; padding:2px 3px; overflow:hidden; display:flex; flex-direction:column; gap:1px}
   .day.pad{background:transparent; border-color:transparent; min-height:0}
   .day.has{cursor:pointer; background:#fbfaff; border-color:#ded6f4}
+  .day[data-day]{cursor:pointer}
+  .day[data-day]:hover{background:#f4f0fd}
   .day.has:hover{background:#f4f0fd}
   .day.today{border-color:var(--brand); box-shadow:inset 0 0 0 1px var(--brand)}
   .day.sel{background:var(--violet-weak); border-color:var(--violet); box-shadow:inset 0 0 0 1px var(--violet)}
@@ -225,6 +227,33 @@
   .b-cc{background:var(--gray-weak); color:var(--ink-2); border:1px solid #e1e6ee}
   .b-st{background:#fff; border:1px solid var(--line); color:var(--ink-2)}
   .b-arch{background:#f4f2ec; color:#7d7259; border:1px dashed #d5cdb9}
+  /* 행에서 바로 누르는 캘린더 등록 · 확인(완료) 토글 */
+  .badge.tog{cursor:pointer; font-family:inherit; line-height:1.35; transition:background .12s, transform .06s}
+  .badge.tog:hover{filter:brightness(.96)}
+  .badge.tog:active{transform:scale(.96)}
+  .badge.tog:focus-visible{outline:2px solid var(--brand); outline-offset:1px}
+  .b-cal{background:#fff; border:1px solid #ded6f4; color:#5b4b8a}
+  .b-cal.on{background:var(--violet); border-color:var(--violet); color:#fff}
+  .b-done{background:#fff; border:1px solid #c9e7d5; color:var(--green)}
+  .b-done:hover{background:var(--green-weak)}
+  .b-undo{background:var(--green-weak); border:1px solid #bfe6d3; color:var(--green)}
+  .cal-date{display:inline-flex; align-items:center; gap:4px; font-size:11px; color:var(--ink-2); background:#fff; border:1px solid var(--line); border-radius:7px; padding:2px 6px}
+  .cal-date input{border:0; background:transparent; font:inherit; color:inherit; outline:none; padding:0}
+  /* ＋ 직접 일정 추가 (메일과 무관한 개인·구두 일정) */
+  .cal-add{padding:9px 14px 8px; background:#fffdf7; border-bottom:1px solid var(--line)}
+  .cal-add form{display:flex; gap:6px; align-items:center; flex-wrap:wrap}
+  .cal-add .ca-lab{font-size:11.5px; font-weight:700; color:#8a5320}
+  .cal-add input[type="date"], .cal-add input[type="text"]{border:1px solid var(--line); border-radius:7px; background:#fff; font:inherit; font-size:11.5px; color:var(--ink-2); padding:5px 7px; outline:none}
+  .cal-add input[type="text"]#cusTitle{flex:1 1 200px; min-width:150px}
+  .cal-add input[type="text"]#cusMemo{flex:1 1 140px; min-width:110px}
+  .cal-add input:focus{border-color:var(--orange)}
+  .cal-add .ca-hint{font-size:10px; color:var(--ink-3); margin-top:4px; line-height:1.45}
+  .day .ev.cus{background:#fdeee2; color:#8a5320}
+  .row.cus{border-left-color:#e0a163}
+  .row .rank.cus{background:var(--orange-weak); color:#93540f; border-color:#eccfa8; min-width:26px}
+  .b-cus{background:var(--orange-weak); color:#93540f; border:1px solid #eccfa8; font-weight:700}
+  .b-del{background:#fff; border:1px solid #efc9c9; color:var(--red); font-weight:700}
+  .b-del:hover{background:var(--red-weak)}
   .b-p1{background:var(--violet); color:#fff}
   .b-p2{background:var(--brand); color:#fff}
   .b-p3{background:#dfe4ec; color:#5d6b7e}
@@ -425,14 +454,24 @@
 
     <section class="cal-panel" aria-label="즉시 확인 마감 캘린더">
       <button class="cal-bar" id="calBar" aria-expanded="false" aria-controls="calBody">
-        <span class="chev">▸</span><span>📅 즉시 확인 마감 캘린더</span>
+        <span class="chev">▸</span><span>📅 내 캘린더</span>
         <span class="cb-sum" id="calSummary"></span>
       </button>
       <div class="cal-body" id="calBody" hidden>
+      <div class="cal-add">
+        <form id="cusForm" autocomplete="off">
+          <span class="ca-lab">＋ 직접 일정 추가</span>
+          <input type="date" id="cusDate" aria-label="일정 날짜">
+          <input type="text" id="cusTitle" placeholder="일정 제목 (예: 팀 회의 15시 · 거래처 방문)" maxlength="80" aria-label="일정 제목">
+          <input type="text" id="cusMemo" placeholder="메모 (선택)" maxlength="120" aria-label="메모">
+          <button type="submit" class="mini on" id="cusAddBtn">추가</button>
+        </form>
+        <div class="ca-hint">메일과 상관없는 개인·구두 일정을 직접 넣습니다. 이 기기에만 저장(`mb_cal_custom_v1`).</div>
+      </div>
       <div class="cal-grid-wrap">
         <div class="cal-main">
           <div class="cal-top">
-            <div class="cal-title" id="calTitle">2026년 11월<span class="cap">즉시 확인 마감</span></div>
+            <div class="cal-title" id="calTitle">2026년 11월<span class="cap">내가 등록한 메일</span></div>
             <div class="cal-nav">
               <button id="calToday">오늘</button>
               <button id="calPrev" aria-label="이전 달">‹</button>
@@ -442,16 +481,16 @@
           <div class="dow" id="calDow"></div>
           <div class="days" id="calDays"></div>
           <div class="cal-legend">
-            <span><i style="background:#6b46c1"></i>즉시 확인 마감</span>
+            <span><i style="background:#6b46c1"></i>내가 등록한 메일</span>
             <span><i style="background:#d93b3b"></i>긴급</span>
             <span><i style="background:#1f5fd0"></i>오늘</span>
-            <span>날짜를 누르면 그날 즉시 확인만</span>
+            <span>행의 📅 캘린더로 직접 등록 · 날짜를 누르면 그날 등록 메일만</span>
           </div>
         </div>
         <div class="cal-side">
-          <div class="side-h">오늘 마감 <span class="n" id="sideTodayN"></span></div>
+          <div class="side-h">오늘 등록 <span class="n" id="sideTodayN"></span></div>
           <div class="side-list" id="sideToday"></div>
-          <div class="side-h">이번 주 마감 <span class="n" id="sideWeekN"></span></div>
+          <div class="side-h">이번 주 등록 <span class="n" id="sideWeekN"></span></div>
           <div class="side-list" id="sideWeek"></div>
         </div>
       </div>
@@ -463,6 +502,7 @@
     <div class="rank-note" id="rankNote"></div>
 
     <div class="toolbar">
+      <label class="tog" id="doneTog"><input type="checkbox" id="doneChk"> 완료 포함</label>
       <label class="tog" id="replyTog"><input type="checkbox" id="replyChk"> 회신 필요만 보기</label>
       <div class="search"><span>🔍</span><input id="q" type="search" placeholder="제목 · 발신자 · 품번 · 내용 검색 (단순 공유 · 이전 기록도 검색)"></div>
       <select class="sort" id="sort">
@@ -510,7 +550,7 @@
 (() => {
   "use strict";
 
-  const LS = { pin: "mb_pin_v1", state: "mb_state_v1", cal: "mb_calopen_v1", bell: "mb_bell_v1", seen: "mb_seen_p1_v1" };
+  const LS = { pin: "mb_pin_v1", state: "mb_state_v1", cal: "mb_calopen_v1", bell: "mb_bell_v1", seen: "mb_seen_p1_v1", cal2: "mb_cal_items_v1", cus: "mb_cal_custom_v1" };
   const AUTO_REFRESH_MS = 5 * 60 * 1000;
   const URG = { urgent: 0, high: 1, normal: 2 };
   const ST_LABEL = { todo: "대기", doing: "진행중", done: "완료" };
@@ -521,7 +561,7 @@
 
   let ENC = null, DATA = null, PIN = null;
   let STORE = loadState();
-  let view = { tab: "p1", q: "", sort: "urgency", day: null, ym: null, sender: "all", group: false, replyOnly: false, openId: null, calOpen: false };
+  let view = { tab: "p1", q: "", sort: "urgency", day: null, ym: null, sender: "all", group: false, replyOnly: false, showDone: false, openId: null, calOpen: false };
 try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
 
   const $ = (id) => document.getElementById(id);
@@ -806,6 +846,14 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     if (it && view.openId === id) $("drawerContent").innerHTML = drawerHtml(it);
     toast(prev && prev !== k ? REPLY_LABEL[prev] + " → " + REPLY_LABEL[k] : "회신 여부: " + REPLY_LABEL[k]);
   }
+  /* ✅ 확인 — 완료로 바꾸면 기본 목록에서 즉시 치운다 (KPI '완료'에 반영, 검색하거나 '완료 포함'을 켜면 다시 보임) */
+  function setDone(id, done) {
+    const it = byId(id); if (!it) return;
+    itemState(id).status = done ? "done" : "todo"; saveState();
+    renderKpi(); renderSeg(); renderCalendar(); renderList();
+    if (view.openId === id) $("drawerContent").innerHTML = drawerHtml(it);
+    toast(done ? "✅ 확인 — 기본 목록에서 치었습니다 (검색·‘완료 포함’에서 다시 볼 수 있음)" : "↩ 완료를 취소해 목록으로 돌렸습니다");
+  }
   function threadOf(it) { return it.thread && it.thread.length ? it.thread : [{ date: it.receivedAt, from: it.sender, gist: it.title, link: it.mailLink }]; }
 
   function human(ms) {
@@ -889,7 +937,8 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const p1 = p1Items();
     const todayDue = p1.filter((i) => { const d = dueInfo(i); return (isTodayDue(i) || d.hot) && !isDone(i); }).length;
     const need = p1.filter((i) => replyOf(i) === "needs_reply" && !isDone(i)).length;
-    const done = p1.filter(isDone).length;
+    const doneAll = liveItems().filter(isDone);
+    const done = doneAll.length;
     const fu = fuPending();
     const fuMax = fu.length ? Math.max.apply(null, fu.map((f) => Number(f.daysElapsed) || 0)) : 0;
     $("kpi").innerHTML =
@@ -897,50 +946,142 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       '<div class="kpi-card k2"><div class="lab">오늘·임박 마감</div><div class="val">' + todayDue + '<small>건</small></div><div class="cap">2시간 이내 또는 지남</div></div>' +
       '<div class="kpi-card k3"><div class="lab">회신 필요</div><div class="val">' + need + '<small>건</small></div><div class="cap">즉시 확인 기준</div></div>' +
       '<div class="kpi-card k5"><div class="lab">⏳ 미회신 대기</div><div class="val">' + fu.length + '<small>건</small></div><div class="cap">' + (fuMax ? "최장 " + fuMax + "일째 · 보낸 요청" : "보낸 요청 회신 대기") + '</div></div>' +
-      '<div class="kpi-card k4"><div class="lab">완료</div><div class="val">' + done + '<small>건</small></div><div class="cap">🟡 ' + p2Items().length + " · ⚪ " + p3Items().length + '</div></div>';
+      '<div class="kpi-card k4"><div class="lab">완료</div><div class="val">' + done + '<small>건</small></div><div class="cap">' +
+        (done ? "🔴 " + doneAll.filter((i) => priorityOf(i) === 1).length + " · 🟡 " + doneAll.filter((i) => priorityOf(i) === 2).length + " · ⚪ " + doneAll.filter((i) => priorityOf(i) === 3).length : "✅ 확인을 누르면 여기로") +
+        '</div></div>';
   }
 
-  /* ---------------- 렌더: 캘린더 ---------------- */
-  function shortTitle(it) { const t = (it.title || "").replace(/\s*\(.*?\)\s*/g, " ").trim(); return t.length > 12 ? t.slice(0, 12) + "…" : t; }
-  function sideItem(it) {
+  /* ---------------- 렌더: 내 캘린더 (사용자가 직접 등록) ----------------
+     기존의 ‘dueDate 가 있으면 자동으로 채우기’를 없앴다. 캘린더는 오직 행·드로어의
+     📅 캘린더 버튼으로 직접 등록한 메일만 보여준다 (localStorage mb_cal_items_v1). */
+  function shortTitle(it) { const t = (it.title || "").replace(/\s*\(.*?\)\s*/g, " ").trim(); return t.length > 12 ? t.slice(0, 12) + "\u2026" : t; }
+  function sideItem(it) { return sideItemDated(it, calDate(it)); }
+  function sideItemDated(it, date) {
     const d = dueInfo(it);
     return '<div class="side-item' + (it.urgency === "urgent" || d.hot ? " urgent" : "") + '" data-open="' + esc(it.id) + '">' +
       '<span class="t">' + esc(it.title) + "</span>" +
-      '<div class="m">' + (d.text ? "<b>" + esc(d.text.replace("⏰ ", "")) + "</b>" : esc((it.deadline || "").slice(0, 24))) + "</div></div>";
+      '<div class="m">' + (date ? "📅 <b>" + esc(date) + "</b>" : "") + (d.text ? " · " + esc(d.text.replace("⏰ ", "")) : "") + "</div></div>";
   }
+
+  let CAL = null;
+  function calLoad() {
+    if (CAL) return CAL;
+    CAL = {};
+    try { const raw = JSON.parse(localStorage.getItem(LS.cal2) || "{}"); if (raw && typeof raw === "object" && !Array.isArray(raw)) CAL = raw; } catch (e) { CAL = {}; }
+    return CAL;
+  }
+  function calSave() { try { localStorage.setItem(LS.cal2, JSON.stringify(calLoad())); } catch (e) {} }
+  const calDate = (it) => calLoad()[it.id] || null;
+  const calItems = () => items().filter((it) => !!calDate(it));
+  const calCount = () => calItems().length;
+  function calDefaultDate(it) { return dueOf(it) || todayY(); }
+  /* 행·드로어의 📅 캘린더 — 누르면 등록(기본 마감일 또는 오늘), 다시 누르면 해제 */
+  function calToggle(id, date) {
+    const it = byId(id); if (!it) return;
+    const m = calLoad();
+    if (m[id]) {
+      delete m[id]; calSave();
+      toast("캘린더에서 뺐습니다 — " + shortTitle(it));
+    } else {
+      m[id] = date || calDefaultDate(it); calSave();
+      toast("📅 캘린더에 등록 — " + m[id] + " · " + shortTitle(it));
+    }
+    renderCalendar(); renderList();
+    if (view.openId === id) $("drawerContent").innerHTML = drawerHtml(it);
+  }
+  function calSetDate(id, date) {
+    if (!date) return;
+    const it = byId(id); if (!it) return;
+    const m = calLoad(); m[id] = date; calSave();
+    renderCalendar(); renderList();
+    if (view.openId === id) $("drawerContent").innerHTML = drawerHtml(it);
+    toast("📅 등록 날짜를 " + date + "(으)로 바꿨습니다");
+  }
+
+  /* ---------------- 📌 직접 일정 (메일과 무관한 개인·구두 일정) ----------------
+     localStorage mb_cal_custom_v1 에 [{id,date,title,memo,createdAt}] 로 저장한다. */
+  let CUS = null;
+  function cusLoad() {
+    if (CUS) return CUS;
+    try { const raw = JSON.parse(localStorage.getItem(LS.cus) || "[]"); CUS = Array.isArray(raw) ? raw.filter((c) => c && c.date && c.title) : []; } catch (e) { CUS = []; }
+    return CUS;
+  }
+  function cusSave() { try { localStorage.setItem(LS.cus, JSON.stringify(cusLoad())); } catch (e) {} }
+  const cusCount = () => cusLoad().length;
+  const cusFor = (date) => cusLoad().filter((c) => c.date === date).sort((a, b) => String(a.createdAt || "").localeCompare(String(b.createdAt || "")));
+  function cusAdd(date, title, memo) {
+    const t = String(title || "").trim(), d = String(date || "").trim();
+    if (!d) { toast("날짜를 골라 주세요"); return false; }
+    if (!t) { toast("일정 제목을 입력해 주세요"); return false; }
+    const list = cusLoad();
+    list.push({ id: "c-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: d, title: t.slice(0, 80), memo: String(memo || "").trim().slice(0, 120), createdAt: new Date().toISOString() });
+    cusSave();
+    renderCalendar(); renderList();
+    toast("📌 일정을 넣었습니다 — " + d + " · " + t.slice(0, 24));
+    return true;
+  }
+  function cusDel(id) {
+    const list = cusLoad(), i = list.findIndex((c) => c.id === id);
+    if (i < 0) return;
+    const c = list.splice(i, 1)[0];
+    cusSave();
+    renderCalendar(); renderList();
+    toast("일정을 지웠습니다 — " + (c.title || ""));
+  }
+  function cusRow(c) {
+    return '<div class="row cus"><span class="rank cus">📌</span>' +
+      '<span class="rmain"><span class="rt"><span class="rtitle">' + esc(c.title) + '</span><span class="badge b-cus">📌 개인/구두</span></span>' +
+        '<span class="rmeta">' + esc(c.date) + (c.memo ? " · " + esc(c.memo) : "") + "</span></span>" +
+      '<span class="rside"><button type="button" class="badge tog b-del" data-cus-del="' + esc(c.id) + '" title="일정 삭제" aria-label="일정 삭제">✕</button></span></div>';
+  }
+
   function renderCalendar() {
     if (!view.ym) { const n = new Date(); view.ym = { y: n.getFullYear(), m: n.getMonth() }; }
     const y = view.ym.y, m = view.ym.m;
-    $("calTitle").innerHTML = y + "년 " + (m + 1) + '월<span class="cap">즉시 확인 마감</span>';
+    $("calTitle").innerHTML = y + "년 " + (m + 1) + '월<span class="cap">내가 등록한 메일</span>';
     $("calDow").innerHTML = DOW.map((d, i) => '<div class="' + (i === 0 ? "sun" : "") + '">' + d + "</div>").join("");
-    const byDate = {};
-    p1Items().forEach((it) => { const d = dueOf(it); if (!d) return; (byDate[d] = byDate[d] || []).push(it); });
+    const byDate = {}, cusByDate = {};
+    calItems().forEach((it) => { const d = calDate(it); if (!d) return; (byDate[d] = byDate[d] || []).push(it); });
+    cusLoad().forEach((c) => { (cusByDate[c.date] = cusByDate[c.date] || []).push(c); });
     const first = new Date(y, m, 1), startPad = (first.getDay() + 6) % 7, lastDay = new Date(y, m + 1, 0).getDate();
     const cells = [];
     for (let i = 0; i < startPad; i++) cells.push('<div class="day pad"></div>');
     for (let d = 1; d <= lastDay; d++) {
-      const key = ymd(new Date(y, m, d)), list = byDate[key] || [];
+      const key = ymd(new Date(y, m, d)), list = byDate[key] || [], cus = cusByDate[key] || [];
+      const total = list.length + cus.length;
       const isToday = key === todayY(), isSel = view.day === key;
-      let inner = '<div class="dn">' + d + (list.length ? '<span class="cnt">' + list.length + "</span>" : "") + "</div>";
-      if (list.length) {
-        inner += list.slice(0, 1).map((it) => '<span class="ev' + (it.urgency === "urgent" ? " urgent" : "") + '">' + esc(shortTitle(it)) + "</span>").join("");
-        if (list.length > 1) inner += '<span class="ev">+' + (list.length - 1) + "건</span>";
-        inner += '<div class="dotrow">' + list.slice(0, 4).map((it) => '<i class="' + (it.urgency === "urgent" ? "urgent" : "") + '"></i>').join("") + "</div>";
+      let inner = '<div class="dn">' + d + (total ? '<span class="cnt">' + total + "</span>" : "") + "</div>";
+      if (total) {
+        if (cus.length) inner += '<span class="ev cus">📌 ' + esc(shortTitle({ title: cus[0].title })) + "</span>";
+        else inner += list.slice(0, 1).map((it) => '<span class="ev' + (it.urgency === "urgent" ? " urgent" : "") + '">' + esc(shortTitle(it)) + "</span>").join("");
+        if (total > 1) inner += '<span class="ev">+' + (total - 1) + "건</span>";
+        inner += '<div class="dotrow">' + cus.slice(0, 2).map(() => '<i class="urgent"></i>').join("") +
+          list.slice(0, 4).map((it) => '<i class="' + (it.urgency === "urgent" ? "urgent" : "") + '"></i>').join("") + "</div>";
       }
-      cells.push('<div class="day' + (list.length ? " has" : "") + (isToday ? " today" : "") + (isSel ? " sel" : "") + '"' +
-        (list.length ? ' data-day="' + key + '" role="button" tabindex="0"' : "") + ">" + inner + "</div>");
+      cells.push('<div class="day' + (total ? " has" : "") + (isToday ? " today" : "") + (isSel ? " sel" : "") + '"' +
+        ' data-day="' + key + '" role="button" tabindex="0">' + inner + "</div>");
     }
     $("calDays").innerHTML = cells.join("");
 
     const today = todayY(), wr = weekRange(new Date()), wStart = ymd(wr.start), wEnd = ymd(wr.end);
-    const todayList = p1Items().filter((i) => dueOf(i) === today).sort((a, b) => (deadlineMs(a) || 9e15) - (deadlineMs(b) || 9e15));
-    const weekList = p1Items().filter((i) => { const d = dueOf(i); return d && d > today && d >= wStart && d <= wEnd; })
-      .sort((a, b) => (dueOf(a) || "").localeCompare(dueOf(b) || ""));
-    $("sideTodayN").textContent = todayList.length ? todayList.length + "건" : "";
-    $("sideWeekN").textContent = weekList.length ? weekList.length + "건" : "";
-    $("sideToday").innerHTML = todayList.length ? todayList.map(sideItem).join("") : '<div class="side-empty">오늘 마감인 즉시 확인 건이 없습니다.</div>';
-    $("sideWeek").innerHTML = weekList.length ? weekList.map(sideItem).join("") : '<div class="side-empty">이번 주 남은 즉시 확인 마감이 없습니다.</div>';
-    renderCalState(todayList.length, weekList.length);
+    const todayList = calItems().filter((i) => calDate(i) === today);
+    const weekList = calItems().filter((i) => { const d = calDate(i); return d && d > today && d >= wStart && d <= wEnd; })
+      .sort((a, b) => (calDate(a) || "").localeCompare(calDate(b) || ""));
+    const todayCus = cusFor(today), weekCus = cusLoad().filter((c) => c.date > today && c.date >= wStart && c.date <= wEnd)
+      .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    $("sideTodayN").textContent = (todayList.length + todayCus.length) ? (todayList.length + todayCus.length) + "건" : "";
+    $("sideWeekN").textContent = (weekList.length + weekCus.length) ? (weekList.length + weekCus.length) + "건" : "";
+    $("sideToday").innerHTML = (todayList.length + todayCus.length)
+      ? todayCus.map(cusSideItem).join("") + todayList.map((it) => sideItemDated(it, calDate(it))).join("")
+      : '<div class="side-empty">오늘 등록한 일정이 없습니다. 행의 📅 캘린더나 ＋ 직접 일정 추가를 쓰세요.</div>';
+    $("sideWeek").innerHTML = (weekList.length + weekCus.length)
+      ? weekCus.map(cusSideItem).join("") + weekList.map((it) => sideItemDated(it, calDate(it))).join("")
+      : '<div class="side-empty">이번 주에 등록한 일정이 없습니다.</div>';
+    renderCalState(todayList.length + todayCus.length, weekList.length + weekCus.length);
+  }
+
+  function cusSideItem(c) {
+    return '<div class="side-item urgent"><span class="t">📌 ' + esc(c.title) + '</span><div class="m">📅 <b>' + esc(c.date) + "</b>" + (c.memo ? " · " + esc(c.memo) : "") + "</div></div>";
   }
 
   function renderCalState(nToday, nWeek) {
@@ -948,8 +1089,8 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     bar.classList.toggle("open", view.calOpen);
     bar.setAttribute("aria-expanded", view.calOpen ? "true" : "false");
     body.hidden = !view.calOpen;
-    $("calSummary").innerHTML = "오늘 마감 <b>" + nToday + "건</b> · 이번 주 <b>" + nWeek + "건</b>" +
-      (view.calOpen ? "" : " · 눌러서 펼치기");
+    $("calSummary").innerHTML = "· 등록 <b>" + (calCount() + cusCount()) + "건</b>" +
+      (view.calOpen ? " · 오늘 <b>" + nToday + "건</b> · 이번 주 <b>" + nWeek + "건</b>" : " · 눌러서 펼치기");
   }
 
   /* ---------------- 렌더: 탭 · 칩 ---------------- */
@@ -1011,6 +1152,12 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         "</span></span>" +
       '<span class="rside">' + (isArchived(it) ? '<span class="badge b-arch">이전 기록</span>' : "") +
         (d.text ? '<span class="badge b-due ' + d.cls + '">' + esc(d.text) + "</span>" : "") +
+        '<button type="button" class="badge tog b-cal' + (calDate(it) ? " on" : "") + '" data-cal-tog="' + esc(it.id) + '" title="' +
+          esc(calDate(it) ? "내 캘린더 등록됨 (" + calDate(it) + ") · 다시 누르면 해제" : "내 캘린더에 등록 (기본 " + calDefaultDate(it) + ") · 다시 누르면 해제") +
+          '" aria-label="캘린더 등록 토글">📅 ' + (calDate(it) ? esc(String(calDate(it)).slice(5).replace("-", "/")) : "캘린더") + "</button>" +
+        '<button type="button" class="badge tog ' + (isDone(it) ? "b-undo" : "b-done") + '" data-done-tog="' + esc(it.id) + '" title="' +
+          esc(isDone(it) ? "완료 취소 — 기본 목록으로 다시 돌림" : "✅ 확인 — 기본 목록에서 바로 치우기 (KPI 완료에 반영)") +
+          '" aria-label="확인 완료 토글">' + (isDone(it) ? "↩ 취소" : "✅ 확인") + "</button>" +
         '<button type="button" class="badge reply-tog ' + replyCls + '" data-reply-tog="' + esc(it.id) + '" title="' + esc(replyTitle) + '" aria-label="' + esc(REPLY_LABEL[r] + " · 눌러서 회신 상태 바꾸기") + '">' +
           esc(REPLY_LABEL[r]) + '<span class="arw">▾</span></button>' +
         '<span class="badge b-st">' + esc(ST_LABEL[st.status] || "대기") + "</span></span></div>";
@@ -1026,16 +1173,35 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
 
   function currentList() {
     let base = view.tab === "p1" ? p1Items() : (view.tab === "p2" ? p2Items() : p3Items());
-    let list = base.filter(matches);
-    if (view.tab === "p1" && view.day) list = list.filter((it) => dueOf(it) === view.day);
-    if ((view.tab === "p1" || view.tab === "p2") && view.sender !== "all") list = list.filter((it) => senderKey(it) === view.sender);
+    let list = view.day ? items().filter((it) => calDate(it) === view.day) : base;
+    list = list.filter(matches);
+    if (!view.day && (view.tab === "p1" || view.tab === "p2") && view.sender !== "all") list = list.filter((it) => senderKey(it) === view.sender);
     if (view.replyOnly) list = list.filter((it) => replyOf(it) === "needs_reply");
+    /* ✅ 확인으로 완료한 메일은 기본 목록에서 숨김 — 검색어를 입력하거나 '완료 포함'을 켜면 다시 나온다 */
+    if (!view.showDone && !view.q.trim()) list = list.filter((it) => !isDone(it));
     return sortList(list);
   }
 
   function renderList() {
     if (view.tab === "fu") { renderFuList(); return; }
     const q = view.q.trim(), main = currentList();
+    /* 캘린더에서 날짜를 누른 경우 — 그날 내가 등록한 메일만 모아 보여준다 */
+    if (view.day) {
+      const dd = parseYmd(view.day);
+      const cus = cusFor(view.day);
+      let dayHtml = '<div class="sec-title">📅 ' + esc(view.day) + (dd ? " (" + DOW[dd.getDay()] + ")" : "") +
+        ' 내 캘린더 <span class="hint">' + (main.length + cus.length) + "건 · 메일은 행의 📅 로 등록·해제 · 날짜는 상세에서</span></div>";
+      if (cus.length) {
+        dayHtml += '<div class="sec-title">📌 개인/구두 일정 <span class="hint">' + cus.length + "건 · ✕ 로 삭제</span></div>" +
+          '<div class="rows">' + cus.map(cusRow).join("") + "</div>";
+      }
+      if (main.length) dayHtml += '<div class="sec-title">📅 등록한 메일 <span class="hint">' + main.length + "건</span></div>" + rowsBlock(main);
+      if (!main.length && !cus.length) dayHtml += '<div class="empty">이 날짜에 등록한 메일·일정이 없습니다.<br>메일 행이나 상세 화면의 <b>📅 캘린더</b>를 누르거나 캘린더 위 <b>＋ 직접 일정 추가</b>로 일정을 넣을 수 있습니다.</div>';
+      $("listWrap").innerHTML = dayHtml;
+      $("dayChipText").textContent = view.day + (dd ? " (" + DOW[dd.getDay()] + ")" : "") + " · 내 캘린더 " + (main.length + cus.length) + "건";
+      $("dayChip").classList.add("on");
+      return;
+    }
     let html = "";
     let extra = (q && view.tab !== "p3") ? sortList(p3Items().filter(matches)) : [];
     /* 검색어가 있을 때만 지난 메일(archived)을 '이전 기록'으로 함께 보여준다 */
@@ -1059,13 +1225,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         '<div class="banner" style="margin-bottom:5px">ℹ️ <div>기본 화면에서는 빠져 있는 지난 메일입니다. 검색어를 지우면 다시 숨겨집니다.</div></div>' + rowsBlock(history);
     }
     $("listWrap").innerHTML = html;
-
-    const chip = $("dayChip");
-    if (view.tab === "p1" && view.day) {
-      const d = parseYmd(view.day);
-      $("dayChipText").textContent = view.day + " (" + DOW[d.getDay()] + ") · 즉시 확인 " + p1Items().filter((it) => dueOf(it) === view.day).length + "건";
-      chip.classList.add("on");
-    } else chip.classList.remove("on");
+    $("dayChip").classList.remove("on");
   }
 
   /* ---------------- 렌더: ⏳ 미회신 추적 ---------------- */
@@ -1264,6 +1424,9 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
           '<option value="todo"' + (st.status === "todo" ? " selected" : "") + ">대기</option>" +
           '<option value="doing"' + (st.status === "doing" ? " selected" : "") + ">진행중</option>" +
           '<option value="done"' + (st.status === "done" ? " selected" : "") + ">완료</option></select>" +
+        '<button type="button" class="mini' + (calDate(it) ? " on" : "") + '" data-cal-tog="' + esc(it.id) + '">📅 ' + (calDate(it) ? "캘린더 등록됨" : "캘린더 등록") + "</button>" +
+        '<label class="cal-date" title="등록 날짜 바꾸기">날짜 <input type="date" data-cal-date="' + esc(it.id) + '" value="' + esc(calDate(it) || calDefaultDate(it)) + '"></label>' +
+        '<button type="button" class="mini" data-done-tog="' + esc(it.id) + '">' + (isDone(it) ? "↩ 완료 취소" : "✅ 확인") + "</button>" +
         '<a class="mini" href="' + esc(it.mailLink || "#") + '" target="_blank" rel="noopener">웹메일 원본</a>' +
         '<span class="sp">' + esc(it.id) + "</span></div>";
   }
@@ -1332,13 +1495,18 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     $("replyTog").classList.toggle("on", view.replyOnly);
     renderList();
   });
+  $("doneChk").addEventListener("change", (e) => {
+    view.showDone = e.target.checked;
+    $("doneTog").classList.toggle("on", view.showDone);
+    renderList();
+  });
 
   $("seg").addEventListener("click", (e) => {
     const b = e.target.closest("[data-tab]"); if (!b) return;
     view.tab = b.dataset.tab;
-    if (view.tab !== "p1") view.day = null;
+    view.day = null;
     view.sender = "all";
-    renderSeg(); renderList();
+    renderSeg(); renderCalendar(); renderList();
   });
   $("chipRow").addEventListener("click", (e) => {
     const b = e.target.closest("[data-sender]"); if (!b) return;
@@ -1359,10 +1527,18 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   $("calDays").addEventListener("click", (e) => {
     const c = e.target.closest("[data-day]"); if (!c) return;
     const key = c.dataset.day;
-    view.tab = "p1"; view.sender = "all";
     view.day = (view.day === key) ? null : key;
+    view.sender = "all";
+    if (view.day && $("cusDate")) $("cusDate").value = view.day;
     renderSeg(); renderCalendar(); renderList();
     if (view.day) $("listWrap").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  /* ＋ 직접 일정 추가 */
+  if ($("cusDate")) $("cusDate").value = todayY();
+  $("cusForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const ok = cusAdd($("cusDate").value, $("cusTitle").value, $("cusMemo").value);
+    if (ok) { $("cusTitle").value = ""; $("cusMemo").value = ""; $("cusDate").value = view.day || todayY(); }
   });
   $("dayClear").addEventListener("click", () => { view.day = null; renderCalendar(); renderList(); });
 
@@ -1374,6 +1550,12 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   });
 
   $("listWrap").addEventListener("click", (e) => {
+    const cd = e.target.closest("[data-cus-del]");
+    if (cd) { e.preventDefault(); e.stopPropagation(); cusDel(cd.dataset.cusDel); return; }
+    const ct = e.target.closest("[data-cal-tog]");
+    if (ct) { e.preventDefault(); e.stopPropagation(); calToggle(ct.dataset.calTog); return; }
+    const dt = e.target.closest("[data-done-tog]");
+    if (dt) { e.preventDefault(); e.stopPropagation(); const it = byId(dt.dataset.doneTog); if (it) setDone(it.id, !isDone(it)); return; }
     const tg = e.target.closest("[data-reply-tog]");
     if (tg) {
       e.preventDefault(); e.stopPropagation();
@@ -1387,7 +1569,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   });
   $("listWrap").addEventListener("keydown", (e) => {
     if (e.key !== "Enter" && e.key !== " ") return;
-    if (e.target.closest("[data-reply-tog]")) return;
+    if (e.target.closest("[data-reply-tog]") || e.target.closest("[data-cal-tog]") || e.target.closest("[data-done-tog]")) return;
     const r = e.target.closest("[data-open]"); if (!r) return;
     e.preventDefault(); openDrawer(r.dataset.open);
   });
@@ -1409,6 +1591,10 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       setReply(id, k, replyOf(byId(id)));
       return;
     }
+    const dc = e.target.closest("[data-cal-tog]");
+    if (dc) { calToggle(dc.dataset.calTog); return; }
+    const dn = e.target.closest("[data-done-tog]");
+    if (dn) { const it = byId(dn.dataset.doneTog); if (it) setDone(it.id, !isDone(it)); return; }
     const fs = e.target.closest("[data-fu-set]");
     if (fs) { fuSetStatus(fs.dataset.fuId, fs.dataset.fuSet); return; }
     const fc = e.target.closest("[data-fu-copy]");
@@ -1461,7 +1647,9 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       const it = byId(t.dataset.status);
       $("drawerContent").innerHTML = drawerHtml(it);
       renderKpi(); renderSeg(); renderCalendar(); renderList();
+      return;
     }
+    if (t.dataset.calDate) { calSetDate(t.dataset.calDate, t.value); return; }
   });
   $("drawer").addEventListener("input", (e) => {
     const t = e.target;
