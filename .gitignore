@@ -7,3 +7,4 @@ __pycache__/
 images_data.py
 archive_index.json
 archive_raw.tsv
+keyword_rows.tsv
