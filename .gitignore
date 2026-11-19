@@ -1,0 +1,6 @@
+# 로컬 작업용 — 절대 GitHub에 올리지 않는다
+data.json
+make_data.py
+*.xlsx
+__pycache__/
+.DS_Store
