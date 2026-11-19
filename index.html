@@ -1075,7 +1075,9 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const byDate = {}, cusByDate = {};
     calItems().forEach((it) => { const d = calDate(it); if (!d) return; (byDate[d] = byDate[d] || []).push(it); });
     cusLoad().forEach((c) => { (cusByDate[c.date] = cusByDate[c.date] || []).push(c); });
-    const first = new Date(y, m, 1), startPad = (first.getDay() + 6) % 7, lastDay = new Date(y, m + 1, 0).getDate();
+    /* 요일 헤더가 일~토 순서이므로 시작 칸도 일요일(0) 기준으로 채운다.
+       (예전엔 (getDay()+6)%7 로 월요일 기준 칸을 채워 요일과 날짜가 한 칸씩 밀렸음) */
+    const first = new Date(y, m, 1), startPad = first.getDay(), lastDay = new Date(y, m + 1, 0).getDate();
     const cells = [];
     for (let i = 0; i < startPad; i++) cells.push('<div class="day pad"></div>');
     for (let d = 1; d <= lastDay; d++) {
