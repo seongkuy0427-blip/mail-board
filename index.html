@@ -288,11 +288,12 @@
     right:0; top:0; height:100%; width:min(480px,94vw); border-left:1px solid var(--line);
     box-shadow:-12px 0 34px rgba(16,32,64,.16); transform:translateX(102%); transition:transform .2s ease}
   #drawer.on{transform:translateX(0)}
-  .dr-head{display:flex; align-items:flex-start; gap:8px; padding:12px 14px; border-bottom:1px solid var(--line); background:#fbfcfe}
+  #drawerContent{display:flex; flex-direction:column; flex:1; min-height:0; height:100%}
+  .dr-head{display:flex; align-items:flex-start; gap:8px; padding:12px 14px; border-bottom:1px solid var(--line); background:#fbfcfe; flex:none}
   .dr-head .badges{display:flex; flex-wrap:wrap; gap:4px; margin-bottom:6px}
   .dr-head h2{font-size:15px; margin:0; letter-spacing:-.25px; line-height:1.4; flex:1; min-width:0}
   .dr-close{flex:none; width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:13px;color:var(--ink-2)}
-  .dr-body{overflow:auto; padding:0 0 20px; flex:1}
+  .dr-body{overflow-y:auto; padding:0 0 20px; flex:1; min-height:0}
   .dr-sec{padding:10px 14px; border-bottom:1px solid #f0f3f7}
   .dr-sec:last-child{border-bottom:none}
   .sec-h{display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; color:var(--ink-2); margin-bottom:6px}
