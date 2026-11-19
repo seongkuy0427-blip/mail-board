@@ -162,20 +162,20 @@
   .wx-h{border:1px solid var(--line); border-radius:9px; padding:6px 4px; text-align:center; background:#fbfcfe}
   .wx-h.warn{border-color:#eeb877; background:#fff9ef}
   .wx-h .h-t{display:block; font-size:10.5px; color:var(--ink-3); font-weight:600}
-  .wx-h .h-i{display:block; font-size:17px; line-height:1.3}
-  .wx-h .h-tp{display:block; font-size:12.5px; font-weight:700; color:var(--ink)}
-  .wx-h .h-p{display:block; font-size:10px; color:#1f5fd0}
-  .wx-h .h-w{display:block; font-size:9.5px; color:var(--ink-3)}
+  .wx-h .h-i{display:block; font-size:20px; line-height:1.35}
+  .wx-h .h-tp{display:block; font-size:15px; font-weight:700; color:var(--ink); letter-spacing:-.3px}
+  .wx-h .h-p{display:block; font-size:10.5px; color:#1f5fd0; font-weight:600}
+  .wx-h .h-w{display:block; font-size:9.5px; color:#b32b2b; font-weight:700}
   .wx-days{display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:5px}
   .wx-d{border:1px solid var(--line); border-radius:9px; padding:6px 4px; text-align:center; background:#fbfcfe}
   .wx-d.warn{border-color:#eeb877; background:#fff9ef}
   .wx-d.severe{border-color:#e9a9a9; background:#fdf1f1}
   .wx-d .d-d{display:block; font-size:10px; color:var(--ink-3); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-  .wx-d .d-i{display:block; font-size:17px; line-height:1.3}
-  .wx-d .d-t{display:block; font-size:10.5px; color:var(--ink-2); white-space:nowrap}
-  .wx-d .d-t b{color:var(--ink); font-size:12px}
-  .wx-d .d-p{display:block; font-size:10px; color:#1f5fd0}
-  .wx-d .d-w{display:block; font-size:9.5px; color:var(--orange)}
+  .wx-d .d-i{display:block; font-size:20px; line-height:1.35}
+  .wx-d .d-t{display:block; font-size:12px; color:var(--ink-2); white-space:nowrap; letter-spacing:-.2px}
+  .wx-d .d-t b{color:var(--ink); font-size:14px}
+  .wx-d .d-p{display:block; font-size:10.5px; color:#1f5fd0; font-weight:600}
+  .wx-d .d-w{display:block; font-size:9.5px; color:#b32b2b; font-weight:700}
   .wx-foot{margin-top:8px; font-size:10.5px; color:var(--ink-3); text-align:right}
   @media (max-width:1000px){ .wx-hours{grid-template-columns:repeat(4, minmax(0,1fr))} .wx-days{grid-template-columns:repeat(4, minmax(0,1fr))} }
   @media (max-width:640px){ .wx-hours{grid-template-columns:repeat(3, minmax(0,1fr))} .wx-days{grid-template-columns:repeat(2, minmax(0,1fr))}
@@ -595,9 +595,9 @@
         <span class="wx-sum" id="wxSummary">불러오는 중…</span>
       </button>
       <div class="wx-body" id="wxBody" hidden>
-        <div class="wx-sec-h">⏱️ 시간별 (앞으로 24시간 · 3시간 간격) — 시각 · 기온 · 강수확률 · 풍속</div>
+        <div class="wx-sec-h">⏱️ 시간별 · 앞으로 24시간</div>
         <div class="wx-hours" id="wxHours"></div>
-        <div class="wx-sec-h" style="margin-top:12px">📅 7일 주간 — 최저/최고 · 강수확률 · 최대 풍속 <span style="font-weight:500">(비·눈 50%↑ 또는 바람 10m/s↑ 강조)</span></div>
+        <div class="wx-sec-h" style="margin-top:12px">📅 7일 주간 <span style="font-weight:500">(비·눈 올 때만 💧 확률 표시)</span></div>
         <div class="wx-days" id="wxDays"></div>
         <div class="wx-foot" id="wxFoot">자료: Open-Meteo · 5분마다 자동 갱신</div>
       </div>
@@ -1527,31 +1527,21 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       wind: Math.round(wxNum((d.wind_speed_10m_max || [])[i], 0) * 10) / 10
     }));
 
-    /* 오늘 비/눈 한 줄 */
-    const t0 = days[0];
-    let todayTxt = "오늘 비/눈 없음";
-    if (t0) {
-      const wet = wxSnow(t0.code) ? "눈" : (wxRain(t0.code) ? "비" : "");
-      if (wet) todayTxt = "오늘 " + wet + " " + t0.pop + "%";
-      else if (t0.pop >= 30) todayTxt = "오늘 비/눈 " + t0.pop + "% 가능";
-    }
-
-    /* 오늘 이후 7일 안 비·눈·강풍 주의 */
+    /* 실제 비·눈이 예상되는 날만 경보 — 그 외에는 아무것도 붙이지 않는다 */
     const alerts = [];
     days.forEach((x, i) => {
-      if (i === 0) return;
       const md = x.date.slice(5).replace("-", "/");
       const dow = WXDOW[new Date(x.date + "T12:00:00").getDay()];
       const when = md + "(" + dow + ")";
-      if (wxSnow(x.code) && (x.pop >= 50 || x.sum > 0)) alerts.push({ i: i, text: when + " 눈 " + x.pop + "% 예보", cls: x.pop >= 70 ? "bad" : "snow", rank: x.pop });
-      else if (wxRain(x.code) && x.pop >= 50) alerts.push({ i: i, text: when + " 비 " + x.pop + "% 예보", cls: x.pop >= 70 ? "bad" : "rain", rank: x.pop });
-      if (x.wind >= 10) alerts.push({ i: i, text: when + " 강풍 " + x.wind + "m/s 예보", cls: "wind", rank: x.wind * 5 });
+      if (wxSnow(x.code) && (x.pop >= 50 || x.sum > 0)) alerts.push({ i: i, text: when + " 눈 " + x.pop + "%", cls: x.pop >= 70 ? "bad" : "snow", rank: x.pop });
+      else if (wxRain(x.code) && x.pop >= 50) alerts.push({ i: i, text: when + " 비 " + x.pop + "%", cls: x.pop >= 70 ? "bad" : "rain", rank: x.pop });
+      if (x.wind >= 14) alerts.push({ i: i, text: when + " 강풍", cls: "wind", rank: 60 });
     });
     alerts.sort((a, b) => (a.i - b.i) || (b.rank - a.rank));
-    const badges = alerts.slice(0, 3).map((a) => '<span class="wx-badge ' + a.cls + '">⚠️ ' + esc(a.text) + "</span>").join("");
+    const badges = alerts.slice(0, 2).map((a) => '<span class="wx-badge ' + a.cls + '">⚠️ ' + esc(a.text) + "</span>").join("");
 
     $("wxSummary").innerHTML = '<span class="wx-t">' + cTemp + "°C</span>" +
-      "<span>" + esc(wxName(cCode)) + " · " + esc(todayTxt) + "</span>" + badges;
+      "<span>· " + esc(wxName(cCode)) + "</span>" + badges;
 
     /* 시간별 — 지금부터 24시간, 3시간 간격 */
     const now = new Date(), ht = h.time || [], cells = [];
@@ -1571,12 +1561,12 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       if (cells.length >= 8) break;
     }
     $("wxHours").innerHTML = cells.map((c) =>
-      '<div class="wx-h' + (c.pop >= 50 || c.wind >= 10 ? " warn" : "") + '">' +
+      '<div class="wx-h' + (c.pop >= 50 ? " warn" : "") + '">' +
         '<span class="h-t">' + String(c.t.getHours()).padStart(2, "0") + "시</span>" +
         '<span class="h-i">' + wxIcon(c.code) + "</span>" +
         '<span class="h-tp">' + c.temp + "°</span>" +
-        '<span class="h-p">💧 ' + c.pop + "%</span>" +
-        '<span class="h-w">🌬 ' + c.wind + "m/s</span></div>").join("")
+        (c.pop >= 20 && (wxRain(c.code) || wxSnow(c.code)) ? '<span class="h-p">💧 ' + c.pop + "%</span>" : "") +
+        (c.wind >= 14 ? '<span class="h-w">💨 강풍</span>' : "") + "</div>").join("")
       || '<div style="font-size:11.5px;color:var(--ink-3)">시간별 자료가 없습니다.</div>';
 
     /* 7일 주간 */
@@ -1584,17 +1574,17 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       const dt = new Date(x.date + "T12:00:00");
       const lab = i === 0 ? "오늘" : (i === 1 ? "내일" : WXDOW[dt.getDay()]);
       const dd = x.date.slice(5).replace("-", "/");
-      const wetHeavy = (wxSnow(x.code) || wxRain(x.code)) && x.pop >= 70;
-      const cls = (x.wind >= 10 || wetHeavy) ? " severe" : ((x.pop >= 50 || x.wind >= 10) ? " warn" : "");
+      const wet = (wxSnow(x.code) || wxRain(x.code)) && x.pop >= 20;
+      const cls = (x.wind >= 14 || (wet && x.pop >= 70)) ? " severe" : ((wet && x.pop >= 50) ? " warn" : "");
       return '<div class="wx-d' + cls + '">' +
         '<span class="d-d">' + esc(lab) + " · " + dd + "</span>" +
         '<span class="d-i">' + wxIcon(x.code) + "</span>" +
         '<span class="d-t"><b>' + x.min + "°</b> / " + x.max + "°</span>" +
-        '<span class="d-p">💧 ' + x.pop + "%</span>" +
-        '<span class="d-w">🌬 ' + x.wind + "m/s</span></div>";
+        (wet ? '<span class="d-p">💧 ' + x.pop + "%</span>" : "") +
+        (x.wind >= 14 ? '<span class="d-w">💨 강풍</span>' : "") + "</div>";
     }).join("");
 
-    $("wxFoot").textContent = "자료: Open-Meteo · 현재 체감 " + cFeels + "°C · 바람 " + cWind + "m/s · 갱신 " + stamp(WX_AT || new Date()) + " · 5분마다 자동";
+    $("wxFoot").textContent = "자료: Open-Meteo · 체감 " + cFeels + "°C · 갱신 " + stamp(WX_AT || new Date()) + " · 5분마다 자동";
     paintWxOpen();
   }
 
