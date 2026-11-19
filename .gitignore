@@ -5,3 +5,5 @@ make_data.py
 __pycache__/
 .DS_Store
 images_data.py
+archive_index.json
+archive_raw.tsv
