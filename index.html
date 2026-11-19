@@ -1276,12 +1276,15 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   /* ---------------- 📌 수기 일정 ↔ 관련 메일 자동 매칭 ---------------- */
   const CUS_STOP = new Set(["및", "또는", "그리고", "관련", "일정", "합니다", "했습니다", "대한", "위한", "에서", "으로",
     "하고", "부터", "까지", "정도", "메일", "오늘", "내일", "미팅", "건", "때", "위해", "진행", "확인"]);
+  const CUS_GENERIC = new Set(["교육", "회의", "미팅", "공지", "안내", "일정", "보고", "요청", "확인", "점검", "송부", "현황"]);
   function cusKeywords(c) {
-    const raw = ((c && c.title) || "") + " " + ((c && c.memo) || "");
+    /* 메모의 시간(08:00)·숫자 등이 키워드로 섞이지 않도록 제목에서만 핵심 단어를 추출 */
+    const raw = (c && c.title) || "";
     const seen = new Set(), out = [];
     raw.split(/[^0-9A-Za-z가-힣]+/).forEach((w) => {
       const t = w.trim();
       if (t.length < 2 || CUS_STOP.has(t)) return;
+      if (/^\d+$/.test(t) || /^\d+(년|월|일|시|분|차|호)$/.test(t)) return;
       const k = t.toLowerCase();
       if (seen.has(k)) return;
       seen.add(k); out.push(t);
@@ -1296,6 +1299,10 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   }
   function titleBlob(it) {
     return [it.title, it.sender, it.summary, (it.tags || []).join(" ")].join("\n").toLowerCase();
+  }
+  function hasKw(blob, k) {
+    if (blob.indexOf(k) !== -1) return true;
+    return blob.replace(/\s+/g, "").indexOf(k.replace(/\s+/g, "")) !== -1;
   }
   function relatedMails(c) {
     const keys = cusKeywords(c);
@@ -1313,18 +1320,21 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     };
     const hasEvMonth = (it) => !evMonth || (it.title || "").indexOf(evMonth + "월") !== -1;
 
-    /* 1순위: 제목·태그·요약에 모든 키워드 포함(AND) + 일정 전후 45일 이내 */
-    let list = all.filter((it) => isNearEvent(it) && low.every((k) => titleBlob(it).indexOf(k) !== -1));
+    /* 1순위: 제목·태그·요약에 모든 키워드 포함(AND, 띄어쓰기 무시) + 일정 전후 45일 이내 */
+    let list = all.filter((it) => isNearEvent(it) && low.every((k) => hasKw(titleBlob(it), k)));
     let mode = "and";
-    /* 2순위: 일정 전후 45일 이내에서 제목에 핵심 키워드 포함 + 해당 월(예: 11월) 표기 일치 */
-    if (!list.length && evDate) {
-      list = all.filter((it) => isNearEvent(it) && hasEvMonth(it) && low.some((k) => (it.title || "").toLowerCase().indexOf(k) !== -1));
-      mode = "month";
-    }
-    /* 3순위: 전체 기간에서 제목·태그·요약에 모든 키워드 포함(AND) */
+    /* 2순위: 전체 기간에서 제목·태그·요약에 모든 키워드 포함(AND) */
     if (!list.length) {
-      mode = "and";
-      list = all.filter((it) => low.every((k) => titleBlob(it).indexOf(k) !== -1));
+      list = all.filter((it) => low.every((k) => hasKw(titleBlob(it), k)));
+    }
+    /* 3순위: '사장단 정례회의'처럼 앞 수식어가 메일 제목에 빠진 경우 — 45일 이내 + 해당 월 + 3자 이상 비일반 핵심어 일치 */
+    if (!list.length && evDate) {
+      const specific = low.filter((k) => k.length >= 3 && !CUS_GENERIC.has(k));
+      if (specific.length) {
+        const lastKey = specific[specific.length - 1];
+        list = all.filter((it) => isNearEvent(it) && hasEvMonth(it) && hasKw((it.title || "").toLowerCase(), lastKey));
+        mode = "month";
+      }
     }
     if (phrase.length >= 3) {
       list.sort((a, b) => {
