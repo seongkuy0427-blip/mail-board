@@ -111,7 +111,11 @@
   .cal-nav button:hover{background:#f2f5fa}
   .dow{display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:3px}
   .dow div{font-size:10px; color:var(--ink-3); text-align:center; font-weight:600}
-  .dow div.sun{color:#c0504d}
+  .dow div.sun{color:#dc2626}
+  .dow div.sat{color:#2563eb}
+  .day.sat .dn{color:#2563eb}
+  .day.hol .dn{color:#dc2626}
+  .day .hn{font-size:8.5px; line-height:1.15; color:#dc2626; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
   .days{display:grid; grid-template-columns:repeat(7,1fr); gap:3px}
   .day{min-height:54px; border:1px solid var(--line); border-radius:8px; background:#fff; padding:2px 3px; overflow:hidden; display:flex; flex-direction:column; gap:1px}
   .day.pad{background:transparent; border-color:transparent; min-height:0}
@@ -558,6 +562,33 @@
   /* 행 배지를 누를 때의 순환: 회신 필요 → 회신 완료 → 회신 불필요 → 회신 필요 */
   const NEXT_REPLY = { needs_reply: "replied", replied: "no_reply_needed", no_reply_needed: "needs_reply" };
   const DOW = ["일", "월", "화", "수", "목", "금", "토"];
+  /* 대한민국 법정 공휴일 (2026~2027 · 대체공휴일 포함)
+     근거: 「관공서의 공휴일에 관한 규정」·우주항공청 월력요항 (2026년 70일 / 2027년 72일 기준).
+     2026년부터 노동절(5/1)·제헌절(7/17)도 공휴일이며, 법 개정으로 이후 지정될 임시공휴일은 미반영. */
+  const HOLIDAYS = {
+    "2025-12-25": "성탄절",
+    "2026-01-01": "신정",
+    "2026-02-16": "설날 연휴", "2026-02-17": "설날", "2026-02-18": "설날 연휴",
+    "2026-03-01": "삼일절", "2026-03-02": "삼일절 대체",
+    "2026-05-01": "노동절", "2026-05-05": "어린이날",
+    "2026-05-24": "부처님오신날", "2026-05-25": "부처님오신날 대체",
+    "2026-06-03": "지방선거일", "2026-06-06": "현충일", "2026-07-17": "제헌절",
+    "2026-08-15": "광복절", "2026-08-17": "광복절 대체",
+    "2026-09-24": "추석 연휴", "2026-09-25": "추석", "2026-09-26": "추석 연휴",
+    "2026-10-03": "개천절", "2026-10-05": "개천절 대체", "2026-10-09": "한글날",
+    "2026-12-25": "성탄절",
+    "2027-01-01": "신정",
+    "2027-02-06": "설날 연휴", "2027-02-07": "설날", "2027-02-08": "설날 연휴", "2027-02-09": "설날 대체",
+    "2027-03-01": "삼일절",
+    "2027-05-01": "노동절", "2027-05-03": "노동절 대체", "2027-05-05": "어린이날", "2027-05-13": "부처님오신날",
+    "2027-06-06": "현충일",
+    "2027-07-17": "제헌절", "2027-07-19": "제헌절 대체",
+    "2027-08-15": "광복절", "2027-08-16": "광복절 대체",
+    "2027-09-14": "추석 연휴", "2027-09-15": "추석", "2027-09-16": "추석 연휴",
+    "2027-10-03": "개천절", "2027-10-04": "개천절 대체",
+    "2027-10-09": "한글날", "2027-10-11": "한글날 대체",
+    "2027-12-25": "성탄절", "2027-12-27": "성탄절 대체",
+  };
 
   let ENC = null, DATA = null, PIN = null;
   let STORE = loadState();
@@ -1039,7 +1070,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     if (!view.ym) { const n = new Date(); view.ym = { y: n.getFullYear(), m: n.getMonth() }; }
     const y = view.ym.y, m = view.ym.m;
     $("calTitle").innerHTML = y + "년 " + (m + 1) + '월<span class="cap">내가 등록한 메일</span>';
-    $("calDow").innerHTML = DOW.map((d, i) => '<div class="' + (i === 0 ? "sun" : "") + '">' + d + "</div>").join("");
+    $("calDow").innerHTML = DOW.map((d, i) => '<div class="' + (i === 0 ? "sun" : (i === 6 ? "sat" : "")) + '">' + d + "</div>").join("");
     const byDate = {}, cusByDate = {};
     calItems().forEach((it) => { const d = calDate(it); if (!d) return; (byDate[d] = byDate[d] || []).push(it); });
     cusLoad().forEach((c) => { (cusByDate[c.date] = cusByDate[c.date] || []).push(c); });
@@ -1049,8 +1080,10 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     for (let d = 1; d <= lastDay; d++) {
       const key = ymd(new Date(y, m, d)), list = byDate[key] || [], cus = cusByDate[key] || [];
       const total = list.length + cus.length;
+      const wd = new Date(y, m, d).getDay(), hol = HOLIDAYS[key] || "";
       const isToday = key === todayY(), isSel = view.day === key;
       let inner = '<div class="dn">' + d + (total ? '<span class="cnt">' + total + "</span>" : "") + "</div>";
+      if (hol) inner += '<span class="hn">' + esc(hol) + "</span>";
       if (total) {
         if (cus.length) inner += '<span class="ev cus">📌 ' + esc(shortTitle({ title: cus[0].title })) + "</span>";
         else inner += list.slice(0, 1).map((it) => '<span class="ev' + (it.urgency === "urgent" ? " urgent" : "") + '">' + esc(shortTitle(it)) + "</span>").join("");
@@ -1058,8 +1091,8 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         inner += '<div class="dotrow">' + cus.slice(0, 2).map(() => '<i class="urgent"></i>').join("") +
           list.slice(0, 4).map((it) => '<i class="' + (it.urgency === "urgent" ? "urgent" : "") + '"></i>').join("") + "</div>";
       }
-      cells.push('<div class="day' + (total ? " has" : "") + (isToday ? " today" : "") + (isSel ? " sel" : "") + '"' +
-        ' data-day="' + key + '" role="button" tabindex="0">' + inner + "</div>");
+      cells.push('<div class="day' + (total ? " has" : "") + (wd === 0 ? " sun" : (wd === 6 ? " sat" : "")) + (hol ? " hol" : "") +
+        (isToday ? " today" : "") + (isSel ? " sel" : "") + '" data-day="' + key + '" role="button" tabindex="0">' + inner + "</div>");
     }
     $("calDays").innerHTML = cells.join("");
 
