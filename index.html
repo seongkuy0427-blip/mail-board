@@ -1095,7 +1095,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     let html = '<div class="banner" style="border-color:#f0d9bb;background:#fffaf2">⏳ <div><b>보낸 요청 미회신</b> — 내가 확인·자료·조치·회신을 부탁했는데 아직 답장이 없는 건입니다. 행을 누르면 <b>보낸 원문 → 요청 요약 → 독촉 문구</b>를 보고, 회신이 오면 하단에서 <b>회신 받음(추적 완료)</b>을 누르세요.</div></div>';
     html += '<div class="sec-title">⏳ 대기 중 <span class="hint">' + pend.length + "건 · 오래된 순</span></div>";
     html += pend.length ? '<div class="rows">' + pend.map(fuRowHtml).join("") + "</div>"
-      : '<div class="empty">' + (q ? "검색어에 맞는 미회신 건이 없습니다." : "지금은 답장을 기다리는 보낸 요청이 없습니다.<br>보낸편지함에서 요청한 건이 생기면 자동 업데이트에서 이곳에 잡힙니다.") + "</div>";
+      : '<div class="empty">' + (q ? "검색어에 맞는 미회신 건이 없습니다." : "현재 회신을 기다리는 요청 메일이 없습니다.<br>(완료 보고·자료 제출 메일은 자동 제외)") + "</div>";
     if (done.length) {
       html += '<div class="sec-title" style="margin-top:12px">✅ 추적 완료 <span class="hint">' + done.length + "건 · 회신 받음으로 표시</span></div>";
       html += '<div class="rows">' + done.map(fuRowHtml).join("") + "</div>";
