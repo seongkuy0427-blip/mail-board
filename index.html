@@ -1221,9 +1221,8 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
 
   function currentList() {
     let base = view.tab === "p1" ? p1Items() : (view.tab === "p2" ? p2Items() : p3Items());
-    let list = view.day ? items().filter((it) => calDate(it) === view.day) : base;
-    list = list.filter(matches);
-    if (!view.day && (view.tab === "p1" || view.tab === "p2") && view.sender !== "all") list = list.filter((it) => senderKey(it) === view.sender);
+    let list = base.filter(matches);
+    if ((view.tab === "p1" || view.tab === "p2") && view.sender !== "all") list = list.filter((it) => senderKey(it) === view.sender);
     if (view.replyOnly) list = list.filter((it) => replyOf(it) === "needs_reply");
     /* ✅ 확인으로 완료한 메일은 기본 목록에서 숨김 — 검색어를 입력하거나 '완료 포함'을 켜면 다시 나온다 */
     if (!view.showDone && !view.q.trim()) list = list.filter((it) => !isDone(it));
@@ -1233,23 +1232,6 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   function renderList() {
     if (view.tab === "fu") { renderFuList(); return; }
     const q = view.q.trim(), main = currentList();
-    /* 캘린더에서 날짜를 누른 경우 — 그날 내가 등록한 메일만 모아 보여준다 */
-    if (view.day) {
-      const dd = parseYmd(view.day);
-      const cus = cusFor(view.day);
-      let dayHtml = '<div class="sec-title">📅 ' + esc(view.day) + (dd ? " (" + DOW[dd.getDay()] + ")" : "") +
-        ' 내 캘린더 <span class="hint">' + (main.length + cus.length) + "건 · 메일은 행의 📅 로 등록·해제 · 날짜는 상세에서</span></div>";
-      if (cus.length) {
-        dayHtml += '<div class="sec-title">📌 개인/구두 일정 <span class="hint">' + cus.length + "건 · ✕ 로 삭제</span></div>" +
-          '<div class="rows">' + cus.map(cusRow).join("") + "</div>";
-      }
-      if (main.length) dayHtml += '<div class="sec-title">📅 등록한 메일 <span class="hint">' + main.length + "건</span></div>" + rowsBlock(main);
-      if (!main.length && !cus.length) dayHtml += '<div class="empty">이 날짜에 등록한 메일·일정이 없습니다.<br>메일 행이나 상세 화면의 <b>📅 캘린더</b>를 누르거나 캘린더 위 <b>＋ 직접 일정 추가</b>로 일정을 넣을 수 있습니다.</div>';
-      $("listWrap").innerHTML = dayHtml;
-      $("dayChipText").textContent = view.day + (dd ? " (" + DOW[dd.getDay()] + ")" : "") + " · 내 캘린더 " + (main.length + cus.length) + "건";
-      $("dayChip").classList.add("on");
-      return;
-    }
     let html = "";
     let extra = (q && view.tab !== "p3") ? sortList(p3Items().filter(matches)) : [];
     /* 검색어가 있을 때만 지난 메일(archived)을 '이전 기록'으로 함께 보여준다 */
@@ -1590,10 +1572,8 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const c = e.target.closest("[data-day]"); if (!c) return;
     const key = c.dataset.day;
     view.day = (view.day === key) ? null : key;
-    view.sender = "all";
     if (view.day && $("cusDate")) $("cusDate").value = view.day;
-    renderSeg(); renderCalendar(); renderList();
-    if (view.day) $("listWrap").scrollIntoView({ behavior: "smooth", block: "start" });
+    renderCalendar();
   });
   /* ＋ 직접 일정 추가 */
   if ($("cusDate")) $("cusDate").value = todayY();
