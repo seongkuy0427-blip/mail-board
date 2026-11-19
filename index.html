@@ -56,6 +56,12 @@
   .sync b{color:var(--ink-2); font-weight:600}
   .icon-btn{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
   .icon-btn:hover{background:#f8fafc}
+  /* 🔔 옆의 작은 '알림 테스트' 버튼 */
+  .notif-test{height:32px; padding:0 10px; border-radius:9px; border:1px solid var(--line); background:#fff; cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center; gap:4px; font-size:11.5px; font-weight:600;
+    color:var(--ink-2); white-space:nowrap; transition:background .12s, transform .06s}
+  .notif-test:hover{background:#f8fafc; border-color:#cfd9e8; color:var(--ink)}
+  .notif-test:active{transform:scale(.97)}
   .spin{animation:sp .9s linear infinite; display:inline-block}
   @keyframes sp{to{transform:rotate(360deg)}}
 
@@ -339,6 +345,7 @@
     .badge{font-size:9.3px; padding:1.5px 5px}
     .badge.reply-tog{padding:3px 6px 3px 7px; gap:2px}
     .seg button{padding:6px 10px; font-size:11.8px}
+    .notif-test{padding:0 8px; font-size:10.5px; gap:3px}
     .dr-sec{padding:9px 12px}
   }
 </style>
@@ -371,6 +378,7 @@
       <div class="hd-right">
         <div class="sync" id="sync">마지막 동기화<br><b>-</b></div>
         <button class="icon-btn" id="bellBtn" title="새 메일 알림 켜기" aria-label="새 메일 알림">🔔</button>
+        <button class="notif-test" id="notifTestBtn" title="브라우저 알림 팝업이 뜨는지 바로 테스트" aria-label="알림 테스트">🔔 알림 테스트</button>
         <button class="icon-btn" id="refreshBtn" title="새로고침" aria-label="새로고침">↻</button>
         <button class="icon-btn" id="lockBtn" title="잠금" aria-label="잠금">🔒</button>
       </div>
@@ -454,7 +462,7 @@
 (() => {
   "use strict";
 
-  const LS = { pin: "mb_pin_v1", state: "mb_state_v1", cal: "mb_calopen_v1", bell: "mb_bell_v1" };
+  const LS = { pin: "mb_pin_v1", state: "mb_state_v1", cal: "mb_calopen_v1", bell: "mb_bell_v1", seen: "mb_seen_p1_v1" };
   const AUTO_REFRESH_MS = 5 * 60 * 1000;
   const URG = { urgent: 0, high: 1, normal: 2 };
   const ST_LABEL = { todo: "대기", doing: "진행중", done: "완료" };
@@ -480,9 +488,9 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   }
   function b64enc(s) { return btoa(unescape(encodeURIComponent(s))); }
   function b64dec(s) { return decodeURIComponent(escape(atob(s))); }
-  function toast(msg) {
+  function toast(msg, ms) {
     const t = $("toast"); t.textContent = msg; t.classList.add("on");
-    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), 1900);
+    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), ms || 1900);
   }
 
   /* ---------------- 암호 ---------------- */
@@ -550,6 +558,16 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
 
   /* ---------------- 새 즉시 확인 메일 알림 (토스트 + 브라우저 팝업) ---------------- */
   let seenP1 = null;
+  /* 본 새 즉시 확인 ID는 localStorage에 남겨 두어, 새로고침(F5)·다시 열기 후에도 '못 본 새 메일'을 알아본다 */
+  function loadSeen() {
+    try {
+      const raw = localStorage.getItem(LS.seen);
+      if (raw === null) return null;
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? new Set(arr.map(String)) : null;
+    } catch (e) { return null; }
+  }
+  function saveSeen(set) { try { localStorage.setItem(LS.seen, JSON.stringify([...set])); } catch (e) {} }
   function liveP1Ids() { return new Set(liveItems().filter((i) => priorityOf(i) === 1).map((i) => i.id)); }
   function bellOn() { try { return localStorage.getItem(LS.bell) === "1"; } catch (e) { return false; } }
   function notifReady() { return ("Notification" in window) && Notification.permission === "granted"; }
@@ -566,9 +584,13 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   function notifyNewP1() {
     if (!DATA) return false;
     const cur = liveP1Ids();
-    if (seenP1 === null) { seenP1 = cur; return false; }   // 첫 로딩은 기준점만 잡는다
+    if (seenP1 === null) {
+      seenP1 = loadSeen();
+      /* 저장된 기준점이 없을 때(최초 1회)만 지금 있는 건을 기준점으로 저장하고 조용히 넘어간다 */
+      if (seenP1 === null) { seenP1 = cur; saveSeen(cur); return false; }
+    }
     const fresh = [...cur].filter((id) => !seenP1.has(id));
-    seenP1 = cur;
+    seenP1 = cur; saveSeen(cur);
     if (!fresh.length) return false;
     const titles = fresh.map((id) => { const it = byId(id); return it ? it.title : id; });
     const head = fresh.length === 1 ? "새 즉시 확인 메일" : "새 즉시 확인 메일 " + fresh.length + "건";
@@ -580,6 +602,26 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       } catch (e) {}
     }
     return true;
+  }
+  /* 상단 '알림 테스트' — 권한을 확인(없으면 요청)하고 즉시 테스트 알림을 띄운다 */
+  async function testNotification() {
+    const blocked = "알림이 차단되어 있습니다 (주소창 자물쇠 → 알림 허용 / Windows 알림 설정 확인)";
+    if (!("Notification" in window)) { toast(blocked, 4200); return; }
+    let perm = Notification.permission;
+    if (perm === "default") { try { perm = await Notification.requestPermission(); } catch (e) { perm = "denied"; } }
+    if (perm !== "granted") { paintBell(); toast(blocked, 4200); return; }
+    let shown = false;
+    try {
+      const n = new Notification("🔴 새 즉시 확인 메일 (테스트)", { body: "알림 팝업이 정상 작동합니다!", tag: "mb-test", renotify: true });
+      n.onclick = () => { try { window.focus(); } catch (e) {} n.close(); };
+      shown = true;
+    } catch (e) { shown = false; }
+    if (!shown) { paintBell(); toast(blocked, 4200); return; }
+    /* 팝업이 정상이면 새 메일 알림도 켜 둔다(🔔을 다시 누르면 꺼짐) */
+    const turnedOn = !bellOn();
+    if (turnedOn) { try { localStorage.setItem(LS.bell, "1"); } catch (e) {} }
+    paintBell();
+    toast("테스트 알림을 보냈습니다 · 팝업이 안 보이면 Windows 알림 설정도 확인" + (turnedOn ? " · 새 메일 알림도 켜 두었습니다" : ""), 3600);
   }
   async function toggleBell() {
     if (bellOn()) { try { localStorage.setItem(LS.bell, "0"); } catch (e) {} paintBell(); toast("새 메일 팝업 알림을 껐습니다 (화면 알림은 계속)"); return; }
@@ -1030,6 +1072,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   });
   $("refreshBtn").addEventListener("click", () => refresh(true));
   $("bellBtn").addEventListener("click", toggleBell);
+  $("notifTestBtn").addEventListener("click", testNotification);
   $("lightbox").addEventListener("click", (e) => { if (e.target.id !== "lbImg") closeLightbox(); });
   $("lbClose").addEventListener("click", closeLightbox);
   $("lockBtn").addEventListener("click", lock);
