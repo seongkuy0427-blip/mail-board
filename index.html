@@ -957,6 +957,10 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const tabs = [["p1", "🔴 즉시 확인", p1Items().length], ["p2", "🟡 흐름 참고", p2Items().length], ["p3", "⚪ 단순 공유", p3Items().length], ["fu", "⏳ 미회신 추적", fuPending().length]];
     $("seg").innerHTML = tabs.map(([k, label, n]) =>
       '<button data-tab="' + k + '" class="' + (view.tab === k ? "on" : "") + '">' + label + '<span class="n">' + n + "</span></button>").join("");
+    /* ⏳ 미회신 추적 탭에서는 회신 필터·정렬이 의미 없으므로 숨긴다 */
+    const isFu = view.tab === "fu";
+    $("replyTog").style.display = isFu ? "none" : "";
+    $("sort").style.display = isFu ? "none" : "";
     renderChips();
   }
   function renderChips() {
