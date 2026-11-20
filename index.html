@@ -67,7 +67,7 @@
   .hd h1{font-size:14.5px; font-weight:700; margin:0; letter-spacing:-.15px; color:#fff}
   .hd .sub{font-size:11px; color:rgba(255,255,255,.58); margin-top:1px}
   .hd-right{margin-left:auto; display:flex; align-items:center; gap:7px}
-  .sync{font-size:10.5px; color:rgba(255,255,255,.55); text-align:right; line-height:1.3; font-variant-numeric:tabular-nums}
+  .sync{display:none; font-size:10.5px; color:rgba(255,255,255,.55); text-align:right; line-height:1.3; font-variant-numeric:tabular-nums}
   .sync b{color:#fff; font-weight:600}
   .icon-btn{width:30px;height:30px;border-radius:6px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);
     color:#e8edf6;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:background .12s, border-color .12s}
@@ -1521,6 +1521,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       lastSyncAt = Date.now();
       ADDR = null;
       $("sync").innerHTML = "마지막 동기화<br><b>" + stamp(new Date()) + "</b>";
+      if ($("refreshBtn")) $("refreshBtn").title = "지금 새로고침 · 마지막 동기화 " + stamp(new Date());
       renderAll();
       wxLoad();
       if (view.openId) openDrawer(view.openId);
@@ -3100,7 +3101,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     paintWebmailSearch();
     syncTogs();
     renderKpi(); renderCalendar(); renderSeg(); renderList(); renderFoot();
-    if (!$("sync").dataset.set) { $("sync").innerHTML = "마지막 동기화<br><b>" + stamp(new Date()) + "</b>"; $("sync").dataset.set = "1"; }
+    if (!$("sync").dataset.set) { const st = stamp(new Date()); $("sync").innerHTML = "마지막 동기화<br><b>" + st + "</b>"; if ($("refreshBtn")) $("refreshBtn").title = "지금 새로고침 · 마지막 동기화 " + st; $("sync").dataset.set = "1"; }
   }
 
   /* ---------------- ⚙️ 분류 규칙 설정 모달 -------------
