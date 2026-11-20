@@ -33,25 +33,40 @@
   button{font-family:inherit}
   .wrap{max-width:1120px; margin:0 auto; padding:0 16px}
 
-  /* ---------- 잠금 ---------- */
-  #gate{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 16px}
-  .gate-card{width:100%; max-width:380px; background:var(--card); border:1px solid var(--line); border-top:3px solid var(--brand);
-    border-radius:8px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 12px 32px rgba(16,24,40,.07); padding:28px 26px 22px; text-align:center}
-  .gate-logo{width:44px;height:44px;border-radius:6px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:21px;margin:0 auto 14px}
-  .gate-card h1{font-size:19px; margin:0 0 6px; letter-spacing:-.3px}
-  .gate-card p{margin:0 0 20px; color:var(--ink-3); font-size:13px}
-  .pin-input{width:100%; padding:13px 12px; font-size:21px; letter-spacing:.4em; text-align:center; font-variant-numeric:tabular-nums;
-    border:1px solid var(--line); border-radius:6px; outline:none; background:#fff; color:var(--ink)}
-  .pin-input:focus{border-color:var(--brand); background:#fff}
-  .gate-row{display:flex; align-items:center; gap:8px; margin:14px 0 4px; font-size:13px; color:var(--ink-2); text-align:left}
+  /* ---------- 잠금 (사내 메일 아이디·비밀번호 로그인) ---------- */
+  #gate{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:32px 16px;
+    background:linear-gradient(180deg,#f7f9fc 0%,#eaeff7 100%)}
+  .gate-card{width:100%; max-width:400px; background:var(--card); border:1px solid var(--line); border-top:3px solid var(--brand);
+    border-radius:10px; box-shadow:0 1px 2px rgba(16,24,40,.04), 0 14px 36px rgba(16,24,40,.09); padding:26px 26px 20px; text-align:left}
+  .gate-head{display:flex; align-items:center; gap:10px; margin-bottom:16px}
+  .gate-logo{flex:none; width:38px;height:38px;border-radius:8px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .gate-card h1{font-size:16.5px; margin:0; letter-spacing:-.35px; line-height:1.35}
+  .gate-sub{margin:0 0 20px; color:var(--ink-3); font-size:12.5px; letter-spacing:-.15px}
+  .field{margin-bottom:13px}
+  .flabel{display:block; font-size:11.5px; font-weight:700; color:var(--ink-2); letter-spacing:-.1px; margin-bottom:6px}
+  .gate-input{display:block; width:100%; padding:11px 12px; font-size:14px; font-family:inherit; letter-spacing:0;
+    border:1px solid var(--line); border-radius:6px; outline:none; background:#fff; color:var(--ink);
+    transition:border-color .12s, box-shadow .12s}
+  .gate-input::placeholder{color:#9aa4b2; font-size:12.5px; letter-spacing:-.15px}
+  .gate-input:focus{border-color:var(--brand); box-shadow:0 0 0 3px rgba(41,98,255,.10)}
+  .gate-input:disabled{background:#f5f7fa; color:var(--ink-3)}
+  .gate-opts{display:flex; flex-wrap:wrap; align-items:center; gap:5px 18px; margin:15px 0 0}
+  .chk{display:inline-flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-2); cursor:pointer; white-space:nowrap; letter-spacing:-.15px}
+  .chk input{flex:none; width:14px; height:14px; margin:0; accent-color:var(--brand); cursor:pointer}
   .btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; border:1px solid var(--line);
     background:#fff; color:var(--ink); padding:8px 13px; border-radius:6px; font-size:13px; cursor:pointer; white-space:nowrap}
   .btn:hover{background:#f8fafc}
   .btn-primary{background:var(--brand); border-color:var(--brand); color:#fff}
   .btn-primary:hover{background:#1c46c4}
-  .btn-block{width:100%; padding:12px; font-size:14px; margin-top:16px}
-  .err{color:var(--red); font-size:12.5px; min-height:18px; margin-top:10px}
-  .gate-foot{margin-top:16px; font-size:11.5px; color:var(--ink-3); line-height:1.6}
+  .btn-block{width:100%; padding:12px; font-size:14px; font-weight:700; margin-top:15px}
+  .err{color:var(--red); font-size:12.5px; min-height:0; margin-top:9px}
+  .err:empty{margin-top:0}
+  .gate-foot{margin-top:14px; padding-top:11px; border-top:1px dashed var(--line); font-size:10.8px; color:var(--ink-3); line-height:1.6; letter-spacing:-.15px}
+  @media (max-width:420px){
+    #gate{padding:20px 12px}
+    .gate-card{padding:22px 18px 18px}
+    .gate-card h1{font-size:15.5px}
+  }
 
   /* ---------- 헤더 ---------- */
   header{position:sticky; top:0; z-index:30; background:#fff; border-bottom:1px solid var(--line); box-shadow:0 1px 2px rgba(16,24,40,.05)}
@@ -1106,15 +1121,34 @@
 
 <!-- ============ 잠금 화면 ============ -->
 <div id="gate">
-  <form class="gate-card" id="gateForm" autocomplete="off">
-    <div class="gate-logo">📋</div>
-    <h1>업무 대시보드</h1>
-    <p>천일정기화물 납입1팀 · 김성규 과장</p>
-    <input class="pin-input" id="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="12" placeholder="••••" aria-label="PIN">
-    <label class="gate-row"><input type="checkbox" id="remember"> 이 기기에서 로그인 유지</label>
-    <button class="btn btn-primary btn-block" type="submit" id="unlockBtn">열기</button>
+  <form class="gate-card" id="gateForm" autocomplete="off" novalidate>
+    <div class="gate-head">
+      <div class="gate-logo">📋</div>
+      <h1>천일정기화물 업무 메일 대시보드</h1>
+    </div>
+    <p class="gate-sub">사내 웹메일 계정으로 로그인하세요</p>
+
+    <div class="field">
+      <label class="flabel" for="loginId">사내 메일 아이디</label>
+      <input class="gate-input" id="loginId" type="text" name="loginId" autocomplete="username"
+             inputmode="email" spellcheck="false" autocapitalize="none" maxlength="64"
+             placeholder="예: kimpro 또는 kimpro@chunil.co.kr">
+    </div>
+
+    <div class="field">
+      <label class="flabel" for="pin">비밀번호</label>
+      <input class="gate-input" id="pin" type="password" name="password" autocomplete="current-password"
+             maxlength="64" placeholder="비밀번호 (현재 접속 키)" aria-label="비밀번호">
+    </div>
+
+    <div class="gate-opts">
+      <label class="chk"><input type="checkbox" id="rememberId" checked> 아이디 기억하기</label>
+      <label class="chk"><input type="checkbox" id="remember"> 이 기기에서 로그인 유지</label>
+    </div>
+
+    <button class="btn btn-primary btn-block" type="submit" id="unlockBtn">로그인</button>
     <div class="err" id="gateErr"></div>
-    <div class="gate-foot">데이터는 PIN으로 암호화되어 있습니다.<br>PIN을 모르면 내용을 볼 수 없습니다.</div>
+    <div class="gate-foot">※ 현재는 개인 암호화 키로 잠금 해제되며, 사내 메일 서버 연동 시 각 계정으로 자동 전환됩니다.</div>
   </form>
 </div>
 
@@ -1373,7 +1407,7 @@
 (() => {
   "use strict";
 
-  const LS = { pin: "mb_pin_v1", state: "mb_state_v1", cal: "mb_calopen_v1", bell: "mb_bell_v1", seen: "mb_seen_p1_v1", seenAll: "mb_seen_all_v1", cal2: "mb_cal_items_v1", cus: "mb_cal_custom_v1", pinList: "mb_pinned_v1", wx: "mb_wxopen_v1", rules: "mb_rules_v1", brief: "mb_brief_hide_v1" };
+  const LS = { pin: "mb_pin_v1", loginId: "mb_login_id_v1", state: "mb_state_v1", cal: "mb_calopen_v1", bell: "mb_bell_v1", seen: "mb_seen_p1_v1", seenAll: "mb_seen_all_v1", cal2: "mb_cal_items_v1", cus: "mb_cal_custom_v1", pinList: "mb_pinned_v1", wx: "mb_wxopen_v1", rules: "mb_rules_v1", brief: "mb_brief_hide_v1" };
   const AUTO_REFRESH_MS = 60 * 1000;
   /* 탭을 다시 열었을 때 이미 받아온 지 30초가 안 됐으면 중복 호출을 건너뛴다 */
   const RESUME_MIN_MS = 30 * 1000;
@@ -1513,16 +1547,17 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       renderAll(); scheduleAuto(); paintBell(); notifyNewP1(); wxLoad(); briefTick();
       cyPaint(); cySync(false);
     } catch (e) {
-      const msg = (e && e.name === "OperationError") ? "PIN이 맞지 않습니다." : (e && e.message ? e.message : "열지 못했습니다.");
+      const msg = (e && e.name === "OperationError") ? "아이디 또는 비밀번호가 맞지 않습니다." : (e && e.message ? e.message : "열지 못했습니다.");
       $("gateErr").textContent = msg;
       if (e && e.name === "OperationError" && PIN !== null) { localStorage.removeItem(LS.pin); PIN = null; }
-    } finally { btn.disabled = false; btn.textContent = "열기"; }
+    } finally { btn.disabled = false; btn.textContent = "로그인"; }
   }
   function lock() {
     localStorage.removeItem(LS.pin);
     if (briefIsOpen()) briefClose("");
     DATA = null; PIN = null; closeDrawer(); cyClose();
     $("app").hidden = true; $("gate").hidden = false; $("pin").value = ""; $("gateErr").textContent = "";
+    (gateRememberId() || $("loginId").value ? $("pin") : $("loginId")).focus();
   }
 
   /* ---------------- 동기화 ---------------- */
@@ -3580,10 +3615,26 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   });
 
   /* ---------------- 이벤트 ---------------- */
+  /* 로그인 화면 — 아이디는 기억(선택), 잠금 해제는 기존과 같이 비밀번호로 data.enc.json을 복호화한다.
+     사내 메일 서버 인증은 아직 연동 전이므로, 지금은 비밀번호(개인 암호화 키)만 실제로 검사된다. */
+  function gateRememberId() { try { return localStorage.getItem(LS.loginId); } catch (e) { return null; } }
+  function gatePrefill() {
+    const savedId = gateRememberId();
+    $("loginId").value = savedId || "kimpro";
+    $("rememberId").checked = true;
+    if (!$("gate").hidden) ($("loginId").value ? $("pin") : $("loginId")).focus();
+  }
   $("gateForm").addEventListener("submit", (e) => {
     e.preventDefault();
+    const id = $("loginId").value.trim();
     const pin = $("pin").value.trim();
-    if (!pin) { $("gateErr").textContent = "PIN을 입력해 주세요."; return; }
+    $("gateErr").textContent = "";
+    if (!id) { $("gateErr").textContent = "사내 메일 아이디를 입력하세요"; $("loginId").focus(); return; }
+    if (!pin) { $("gateErr").textContent = "비밀번호를 입력하세요"; $("pin").focus(); return; }
+    try {
+      if ($("rememberId").checked) localStorage.setItem(LS.loginId, id);
+      else localStorage.removeItem(LS.loginId);
+    } catch (err) {}
     unlock(pin, $("remember").checked);
   });
   $("refreshBtn").addEventListener("click", () => refresh(true));
@@ -4471,6 +4522,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
 
   /* ---------------- 시작 ---------------- */
   (async function boot() {
+    gatePrefill();
     let saved = null;
     try { saved = localStorage.getItem(LS.pin); } catch (e) {}
     if (saved) {
@@ -4487,7 +4539,6 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       } catch (e) { localStorage.removeItem(LS.pin); }
     }
     try { ENC = await fetchEnc(); } catch (e) {}
-    $("pin").focus();
   })();
 })();
 </script>
