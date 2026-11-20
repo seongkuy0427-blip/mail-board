@@ -1992,32 +1992,68 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     if (view.openId === id) $("drawerContent").innerHTML = drawerHtml(it);
     toast(done ? "✅ 확인 — 기본 목록에서 치었습니다 (검색·‘완료 포함’에서 다시 볼 수 있음)" : "↩ 완료를 취소해 목록으로 돌렸습니다");
   }
-  /* 🟡 흐름 참고 · ⚪ 단순 공유 — 보이는 항목을 한꺼번에 선택해 일괄 ✅ 확인 (행의 ✅ 확인과 같은 localStorage 상태) */
-  const bulkSel = { p2: new Set(), p3: new Set() };
-  const bulkTab = () => (view.kpi ? null : (view.tab === "p2" || view.tab === "p3" ? view.tab : null));
+  /* 🔴 즉시 확인 · 🟡 흐름 참고 · ⚪ 단순 공유 · 📌 고정 · ⏳ 미회신 — 보이는 항목을 한꺼번에 선택해 일괄 처리
+     (행의 ✅ 확인 / 고정 / 회신 받음과 같은 localStorage 상태를 쓴다) */
+  const bulkSel = { p1: new Set(), p2: new Set(), p3: new Set(), pin: new Set(), fu: new Set() };
+  const BULK_TABS = { p1: 1, p2: 1, p3: 1, pin: 1, fu: 1 };
+  const bulkTab = () => (!view.kpi && BULK_TABS[view.tab] ? view.tab : null);
+  let bulkIds = {};   /* 지금 탭에 보이는 id — ‘모두 확인’이 쓴다 */
+  function bulkPrune(key, ids) {
+    if (!key) return;
+    const vis = new Set(ids);
+    [...bulkSel[key]].forEach((id) => { if (!vis.has(id)) bulkSel[key].delete(id); });
+  }
   function bulkBarHtml(list) {
     const key = bulkTab(); if (!key) return "";
     const sel = bulkSel[key], ids = list.map((it) => it.id);
+    bulkIds[key] = ids;
     const n = ids.filter((id) => sel.has(id)).length;
     const all = ids.length > 0 && n === ids.length;
+    const isPin = key === "pin", isFu = key === "fu";
+    const pick = isFu ? "✅ 선택 완료" : "✅ 선택 확인";
+    const allDone = isFu ? "모두 완료" : "모두 확인";
     return '<div class="bulkbar">' +
       '<label class="bulk-all"><input type="checkbox" id="bulkAll"' + (all ? " checked" : "") + (ids.length ? "" : " disabled") + "> <span>전체 선택</span></label>" +
       '<span class="bulk-n">' + (n ? "<b>" + n + "</b>건 선택 / " + ids.length + "건" : "보이는 " + ids.length + "건") + "</span>" +
       '<span class="bulk-sp"></span>' +
-      '<button type="button" class="bulk-btn" id="bulkDone"' + (n ? "" : " disabled") + ">✅ 선택 확인" + (n ? " (" + n + ")" : "") + "</button>" +
-      '<button type="button" class="bulk-btn ghost" id="bulkAllDone"' + (ids.length ? "" : " disabled") + ">모두 확인</button>" +
+      '<button type="button" class="bulk-btn" id="bulkDone"' + (n ? "" : " disabled") + ">" + pick + (n ? " (" + n + ")" : "") + "</button>" +
+      '<button type="button" class="bulk-btn ghost" id="bulkAllDone"' + (ids.length ? "" : " disabled") + ">" + allDone + "</button>" +
+      (isPin ? '<button type="button" class="bulk-btn ghost" id="bulkUnpin"' + (n ? "" : " disabled") + ">📌 선택 고정 해제</button>" : "") +
       (n ? '<button type="button" class="bulk-btn ghost" id="bulkClear">선택 해제</button>' : "") +
       "</div>";
   }
   function bulkSetDone(ids) {
+    const key = bulkTab();
+    if (key === "fu") return bulkFuDone(ids);
     const list = (ids || []).filter((id) => byId(id));
     if (!list.length) return;
     list.forEach((id) => { itemState(id).status = "done"; });
     saveState();
     markSeenAll(list);
-    const key = bulkTab(); if (key) bulkSel[key].clear();
+    if (key) bulkSel[key].clear();
     renderKpi(); renderSeg(); renderCalendar(); renderList();
+    if (view.openId && list.indexOf(view.openId) >= 0) { const it = byId(view.openId); if (it) $("drawerContent").innerHTML = drawerHtml(it); }
     toast("✅ " + list.length + "건 확인 처리 — 기본 목록에서 치웠습니다 (‘완료 포함’을 켜면 다시 볼 수 있어요)", 2800);
+  }
+  function bulkFuDone(ids) {
+    const list = (ids || []).filter((id) => fupById(id));
+    if (!list.length) return;
+    list.forEach((id) => { fuState(id).fuStatus = "done"; });
+    saveState();
+    bulkSel.fu.clear();
+    renderKpi(); renderSeg(); renderList();
+    if (view.openId && list.indexOf(view.openId) >= 0) { const f = fupById(view.openId); if (f) $("drawerContent").innerHTML = fuDrawerHtml(f); }
+    toast("✅ " + list.length + "건 회신 받음(추적 완료)으로 옮겼습니다", 2800);
+  }
+  function bulkUnpin(ids) {
+    const list = (ids || []).filter((id) => isPinned(id));
+    if (!list.length) return;
+    const s = pinLoad();
+    list.forEach((id) => s.delete(String(id)));
+    pinSave();
+    bulkSel.pin.clear();
+    renderKpi(); renderSeg(); renderList();
+    toast("📌 " + list.length + "건 고정을 풀었습니다", 2600);
   }
   function threadOf(it) { return it.thread && it.thread.length ? it.thread : [{ date: it.receivedAt, from: it.sender, gist: it.title, link: it.mailLink }]; }
 
@@ -3068,11 +3104,13 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   }
   function renderPinList() {
     const list = pinListForView(), total = pinnedItems().length;
+    bulkPrune("pin", list.map((it) => it.id));
     const arch = list.filter(isArchived).length, done = list.filter(isDone).length;
     let html = '<div class="banner" style="border-color:#f0d6b0;background:#fffaf2">📌 <div><b>고정한 메일</b> — 분류(🔴·🟡·⚪)·<b>✅ 확인</b>·<b>이전 기록</b>과 상관없이 고정을 풀기 전까지 여기에 계속 남습니다. 행을 누르면 상세를 열고, <b>📌</b>을 다시 누르면 고정이 풀립니다.</div></div>';
     html += '<div class="sec-title">📌 고정 <span class="hint">' + list.length + "건" +
       (view.q.trim() ? " · “" + esc(view.q.trim()) + "” 검색" : "") +
       (arch ? " · 이전 기록 " + arch : "") + (done ? " · ✅ 완료 " + done : "") + "</span></div>";
+    if (list.length) html += bulkBarHtml(list);
     html += list.length
       ? '<div class="rows">' + list.map(rowHtml).join("") + "</div>"
       : '<div class="empty">' + (total
@@ -3096,7 +3134,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const q = view.q.trim(), main = currentList();
     /* 선택 상태는 지금 보이는 행에만 유효 — 사라진 건은 조용히 정리 */
     const bkey = bulkTab();
-    if (bkey) { const vis = new Set(main.map((it) => it.id)); [...bulkSel[bkey]].forEach((id) => { if (!vis.has(id)) bulkSel[bkey].delete(id); }); }
+    if (bkey) bulkPrune(bkey, main.map((it) => it.id));
     let html = "";
     let extra = (q && view.tab !== "p3") ? pinFirst(sortList(p3Items().filter(matches))) : [];
     /* 검색어가 있을 때만 지난 메일(archived)을 '이전 기록'으로 함께 보여준다 */
@@ -3104,6 +3142,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
 
     if (view.tab === "p1") {
       html += '<div class="sec-title">🔴 즉시 확인 <span class="hint">' + main.length + "건 · 행을 누르면 상세 · 회신 배지를 누르면 바로 전환</span></div>";
+      if (main.length) html += bulkBarHtml(main);
       html += main.length ? rowsBlock(main) : '<div class="empty">' + (view.day ? "이 날짜에 마감인 즉시 확인 건이 없습니다." : (view.replyOnly ? "회신이 필요한 즉시 확인 건이 없습니다." : (q && history.length ? "오늘(11/19 이후) 즉시 확인에는 없습니다. 아래 ‘이전 기록’에서 " + history.length + "건 찾았습니다." : "지금은 본문에서 회원님을 직접 지목한 메일이 없습니다.<br>고객사·사내 이슈는 <b>🟡 흐름 참고</b> 탭에서 볼 수 있습니다."))) + "</div>";
     } else if (view.tab === "p2") {
       html += '<div class="banner">🟡 <div><b>흐름 참고</b> — 고객사(@gm.com)·MC↔GM 왕복, 사내 결품·PTR·조직 공지처럼 흐름을 알아야 하는 건. 내가 이름으로 지목된 건 아니면 여기로 옵니다.</div></div>';
@@ -3139,6 +3178,8 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   function fuRowHtml(f) {
     const done = fuDone(f);
     return '<div class="row fu' + (done ? " done" : "") + '" data-open="' + esc(f.id) + '" role="button" tabindex="0" aria-label="' + esc(f.title) + '">' +
+      (bulkTab() === "fu" ? '<span class="selbox"><input type="checkbox" data-sel-tog="' + esc(f.id) + '"' + (bulkSel.fu.has(f.id) ? " checked" : "") +
+        ' aria-label="이 요청 선택 (한꺼번에 완료)" title="선택해서 한꺼번에 완료"></span>' : "") +
       '<span class="rank fu">' + (done ? "✅" : "⏳") + "</span>" +
       '<span class="rmain"><span class="rt"><span class="rtitle">' + esc(f.title) + "</span></span>" +
         '<span class="rmeta"><b>' + esc(f.recipient) + "</b> · " + esc(f.sentAt) + " · " + esc(f.requestType || "요청") +
@@ -3152,10 +3193,12 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const q = view.q.trim().toLowerCase();
     const all = sortFu(fups());
     const shown = q ? all.filter((f) => fuBlob(f).includes(q)) : all;
+    bulkPrune("fu", shown.map((f) => f.id));
     const pend = shown.filter((f) => !fuDone(f));
     const done = shown.filter(fuDone);
     let html = '<div class="banner" style="border-color:#f0d9bb;background:#fffaf2">⏳ <div><b>보낸 요청 미회신</b> — 협력사·타 부서·고객사에 답변·자료·승인·조치를 요청했는데 아직 회신이 없는 건입니다. (상사 보고·자료 제출은 제외) 행을 누르면 <b>보낸 원문 → 요청 요약 → 독촉 문구</b>를 보고, 회신이 오면 하단에서 <b>회신 받음(추적 완료)</b>을 누르세요.</div></div>';
     html += '<div class="sec-title">⏳ 대기 중 <span class="hint">' + pend.length + "건 · 오래된 순</span></div>";
+    if (shown.length) html += bulkBarHtml(shown);
     html += pend.length ? '<div class="rows">' + pend.map(fuRowHtml).join("") + "</div>"
       : '<div class="empty">' + (q ? "검색어에 맞는 미회신 건이 없습니다." : "현재 회신을 기다리는 요청 메일이 없습니다.<br>(완료 보고·자료 제출 메일은 자동 제외)") + "</div>";
     if (done.length) {
@@ -3243,13 +3286,24 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   /* ---------------- ⚙️ 분류 규칙 설정 모달 -------------
      주소록(items() 발신자) · 제목 키워드에 등급을 지정하고, 저장하면
      renderAll()로 KPI·탭 건수·목록이 새로고침 없이 즉시 다시 분류된다. */
-  const RM = { tab: "send", q: "", draft: null };
+  const RM = { tab: "send", q: "", draft: null, page: 1 };
+  const RM_PAGE = 20;
   const RM_RANK_LABEL = { 1: "🔴 즉시", 2: "🟡 숙지", 3: "⚪ 열람" };
 
-  const TITLE_RE = /(부장|상무|전무|이사|차장|과장|대리|사원|주임|팀장|실장|소장|본부장|대표|사장)$/;
+  const TITLE_RE = /(부장|상무|전무|이사|차장|과장보|과장|대리|사원|주임|팀장|실장|소장|본부장|대표|사장)$/;
   const MAIL_RE = /^[^\s@,]+@[^\s@,]+$/;
   /* 직급 꼬리(부장·과장 등)를 떼어낸 이름 — 같은 사람이 ‘최수철’/‘최수철 부장’으로 나뉘어도 한 줄로 묶는다 */
   function baseName(s) { return normName(s).replace(TITLE_RE, ""); }
+  /* 이름 칸이 메일주소(또는 비어 있음)인지 — 주소록의 한글 이름이 있으면 그쪽을 쓴다 */
+  const isMailName = (s) => !s || String(s).indexOf("@") >= 0;
+  /* 화면에 보여줄 이름 — ‘이름 직급’ (직급은 주소록·메일 표시 이름에서 얻는다) */
+  function personLabel(r) {
+    const nm = String(r.name || "").trim();
+    const tt = String(r.title || "").trim();
+    if (!nm) return "";
+    if (tt && nm.slice(-tt.length) !== tt) return nm + " " + tt;
+    return nm;
+  }
   /* 주소록: 지금까지 오간(보관 포함) 메일의 발신자를 이름 기준으로 묶어 한 줄씩.
      이메일이 있는 기록이 하나라도 있으면 그 이메일을 대표 주소로 쓴다. */
   function addressBook() {
@@ -3266,12 +3320,13 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       if (!email && !name) return;
       const bn = baseName(name) || ("e:" + email);
       let r = map.get(bn);
-      if (!r) { r = { key: bn, email: "", name: "", count: 0, live: 0, base: 9, vipLabel: "", last: "", dept: "", src: "mail" }; map.set(bn, r); }
+      if (!r) { r = { key: bn, email: "", name: "", count: 0, live: 0, base: 9, vipLabel: "", last: "", dept: "", src: "mail", title: "" }; map.set(bn, r); }
       r.count++;
       if (!it.archived) r.live++;
       if (email && !r.email) r.email = email;
       if (name && name.length > r.name.length) r.name = name;
       if (!r.vipLabel && it.vipLabel) r.vipLabel = it.vipLabel;
+      if (!r.title && name) { const tm = TITLE_RE.exec(name); if (tm) r.title = tm[1]; }
       const bp = Number(it.priority) || 3;
       if (bp < r.base) r.base = bp;
       const t = it.lastAt || it.receivedAt || "";
@@ -3295,13 +3350,16 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         if (cand && (!cand.email || !email)) r = cand;
       }
       if (!r) {
-        r = { key: bn, email: "", name: "", count: 0, live: 0, base: 9, vipLabel: "", last: "", dept: "", src: "contact", kind: kind };
+        r = { key: bn, email: "", name: "", count: 0, live: 0, base: 9, vipLabel: "", last: "", dept: "", src: "contact", kind: kind, title: "" };
         map.set(bn, r);
       }
       if (!r.email) r.email = email;
-      if (nm && nm.length > r.name.length) r.name = nm;
+      /* 이름이 메일주소나 비어 있으면 주소록의 한글 이름을 우선한다 */
+      if (nm && !isMailName(nm) && (isMailName(r.name) || nm.length > r.name.length)) r.name = nm;
       if (dept && !r.dept) r.dept = dept;
       if (kind && !r.kind) r.kind = kind;
+      const ttl = String(c.title || "").trim();
+      if (ttl && !r.title) r.title = ttl;
       if (!r.src) r.src = "contact";
       if (r.email) byMail.set(r.email, r);
     });
@@ -3314,10 +3372,11 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         t.count += r.count; t.live += r.live;
         if (r.base < t.base) t.base = r.base;
         if (!t.vipLabel && r.vipLabel) t.vipLabel = r.vipLabel;
-        if (r.name.length > t.name.length) t.name = r.name;
+        if (isMailName(t.name) ? !isMailName(r.name) : (!isMailName(r.name) && r.name.length > t.name.length)) t.name = r.name;
         if (r.last > t.last) t.last = r.last;
         if (!t.dept && r.dept) t.dept = r.dept;
         if (!t.kind && r.kind) t.kind = r.kind;
+        if (!t.title && r.title) t.title = r.title;
         if (r.src === "mail") t.src = "mail";
         return;
       }
@@ -3346,6 +3405,31 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     [[0, "기본"], [1, "🔴 즉시"], [2, "🟡 숙지"], [3, "⚪ 열람"]].map(([v, l]) =>
       '<button type="button" data-rm-p="' + v + '" data-key="' + esc(key) + '" class="' + (p === v ? "on" : "") + '">' + l + "</button>").join("") + "</span>";
 
+  /* 주소록 한 줄의 부서 표기 — 개인주소록은 그룹명을 함께 보여준다 */
+  function rmDeptLabel(r) {
+    const d = String(r.dept || "").trim();
+    if (r.kind === "personal") return d && d !== "기본" ? "개인주소록 · " + d : "개인주소록";
+    return d;
+  }
+  function rmPagerHtml(total) {
+    const pages = Math.max(1, Math.ceil(total / RM_PAGE));
+    const p = Math.min(Math.max(1, RM.page || 1), pages);
+    if (pages <= 1) return '<div class="rm-pager"><span class="pg-info">전체 ' + total + "명</span></div>";
+    let html = '<div class="rm-pager">' +
+      '<button type="button" data-rm-page="' + (p - 1) + '"' + (p <= 1 ? " disabled" : "") + ' aria-label="이전 페이지">‹ 이전</button>';
+    const nums = new Set([1, pages]);
+    for (let i = p - 2; i <= p + 2; i++) if (i >= 1 && i <= pages) nums.add(i);
+    const arr = [...nums].sort((a, b) => a - b);
+    let prev = 0;
+    arr.forEach((n) => {
+      if (prev && n - prev > 1) html += '<span class="pg-info">…</span>';
+      html += '<button type="button" data-rm-page="' + n + '"' + (n === p ? ' class="on"' : "") + ">" + n + "</button>";
+      prev = n;
+    });
+    html += '<button type="button" data-rm-page="' + (p + 1) + '"' + (p >= pages ? " disabled" : "") + ' aria-label="다음 페이지">다음 ›</button>';
+    html += '<span class="pg-info">' + p + " / " + pages + "페이지 · 전체 " + total + "명</span></div>";
+    return html;
+  }
   function rmListHtml() {
     const q = RM.q.trim().toLowerCase();
     const book = addressBook();
@@ -3356,24 +3440,32 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     });
     book.forEach((b) => rows.push(b));
     const dm = new Map(); RM.draft.senders.forEach((s) => dm.set(s.key, s));
-    const list = rows.filter((r) => !q || (r.name + " " + r.email + " " + (r.vipLabel || "")).toLowerCase().indexOf(q) >= 0);
+    const list = rows.filter((r) => !q || [r.name, r.title, personLabel(r), r.email, r.dept, rmDeptLabel(r), (r.vipLabel || "")].join(" ").toLowerCase().indexOf(q) >= 0);
     if (!list.length) return '<div class="rm-empty">' + (q
-      ? "‘" + esc(RM.q.trim()) + "’ 와 맞는 발신자가 없습니다. 위 입력창에서 직접 추가할 수 있습니다."
-      : "발신자 주소록이 비어 있습니다. 위 입력창에서 직접 추가해 주세요.") + "</div>";
-    return list.map((r) => {
+      ? "‘" + esc(RM.q.trim()) + "’ 와 맞는 사람이 없습니다. 위 입력창에서 직접 추가할 수 있습니다."
+      : "주소록이 비어 있습니다. 위 입력창에서 직접 추가해 주세요.") + "</div>";
+    const pages = Math.max(1, Math.ceil(list.length / RM_PAGE));
+    if (RM.page > pages) RM.page = pages;
+    if (RM.page < 1) RM.page = 1;
+    const from = (RM.page - 1) * RM_PAGE;
+    const pageRows = list.slice(from, from + RM_PAGE);
+    const body = pageRows.map((r) => {
       const d = dm.get(r.key); const p = d ? d.priority : 0; const toOnly = !!(d && d.toOnly);
       const tag = r.vipLabel ? '<span class="snd-tag" title="기본 등급 (그대로 유지)">' + esc(r.vipLabel) + "</span>" : "";
       const baseTag = p ? '<span class="snd-tag b">내 규칙</span>'
         : (r.base === 1 ? '<span class="snd-tag">기본 🔴</span>' : (r.base === 2 ? '<span class="snd-tag b">기본 🟡</span>' : ""));
+      const deptTxt = rmDeptLabel(r);
+      const cnt = r.count
+        ? '<span class="snd-n">' + (r.live ? "최근 " + r.live + " · " : "") + "전체 " + r.count + "건</span>"
+        : '<span class="snd-n">' + (r.added ? "직접 추가" : "주소록") + "</span>";
       return '<div class="snd-row' + (p ? " on" : "") + '">' +
-        '<div class="snd-main"><div class="nm">' + esc(r.name || r.email || r.key) + tag + baseTag + "</div>" +
-        '<div class="em">' + esc(r.email || "이메일 없음") +
-          (r.count ? '<span class="snd-n">' + (r.live ? "최근 " + r.live + " · " : "") + "전체 " + r.count + "건</span>"
-                  : '<span class="snd-n">직접 추가</span>') + "</div></div>" +
+        '<div class="snd-main"><div class="nm">' + esc(personLabel(r) || r.email || r.key) + tag + baseTag + "</div>" +
+        '<div class="em">' + (deptTxt ? '<span class="dp">' + esc(deptTxt) + "</span> · " : "") + esc(r.email || "이메일 없음") + cnt + "</div></div>" +
         '<label class="toonly' + (p ? "" : " off") + '" title="직접 수신인(To)일 때만 이 등급을 적용합니다"><input type="checkbox" data-rm-to="' + esc(r.key) + '"' +
           (toOnly ? " checked" : "") + (p ? "" : " disabled") + ">To만</label>" +
         psegHtml(r.key, p) + "</div>";
     }).join("");
+    return body + rmPagerHtml(list.length);
   }
   function rmKwHtml() {
     if (!RM.draft.keywords.length) return '<div class="rm-empty">아직 키워드 규칙이 없습니다. 예: ‘긴급’, ‘용기승인’, ‘정례회의’, ‘출하리스트’</div>';
@@ -3393,14 +3485,15 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     let html = "";
     if (RM.tab === "send") {
       html += '<div class="rm-note">기본 설정된 최우선·주요 발신자 규칙은 그대로 유지됩니다. 여기서 고른 등급만 그 위에 덧씌워집니다. ' +
-        '목록은 지금까지 오간 메일의 발신자를 모은 주소록입니다.</div>' +
-        '<label class="rm-search">🔍<input id="rmQ" type="search" placeholder="이름 · 이메일로 찾기" value="' + esc(RM.q) + '" autocomplete="off"></label>' +
+        '목록은 <b>사내 웹메일 주소록 전체</b>(조직도 392명 + 개인주소록)와 지금까지 오간 메일 발신자를 합친 것입니다 — 이름·부서·이메일로 찾고 페이지를 넘겨 지정하세요.</div>' +
+        '<label class="rm-search">🔍<input id="rmQ" type="search" placeholder="이름 · 부서 · 이메일로 찾기" value="' + esc(RM.q) + '" autocomplete="off"></label>' +
         '<form class="rm-add" id="rmAddForm" autocomplete="off"><span class="lbl">＋ 직접 추가</span>' +
         '<input type="text" id="rmAddName" placeholder="이름" maxlength="40" aria-label="발신자 이름" style="flex:1 1 90px">' +
         '<input type="email" id="rmAddEmail" placeholder="이메일" maxlength="80" aria-label="발신자 이메일" style="flex:1 1 140px">' +
         '<select class="rm-sel" id="rmAddP" aria-label="등급"><option value="1">🔴 즉시</option><option value="2">🟡 숙지</option><option value="3" selected>⚪ 열람</option></select>' +
         '<button type="submit" class="mini on">추가</button></form>' +
-        '<div class="rm-count">주소록 ' + addressBook().length + '명 · 그중 내 규칙 ' + RM.draft.senders.length + '명</div>' +
+        '<div class="rm-count">주소록 ' + addressBook().length + '명(웹메일 주소록 + 메일 발신자) · 그중 내 규칙 ' + RM.draft.senders.length + '명' +
+          (RM.q.trim() ? ' · 검색 “' + esc(RM.q.trim()) + '”' : '') + '</div>' +
         '<div id="rmList">' + rmListHtml() + "</div>";
     } else {
       html += '<div class="rm-note">제목에 이 단어가 들어간 메일을 고른 등급으로 분류합니다. 발신자 규칙이 먼저 적용되고, 그다음 키워드 규칙을 봅니다.</div>' +
@@ -3417,7 +3510,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   function rmIsOpen() { const m = $("rulesModal"); return !!m && m.classList.contains("on"); }
   function rmOpen() {
     const r = rulesLoad();
-    RM.tab = "send"; RM.q = "";
+    RM.tab = "send"; RM.q = ""; RM.page = 1;
     RM.draft = { senders: r.senders.map((s) => Object.assign({}, s)), keywords: r.keywords.map((k) => Object.assign({}, k)) };
     $("rulesModal").classList.add("on");
     $("rulesModal").setAttribute("aria-hidden", "false");
@@ -3870,7 +3963,13 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     if (e.target.id === "rmSave") { rmSave(); return; }
     if (e.target.id === "rmReset") { rmReset(); return; }
     const tab = e.target.closest("[data-rm-tab]");
-    if (tab) { RM.tab = tab.dataset.rmTab; RM.q = ""; rmRender(); return; }
+    if (tab) { RM.tab = tab.dataset.rmTab; RM.q = ""; RM.page = 1; rmRender(); return; }
+    const pg = e.target.closest("[data-rm-page]");
+    if (pg) {
+      const n = Number(pg.dataset.rmPage);
+      if (n > 0) { RM.page = n; rmRender(); const box = $("rmBody"); if (box) box.scrollTop = 0; }
+      return;
+    }
     const p = e.target.closest("[data-rm-p]");
     if (p) {
       const key = p.dataset.key, v = Number(p.dataset.rmP);
@@ -3900,8 +3999,11 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   });
   $("rulesModal").addEventListener("input", (e) => {
     if (e.target.id !== "rmQ") return;
-    RM.q = e.target.value;
+    RM.q = e.target.value; RM.page = 1;
     const box = $("rmList"); if (box) box.innerHTML = rmListHtml();
+    const cnt = $("rulesModal").querySelector(".rm-count");
+    if (cnt) cnt.innerHTML = "주소록 " + addressBook().length + "명(웹메일 주소록 + 메일 발신자) · 그중 내 규칙 " + RM.draft.senders.length + "명" +
+      (RM.q.trim() ? " · 검색 “" + esc(RM.q.trim()) + "”" : "");
   });
   $("rulesModal").addEventListener("submit", (e) => {
     e.preventDefault();
@@ -4038,7 +4140,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   $("listWrap").addEventListener("change", (e) => {
     if (e.target.id === "bulkAll") {
       const k = bulkTab(); if (!k) return;
-      const ids = currentList().map((it) => it.id);
+      const ids = bulkIds[k] || [];
       if (e.target.checked) ids.forEach((id) => bulkSel[k].add(id)); else bulkSel[k].clear();
       renderList(); return;
     }
@@ -4071,7 +4173,13 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     }
     if (e.target.closest("#bulkAllDone")) {
       e.preventDefault(); e.stopPropagation();
-      bulkSetDone(currentList().map((it) => it.id));
+      const k = bulkTab();
+      bulkSetDone((k && bulkIds[k]) || currentList().map((it) => it.id));
+      return;
+    }
+    if (e.target.closest("#bulkUnpin")) {
+      e.preventDefault(); e.stopPropagation();
+      bulkUnpin([...bulkSel.pin]);
       return;
     }
     if (e.target.closest("#bulkClear")) {
