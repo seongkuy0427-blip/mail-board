@@ -73,7 +73,9 @@
   /* 상세 드로어가 열려 있어도 좌상단 홈 버튼은 누를 수 있게 한다 (드로어 41 > 헤더 41(동일·DOM 뒤) > 어둠막 40) */
   body.locked header{z-index:41}
   .hd{display:flex; align-items:center; gap:12px; padding:8px 16px; background:var(--navy); color:#fff;
-    box-shadow:0 0 0 100vmax var(--navy); clip-path:inset(0 -100vmax)}
+    position:relative; z-index:90; overflow:visible;
+    /* 좌·우로만 네이비를 늘려 전체 폭을 채운다 — clip-path 를 쓰지 않아 드롭다운이 잘리지 않는다 */
+    box-shadow:-100vmax 0 0 var(--navy), 100vmax 0 0 var(--navy)}
   .hd .mark{width:30px;height:30px;border-radius:6px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;flex:none}
   .hd-home{display:flex; align-items:center; gap:10px; cursor:pointer; border-radius:6px; padding:3px 9px 3px 3px; margin-left:-3px; transition:background .15s ease}
   .hd-home:hover{background:rgba(255,255,255,.08)}
@@ -91,7 +93,7 @@
   .user-btn .u-caret{opacity:.72; font-size:9px}
   .user-btn .u-short{display:none}
   .user-menu{position:absolute; right:0; top:calc(100% + 7px); min-width:190px; background:#fff; border:1px solid var(--line);
-    border-radius:8px; box-shadow:0 10px 28px rgba(16,24,40,.18); padding:6px; z-index:60; display:none; text-align:left}
+    border-radius:8px; box-shadow:0 10px 28px rgba(16,24,40,.18); padding:6px; z-index:95; display:none; text-align:left}
   .user-menu.on{display:block}
   .um-head{padding:8px 9px 9px; border-bottom:1px solid var(--line-2); margin-bottom:5px}
   .um-head b{display:block; font-size:12.6px; color:var(--ink); letter-spacing:-.2px}
