@@ -3502,7 +3502,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const toTxt = to.length ? addrText(to, 4) : (role === "to" ? me + " · 직접 수신" : "");
     const ccTxt = cc.length ? addrText(cc, 4) : (role === "cc" ? me + " · 참조 수신" : "");
     return '<div class="dr-addr">' +
-      '<div class="ar"><span class="ak">보낸사람</span><span class="av"><b>' + esc(it.senderName || it.sender || "") + "</b>" +
+      '<div class="ar"><span class="ak">발신</span><span class="av"><b>' + esc(it.senderName || it.sender || "") + "</b>" +
         (it.senderEmail ? ' <span class="em">&lt;' + esc(it.senderEmail) + "&gt;</span>" : "") + "</span></div>" +
       addrRowHtml("수신(To)", toTxt) +
       addrRowHtml("참조(CC)", ccTxt) +
