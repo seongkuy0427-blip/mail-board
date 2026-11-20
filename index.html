@@ -655,7 +655,7 @@
   .bf-body{flex:1; min-height:0; overflow-y:auto; padding:13px 18px 15px; background:var(--bg)}
   .bf-sec{background:#fff; border:1px solid var(--line); border-radius:9px; margin-bottom:10px; overflow:hidden; box-shadow:var(--shadow)}
   .bf-sec-h{display:flex; align-items:center; gap:6px; padding:9px 12px; border-bottom:1px solid var(--line-2); background:#fbfcfe; flex-wrap:wrap}
-  .bf-sec-h .bf-st{font-size:12.5px; font-weight:800; color:var(--ink)}
+  .bf-sec-h .bf-st{font-size:13px; font-weight:800; color:var(--ink)}
   .bf-sec-h .bf-sn{font-size:11px; font-weight:800; color:var(--ink-2); background:var(--gray-weak); border-radius:999px; padding:1px 7px}
   .bf-sec-h .bf-when{margin-left:auto; font-size:10.6px; color:var(--ink-3); font-weight:600}
   .bf-more{margin-left:auto; border:none; background:none; color:var(--brand); font-family:inherit;
@@ -668,11 +668,11 @@
   .bf-row:focus-visible{outline:2px solid var(--brand); outline-offset:-2px}
   .bf-row .bf-p{flex:none; font-size:10px; width:14px; text-align:center}
   .bf-row .bf-main{flex:1; min-width:0}
-  .bf-row .bf-rt{display:block; font-size:12.6px; font-weight:600; color:var(--ink);
+  .bf-row .bf-rt{display:block; font-size:13.1px; font-weight:600; color:var(--ink);
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-  .bf-row .bf-rs{display:block; font-size:10.8px; color:var(--ink-3);
+  .bf-row .bf-rs{display:block; font-size:11.2px; color:var(--ink-3);
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-  .bf-row .bf-due{flex:none; font-size:10.4px; font-weight:700; color:var(--ink-2);
+  .bf-row .bf-due{flex:none; font-size:10.7px; font-weight:700; color:var(--ink-2);
     background:var(--gray-weak); border-radius:999px; padding:1px 8px; white-space:nowrap}
   .bf-row .bf-due.hot{color:var(--red); background:var(--red-weak)}
   .bf-row .bf-due.cus{color:#b26a00; background:#fdf1e0}
@@ -1772,7 +1772,8 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
        · [오늘 하루 보지 않기]를 누르면 오늘 날짜를 저장하고 닫는다. 헤더 ☀️ 브리핑 버튼으로는 언제든 열린다.
      내용은 DATA + 이 기기의 localStorage(완료·회신·캘린더·고정)를 그때그때 다시 계산해 그린다. */
   const BRIEF_SNOOZE_MS = 30 * 60 * 1000;
-  const BRIEF_ROW_MAX = 6;
+  const BRIEF_ROW_MAX = 4;
+  const BRIEF_NEW_MAX = 3;
   let briefDismissAt = 0;   /* 이 화면에서 ‘나중에’로 닫은 시각 — 새로 열면 초기화된다 */
 
   function briefHideDate() { try { return localStorage.getItem(LS.brief) || ""; } catch (e) { return ""; } }
@@ -1780,7 +1781,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   function briefIsOpen() { const m = $("briefModal"); return !!m && m.classList.contains("on"); }
   function briefDateLabel() { return todayY() + " " + DOW[new Date().getDay()] + "요일"; }
 
-  /* 간밤 = 어저게 18:00 이후. 그 뒤 받은편지함에 들어온 메일을 ‘간밤 새 메일’로 센다. */
+  /* 간밤 = 어제 18:00 이후. 그 뒤 받은편지함에 들어온 메일을 ‘간밤 새 메일’로 센다. */
   function briefSinceMs() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate() - 1, 18, 0, 0).getTime(); }
   function briefOvernightList() {
     const t0 = briefSinceMs();
@@ -1844,14 +1845,14 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
 
     let html = "";
 
-    /* 0) 🌙 간밤·어저게 18시 이후 새로 들어온 메일 */
+    /* 0) 🌙 간밤·어제 18시 이후 새로 들어온 메일 */
     html += '<div class="bf-sec"><div class="bf-sec-h"><span class="bf-st">🌙 간밤 새 메일</span><span class="bf-sn">' + overnight.length + '건</span>' +
-      '<span class="bf-when">어저게 18시 이후 수신 · 오늘 ' + ovToday + '건' +
+      '<span class="bf-when">어제 18시 이후 수신 · 오늘 ' + ovToday + '건' +
         (overnight.length ? " · 🔴 " + ovP[0] + " · 🟡 " + ovP[1] + " · ⚪ " + ovP[2] : "") + "</span></div>" +
       (overnight.length
-        ? overnight.slice(0, 5).map((it) => bfMailRow(it, true)).join("") +
-          (overnight.length > 5 ? '<div class="bf-note-row">…외 ' + (overnight.length - 5) + "건은 아래 대시보드 목록과 검색에서 볼 수 있습니다.</div>" : "")
-        : '<div class="bf-none">어저게 18시 이후 새로 들어온 메일이 없습니다.</div>') +
+        ? overnight.slice(0, BRIEF_NEW_MAX).map((it) => bfMailRow(it, true)).join("") +
+          (overnight.length > BRIEF_NEW_MAX ? '<div class="bf-note-row">…외 ' + (overnight.length - BRIEF_NEW_MAX) + "건은 아래 대시보드 목록과 검색에서 볼 수 있습니다.</div>" : "")
+        : '<div class="bf-none">어제 18시 이후 새로 들어온 메일이 없습니다.</div>') +
       "</div>";
 
     if (!p1.length && !todayN && !reply.length && !fu.length) {
