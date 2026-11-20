@@ -110,6 +110,24 @@
   .kpi-hint{font-size:10.5px; color:var(--ink-3); margin:5px 2px 0; text-align:right}
   .kpi-hint b{color:var(--ink-2); font-weight:600}
   @media (max-width:1000px){ .kpi{grid-template-columns:repeat(3,1fr)} }
+  /* 🔴 즉시 확인 점멸 — 아직 ✅ 확인하지 않은 🔴 메일이 1건 이상이면
+     상단 🔴 KPI 카드와 아래 🔴 탭이 부드럽게 맥동한다. 모두 확인해 0건이 되면
+     JS가 .p1-live 클래스를 떼어 그 자리에서 즉시 멈춘다. */
+  @keyframes p1Pulse{0%,100%{box-shadow:0 0 0 0 rgba(229,72,77,0)} 50%{box-shadow:0 0 0 4px rgba(229,72,77,.16)}}
+  @keyframes p1Dot{0%,100%{opacity:.4; transform:scale(1)} 50%{opacity:1; transform:scale(1.65)}}
+  @keyframes p1Ring{0%,100%{box-shadow:inset 0 0 0 1px rgba(229,72,77,0)} 50%{box-shadow:inset 0 0 0 1px rgba(229,72,77,.5)}}
+  @keyframes p1Badge{0%,100%{background:var(--gray-weak); color:var(--ink-2)} 50%{background:var(--red-weak); color:var(--red)}}
+  button.kpi-card.p1-live{animation:p1Pulse 1.7s ease-in-out infinite}
+  button.kpi-card.p1-live .val::after{background:var(--red); animation:p1Dot 1.7s ease-in-out infinite}
+  .seg button[data-tab="p1"].p1-live{animation:p1Ring 1.7s ease-in-out infinite; border-radius:5px}
+  .seg button[data-tab="p1"].p1-live .n{animation:p1Badge 1.7s ease-in-out infinite; font-weight:800}
+  @media (prefers-reduced-motion:reduce){
+    button.kpi-card.p1-live, button.kpi-card.p1-live .val::after,
+    .seg button[data-tab="p1"].p1-live, .seg button[data-tab="p1"].p1-live .n{animation:none !important}
+    button.kpi-card.p1-live{box-shadow:inset 0 0 0 1px #f2b6b8}
+    .seg button[data-tab="p1"].p1-live .n{background:var(--red-weak); color:var(--red)}
+    .seg button[data-tab="p1"].p1-live{box-shadow:inset 0 0 0 1.5px #f2b6b8}
+  }
   /* KPI 카드로 모아 본 목록 상단 안내 */
   .kpi-focus{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:2px 0 8px; padding:8px 11px;
     background:var(--brand-weak); border:1px solid #c9d8ff; border-radius:6px; font-size:12px; color:var(--ink-2)}
@@ -1679,7 +1697,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         '<div class="lab">' + lab + '<span class="go">' + kpiHint(k) + "</span></div>" +
         '<div class="val">' + val + '<small>건</small></div><div class="cap">' + cap + "</div></button>";
     $("kpi").innerHTML =
-      card("p1", "k1", "🔴 즉시 확인", p1.length, "미완료 " + p1Open + " · VIP 발신 · 본문 지목", "🔴 즉시 확인 목록으로 이동") +
+      card("p1", "k1" + (p1Open ? " p1-live" : ""), "🔴 즉시 확인", p1.length, "미완료 " + p1Open + " · VIP 발신 · 본문 지목", "🔴 즉시 확인 목록으로 이동") +
       card("today", "k2", "⏰ 오늘 마감", todayDue, "🔴·🟡·📌 기한 + 📅 오늘 일정", "🔴·🟡·📌 기한·임박 메일과 📅 오늘 일정만 모아 보기 (다시 누르면 해제)") +
       card("reply", "k3", "✉️ 회신 필요", need, "🔴·🟡 답장 대기", "🔴·🟡 중 답장이 필요한 건만 모아 보기 (다시 누르면 해제)") +
       card("fu", "k5", "⏳ 미회신 대기", fu.length, (fuMax ? "최장 " + fuMax + "일째 · 보낸 요청" : "보낸 요청 회신 대기"), "⏳ 미회신 추적 탭으로 이동") +
@@ -2111,10 +2129,11 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   function renderSeg() {
     const rows = [["p1", "🔴 즉시 확인", p1Items()], ["p2", "🟡 흐름 참고", p2Items()], ["p3", "⚪ 단순 공유", p3Items()],
       ["fu", "⏳ 미회신 추적", null], ["pin", "📌 고정", pinnedItems()]];
+    const segP1Open = p1Items().filter((i) => !isDone(i)).length;
     $("seg").innerHTML = rows.map(([k, label, list]) => {
       const n = list ? list.length : fuPending().length;
       const nn = list ? newCount(list) : 0;
-      return '<button data-tab="' + k + '" class="' + (!view.kpi && view.tab === k ? "on" : "") + '">' + label +
+      return '<button data-tab="' + k + '" class="' + (!view.kpi && view.tab === k ? "on" : "") + (k === "p1" && segP1Open ? " p1-live" : "") + '">' + label +
         '<span class="n">' + n + '</span>' +
         (nn ? '<span class="newb" data-clear-new="' + k + '" title="이 탭의 NEW 표시를 모두 지우기 (메일은 그대로)">NEW' + (nn > 1 ? " " + nn : "") + '</span>' : "") +
         "</button>";
@@ -3375,7 +3394,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   /* === PRESENTATION_END (JS) === */
 
   /* 마감 카운트다운 — 1분마다 배지만 갱신 */
-  setInterval(() => { if (DATA && PIN) { renderList(); renderKpi(); } }, 60 * 1000);
+  setInterval(() => { if (DATA && PIN) { renderList(); renderKpi(); renderSeg(); } }, 60 * 1000);
 
   /* ---------------- 시작 ---------------- */
   (async function boot() {
