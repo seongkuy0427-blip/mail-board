@@ -627,6 +627,50 @@
     .snd-row{gap:6px}
   }
 
+  /* ---------- ☁️ PC·모바일 상태 자동 동기화 ---------- */
+  .cloud-btn{position:relative}
+  .cloud-btn .cy-dot{position:absolute; right:3px; bottom:3px; width:7px; height:7px; border-radius:50%;
+    background:#8b98ab; box-shadow:0 0 0 1.5px rgba(255,255,255,.28)}
+  .cloud-btn.on .cy-dot{background:#31c46b}
+  .cloud-btn.err .cy-dot{background:#f0453a}
+  .cloud-btn.busy .cy-dot{background:#f0b429; animation:cypulse 1s infinite}
+  @keyframes cypulse{0%,100%{opacity:1}50%{opacity:.25}}
+  #syncModal{position:fixed; inset:0; z-index:76; display:none; align-items:center; justify-content:center; padding:16px}
+  #syncModal.on{display:flex}
+  .cy-back{position:absolute; inset:0; background:rgba(16,24,40,.45)}
+  .cy-card{position:relative; width:min(560px,100%); max-height:min(90vh,720px); background:#fff; border:1px solid var(--line);
+    border-radius:10px; box-shadow:0 18px 50px rgba(16,24,40,.3); display:flex; flex-direction:column; overflow:hidden}
+  .cy-head{display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--line); background:#f8fafc; flex:none}
+  .cy-head h2{font-size:14.5px; margin:0; flex:1; letter-spacing:-.2px}
+  .cy-x{width:28px; height:28px; border-radius:6px; border:1px solid var(--line); background:#fff; cursor:pointer; font-size:13px; color:var(--ink-2)}
+  .cy-body{flex:1; min-height:0; overflow-y:auto; padding:12px 16px 14px}
+  .cy-state{display:flex; align-items:center; gap:8px; padding:9px 11px; border:1px solid var(--line); border-radius:8px;
+    background:#f8fafc; font-size:12px; color:var(--ink-2); margin-bottom:11px; flex-wrap:wrap}
+  .cy-state b{color:var(--ink); font-weight:700}
+  .cy-pill{font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:999px; border:1px solid #d8dee8; background:#fff; color:var(--ink-3)}
+  .cy-pill.on{background:var(--green-weak); border-color:#bfe6d3; color:var(--green)}
+  .cy-pill.err{background:#fdeceb; border-color:#f5c7c3; color:#c0392b}
+  .cy-step{font-size:11.6px; color:var(--ink-2); line-height:1.65; margin:0 0 7px}
+  .cy-step b{color:var(--ink); font-weight:700}
+  .cy-token{width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:7px; font-size:12px;
+    font-family:ui-monospace,Menlo,monospace; color:var(--ink); background:#fff; outline:none; margin:7px 0 0}
+  .cy-token:focus{border-color:var(--brand)}
+  .cy-link{display:inline-flex; align-items:center; gap:4px; font-size:11.6px; font-weight:700; color:var(--brand); text-decoration:none;
+    border:1px solid #d3e1fb; background:var(--brand-weak); padding:5px 9px; border-radius:7px; margin:2px 0 0}
+  .cy-link:hover{background:#e9f0fd}
+  .cy-acts{display:flex; gap:6px; margin:9px 0 11px; flex-wrap:wrap}
+  .cy-list{font-size:11.5px; color:var(--ink-2); line-height:1.75; margin:5px 0 10px; padding:0; list-style:none}
+  .cy-list li::before{content:"·"; margin-right:5px; color:var(--ink-3)}
+  .cy-note{font-size:11.1px; color:var(--ink-3); line-height:1.65; background:#fffdf3; border:1px solid #f2e4b8; border-radius:7px; padding:8px 10px}
+  .cy-note b{color:#8a5a00; font-weight:700}
+  .cy-foot{display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:10px 16px; border-top:1px solid var(--line); background:#f8fafc; flex:none}
+  .cy-foot .sp{margin-left:auto; font-size:10.8px; color:var(--ink-3)}
+  @media (max-width:760px){
+    #syncModal{padding:0}
+    .cy-card{width:100%; height:100%; max-height:none; border-radius:0; border:none}
+    .cy-body{padding:10px 12px 12px}
+  }
+
   /* ---------- ☀️ 오늘의 업무 브리핑 (아침 팝업) ----------
      잠금 해제 직후 화면 중앙에 크게(680px) 떠서, 간밤에 온 메일과 오늘 챙길 것을 한눈에 보여준다. */
   .brief-btn{height:32px; padding:0 11px; border-radius:9px; border:1px solid #efd79b;
@@ -960,6 +1004,7 @@
       </div>
       <div class="hd-right">
         <div class="sync" id="sync">마지막 동기화<br><b>-</b></div>
+        <button class="icon-btn cloud-btn" id="cloudBtn" title="PC·모바일 상태 동기화" aria-label="PC·모바일 상태 동기화"><span>☁️</span><i class="cy-dot"></i></button>
         <button class="icon-btn" id="bellBtn" title="새 메일 알림 켜기" aria-label="새 메일 알림">🔔</button>
         <button class="notif-test" id="notifTestBtn" title="브라우저 알림 팝업이 뜨는지 바로 테스트" aria-label="알림 테스트">🔔 알림 테스트</button>
         <button class="brief-btn" id="briefBtn" title="오늘의 업무 브리핑 — 간밤 새 메일·오늘 마감·회신 대기" aria-label="오늘의 업무 브리핑 열기"><span>☀️</span><span class="bf-t">브리핑</span></button>
@@ -1108,6 +1153,53 @@
     </div>
   </div>
 </div>
+<!-- ============ ☁️ PC·모바일 상태 동기화 ============
+     이 기기의 ✅ 확인·📌 고정·📅 캘린더·⚙️ 규칙·브리핑 숨김 상태를 PIN으로 암호화해
+     비공개(Secret) Gist에 올리고, 다른 기기에서 내려받아 합친다.
+     Gist를 읽고 쓰는 토큰은 사용자가 여기서 붙여넣어 이 브라우저에만 둔다. -->
+<div id="syncModal" role="dialog" aria-modal="true" aria-labelledby="cyTitle" aria-hidden="true">
+  <div class="cy-back" data-cy-close="1"></div>
+  <div class="cy-card">
+    <div class="cy-head">
+      <h2 id="cyTitle">☁️ PC·모바일 상태 동기화</h2>
+      <button type="button" class="cy-x" data-cy-close="1" aria-label="닫기">✕</button>
+    </div>
+    <div class="cy-body">
+      <div class="cy-state">
+        <span class="cy-pill" id="cyPill">미연결</span>
+        <span id="cyStateTxt">이 기기만 쓰는 중입니다</span>
+      </div>
+
+      <p class="cy-step"><b>1)</b> 아래 링크를 열어 <b>gist</b> 한 칸만 체크하고 토큰을 만듭니다 (30초).</p>
+      <a class="cy-link" id="cyTokenLink" href="https://github.com/settings/tokens/new?scopes=gist&amp;description=mail-board-sync" target="_blank" rel="noopener noreferrer">🔑 GitHub에서 gist 토큰 만들기</a>
+
+      <p class="cy-step" style="margin-top:11px"><b>2)</b> 만든 토큰을 붙여 넣고 <b>연결</b>을 누릅니다. PC·휴대폰에 각각 한 번만 하면 됩니다.</p>
+      <input class="cy-token" id="cyToken" type="password" autocomplete="off" spellcheck="false" placeholder="ghp_…  (gist 권한만 있는 토큰)">
+
+      <div class="cy-acts">
+        <button type="button" class="btn btn-primary" id="cyConnect">연결하고 동기화</button>
+        <button type="button" class="btn" id="cySync">지금 동기화</button>
+        <button type="button" class="mini" id="cyOff">연결 해제</button>
+      </div>
+
+      <p class="cy-step" style="margin-bottom:2px"><b>동기화하는 항목</b></p>
+      <ul class="cy-list">
+        <li>✅ 확인·진행·메모·체크</li>
+        <li>📌 고정한 메일</li>
+        <li>📅 캘린더 등록·직접 일정</li>
+        <li>⚙️ 분류 규칙(발신자·키워드 등급)</li>
+        <li>☀️ 오늘 하루 브리핑 숨김</li>
+      </ul>
+      <p class="cy-note"><b>안전합니다.</b> 올라가는 건 PIN으로 풀어야 읽히는 암호문뿐입니다. 토큰은 이 브라우저(localStorage)에만 두고, 페이지 소스·저장소·<code>data.enc.json</code> 어디에도 넣지 않습니다. 토큰은 <b>gist</b> 권한만 있어 저장소 파일은 건드릴 수 없습니다.</p>
+    </div>
+    <div class="cy-foot">
+      <span class="sp" id="cyGist"></span>
+      <span class="sp" id="cyLast"></span>
+      <button type="button" class="btn" data-cy-close="1">닫기</button>
+    </div>
+  </div>
+</div>
+
 <!-- 화면 상단 알림 카드(OS 팝업이 막혀도 항상 뜼) -->
 <div id="alertBanner" role="alert" aria-live="assertive" aria-hidden="true">
   <div class="ab-ico">🔴</div>
@@ -1201,7 +1293,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
 
   /* ---------------- 저장소 ---------------- */
   function loadState() { try { return JSON.parse(localStorage.getItem(LS.state) || "{}") || {}; } catch (e) { return {}; } }
-  function saveState() { try { localStorage.setItem(LS.state, JSON.stringify(STORE)); } catch (e) {} }
+  function saveState() { try { localStorage.setItem(LS.state, JSON.stringify(STORE)); } catch (e) {} mbSyncMark("state"); }
   function itemState(id) {
     if (!STORE[id]) STORE[id] = { status: "todo", memo: "", checks: [] };
     if (!Array.isArray(STORE[id].checks)) STORE[id].checks = [];
@@ -1291,6 +1383,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       if (remember) localStorage.setItem(LS.pin, b64enc(pin)); else localStorage.removeItem(LS.pin);
       $("gate").hidden = true; $("app").hidden = false;
       renderAll(); scheduleAuto(); paintBell(); notifyNewP1(); wxLoad(); briefTick();
+      cyPaint(); cySync(false);
     } catch (e) {
       const msg = (e && e.name === "OperationError") ? "PIN이 맞지 않습니다." : (e && e.message ? e.message : "열지 못했습니다.");
       $("gateErr").textContent = msg;
@@ -1300,7 +1393,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   function lock() {
     localStorage.removeItem(LS.pin);
     if (briefIsOpen()) briefClose("");
-    DATA = null; PIN = null; closeDrawer();
+    DATA = null; PIN = null; closeDrawer(); cyClose();
     $("app").hidden = true; $("gate").hidden = false; $("pin").value = ""; $("gateErr").textContent = "";
   }
 
@@ -1323,6 +1416,8 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       const fresh = notifyNewP1();
       /* 브리핑이 열려 있으면 내용을 다시 계산하고, ‘나중에’로 닫은 지 30분이 지났으면 다시 띄운다 */
       briefTick();
+      /* 다른 기기에서 바뀐 상태도 이 주기에 함께 맞춘다 */
+      if (cyLinked()) cySync(false);
       if (manual && !fresh) toast("최신 데이터로 갱신했습니다");
     } catch (e) {
       if (manual) toast("갱신 실패 — PIN을 다시 확인해 주세요");
@@ -1596,7 +1691,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     } catch (e) { PINS = new Set(); }
     return PINS;
   }
-  function pinSave() { try { localStorage.setItem(LS.pinList, JSON.stringify([...pinLoad()])); } catch (e) {} }
+  function pinSave() { try { localStorage.setItem(LS.pinList, JSON.stringify([...pinLoad()])); } catch (e) {} mbSyncMark("pinned"); }
   function isPinned(it) {
     const id = (it && typeof it === "object") ? it.id : it;
     return id != null && pinLoad().has(String(id));
@@ -1985,6 +2080,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     }
     if (mode === "hide") {
       try { localStorage.setItem(LS.brief, todayY()); } catch (e) {}
+      mbSyncMark("brief");
       briefDismissAt = 0;
       toast("오늘 하루는 브리핑을 자동으로 띄우지 않습니다 — 상단 ☀️ 브리핑으로 언제든 다시 볼 수 있습니다", 3400);
     } else if (mode === "later") {
@@ -2180,7 +2276,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     try { const raw = JSON.parse(localStorage.getItem(LS.cal2) || "{}"); if (raw && typeof raw === "object" && !Array.isArray(raw)) CAL = raw; } catch (e) { CAL = {}; }
     return CAL;
   }
-  function calSave() { try { localStorage.setItem(LS.cal2, JSON.stringify(calLoad())); } catch (e) {} }
+  function calSave() { try { localStorage.setItem(LS.cal2, JSON.stringify(calLoad())); } catch (e) {} mbSyncMark("cal"); }
   const calDate = (it) => calLoad()[it.id] || null;
   const calItems = () => items().filter((it) => !!calDate(it));
   const calCount = () => calItems().length;
@@ -2216,7 +2312,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     try { const raw = JSON.parse(localStorage.getItem(LS.cus) || "[]"); CUS = Array.isArray(raw) ? raw.filter((c) => c && c.date && c.title) : []; } catch (e) { CUS = []; }
     return CUS;
   }
-  function cusSave() { try { localStorage.setItem(LS.cus, JSON.stringify(cusLoad())); } catch (e) {} }
+  function cusSave() { try { localStorage.setItem(LS.cus, JSON.stringify(cusLoad())); } catch (e) {} mbSyncMark("cus"); }
   const cusCount = () => cusLoad().length;
   const cusFor = (date) => cusLoad().filter((c) => c.date === date).sort((a, b) => String(a.createdAt || "").localeCompare(String(b.createdAt || "")));
 
@@ -3064,6 +3160,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     try {
       localStorage.setItem(LS.rules, JSON.stringify({ senders, keywords, savedAt: new Date().toISOString() }));
     } catch (err) { toast("이 브라우저에 저장하지 못했습니다 — 저장 공간을 확인해 주세요", 3000); return; }
+    mbSyncMark("rules");
     RULES = null; rulesLoad();
     renderAll();
     /* 내 규칙 때문에 🔴이 된 예전 메일이 1분 뒤 ‘새 메일’ 팝업으로 뜨지 않게, 지금 🔴을 본 것으로 표시 */
@@ -3073,6 +3170,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   }
   function rmReset() {
     try { localStorage.removeItem(LS.rules); } catch (err) {}
+    mbSyncMark("rules");
     RULES = null; rulesLoad();
     RM.draft = { senders: [], keywords: [] }; RM.q = "";
     renderAll();
@@ -3807,6 +3905,289 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   /* 마감 카운트다운 — 1분마다 배지만 갱신 */
   setInterval(() => { if (DATA && PIN) { renderList(); renderKpi(); renderSeg(); } }, 60 * 1000);
 
+  /* ================= ☁️ PC·모바일 상태 자동 동기화 =================
+     이 기기의 localStorage 상태(✅ 확인·진행·메모, 📌 고정, 📅 캘린더 등록·직접 일정,
+     ⚙️ 분류 규칙, ☀️ 브리핑 숨김)를 항목별 시각(updatedAt)과 함께 하나의 JSON으로 묶어
+     PIN으로 AES-256-GCM 암호화한 뒤 비공개(Secret) Gist 파일 `mailboard-state.enc.json`에
+     올리고, 다른 기기에서는 내려받아 항목별로 최신 것을 채택해 합친다.
+
+     · 올라가는 것은 암호문뿐 — Gist에는 PIN 없이 읽히는 내용이 없다.
+     · Gist를 읽고 쓰는 GitHub 토큰은 사용자가 ☁️ 창에서 붙여넣어 이 브라우저의
+       localStorage에만 둔다. 페이지 소스·저장소·data.enc.json 어디에도 넣지 않는다.
+     · 토큰은 gist 권한만 쓰므로 저장소 파일은 건드릴 수 없다(repo 권한 불필요).
+     · 기기별로는 기기 전용 상태(읽음 표시·알림·PIN 기억·날씨 펼침)를 올리지 않는다. */
+  const CY = { token: "mb_gist_token_v1", gistId: "mb_gist_id_v1", ts: "mb_sync_ts_v1", last: "mb_gist_last_v1" };
+  const CY_FILE = "mailboard-state.enc.json";
+  const CY_DESC = "mail-board-sync";
+  const CY_API = "https://api.github.com";
+  const CY_ITER = 100000;
+  const CY_SECTIONS = [
+    { name: "state", key: LS.state, label: "✅ 확인·진행·메모" },
+    { name: "pinned", key: LS.pinList, label: "📌 고정한 메일" },
+    { name: "cal", key: LS.cal2, label: "📅 캘린더 등록" },
+    { name: "cus", key: LS.cus, label: "📅 직접 일정" },
+    { name: "rules", key: LS.rules, label: "⚙️ 분류 규칙" },
+    { name: "brief", key: LS.brief, label: "☀️ 브리핑 숨김" },
+  ];
+  let CY_BUSY = false, CY_ERR = "", CY_TIMER = null;
+
+  function cyGet(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
+  function cySet(k, v) { try { if (v === null || v === undefined) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
+  const cyToken = () => cyGet(CY.token);
+  const cyGistId = () => cyGet(CY.gistId);
+  const cyLinked = () => !!(cyToken() && cyGistId());
+  function cyTs() { try { const o = JSON.parse(cyGet(CY.ts) || "{}"); return (o && typeof o === "object") ? o : {}; } catch (e) { return {}; } }
+  function cySetTs(o) { cySet(CY.ts, JSON.stringify(o)); }
+  function cyLastAt() { return Number(cyGet(CY.last) || 0) || 0; }
+  function cyLastText() { const t = cyLastAt(); return t ? stamp(new Date(t)) : "-"; }
+
+  /* --- 암호 (data.enc.json과 같은 PBKDF2-SHA256 10만 회 + AES-256-GCM) --- */
+  function cyB64(u8) { let s = ""; for (let i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]); return btoa(s); }
+  async function cyKey(pin, salt, usages) {
+    const km = await crypto.subtle.importKey("raw", new TextEncoder().encode(pin), "PBKDF2", false, ["deriveKey"]);
+    return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: CY_ITER, hash: "SHA-256" }, km, { name: "AES-GCM", length: 256 }, false, usages);
+  }
+  async function cyEncrypt(obj, pin) {
+    if (!window.crypto || !crypto.subtle) throw new Error("이 브라우저에서는 암호화 기능을 쓸 수 없습니다 — https 주소로 열어 주세요");
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const key = await cyKey(pin, salt, ["encrypt"]);
+    const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(JSON.stringify(obj)));
+    return { v: 1, alg: "AES-256-GCM", kdf: "PBKDF2-SHA256", iterations: CY_ITER,
+      salt: cyB64(salt), iv: cyB64(iv), ciphertext: cyB64(new Uint8Array(ct)), savedAt: new Date().toISOString() };
+  }
+  async function cyDecrypt(env, pin) {
+    if (!env || !env.ciphertext || !env.salt || !env.iv) throw new Error("동기화 파일 형식을 읽을 수 없습니다");
+    const key = await cyKey(pin, b64ToBytes(env.salt), ["decrypt"]);
+    const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64ToBytes(env.iv) }, key, b64ToBytes(env.ciphertext));
+    return JSON.parse(new TextDecoder().decode(plain));
+  }
+
+  /* --- GitHub Gist API (토큰은 요청 헤더에만 쓰고 어디에도 남기지 않는다) --- */
+  function cyHd(token, extra) {
+    return Object.assign({ "Accept": "application/vnd.github+json", "Authorization": "Bearer " + token, "X-GitHub-Api-Version": "2022-11-28" }, extra || {});
+  }
+  async function cyApi(path, opts) {
+    const res = await fetch(CY_API + path, opts);
+    const txt = await res.text();
+    let body = null; try { body = txt ? JSON.parse(txt) : null; } catch (e) { body = null; }
+    if (!res.ok) {
+      const err = new Error((body && body.message) || ("HTTP " + res.status));
+      err.status = res.status; throw err;
+    }
+    return body;
+  }
+  function cyErrText(e) {
+    if (!e) return "알 수 없는 오류";
+    if (e.status === 401) return "토큰이 올바르지 않거나 만료됐습니다 — 새로 만들어 붙여 넣어 주세요";
+    if (e.status === 403) return "토큰에 gist 권한이 없거나 GitHub 호출 한도를 넘었습니다";
+    if (e.status === 404) return "동기화 Gist를 찾을 수 없습니다 — [연결 해제] 후 다시 연결해 주세요";
+    if (e.name === "OperationError") return "다른 PIN으로 암호화된 기록이라 열지 못했습니다 — 덮어쓰지 않고 그대로 두었습니다";
+    if (e.name === "TypeError") return "GitHub에 연결하지 못했습니다 (네트워크·방화벽)";
+    return e.message || String(e);
+  }
+
+  /* --- 이 기기 상태 ↔ Gist 문서 --- */
+  function cyLocal() {
+    const ts = cyTs(), out = {};
+    CY_SECTIONS.forEach((s) => { let raw = null; try { raw = localStorage.getItem(s.key); } catch (e) { raw = null; } out[s.name] = { raw, t: Number(ts[s.name] || 0) }; });
+    return out;
+  }
+  function cyDoc() {
+    const loc = cyLocal(), sections = {};
+    CY_SECTIONS.forEach((s) => { sections[s.name] = { t: loc[s.name].t, raw: loc[s.name].raw }; });
+    return { app: "mail-board", v: 1, sections, savedAt: new Date().toISOString() };
+  }
+  function cyApply(section, raw) {
+    try { if (raw === null || raw === undefined) localStorage.removeItem(section.key); else localStorage.setItem(section.key, raw); } catch (e) {}
+  }
+  /* 내려받은 값을 메모리 캐시에도 반영한다(STORE·PINS·CAL·CUS·RULES는 캐시를 쓰므로 비운다) */
+  function cyReload() {
+    STORE = loadState();
+    PINS = null; CAL = null; CUS = null; RULES = null;
+    rulesLoad();
+  }
+  function cyMerge(remoteDoc) {
+    const loc = cyLocal(), ts = cyTs(), rem = (remoteDoc && remoteDoc.sections) || {};
+    let applied = 0, push = false;
+    CY_SECTIONS.forEach((s) => {
+      const r = rem[s.name], l = loc[s.name];
+      if (r && typeof r.t === "number") {
+        const rraw = (r.raw === undefined) ? null : r.raw;
+        if (r.t > l.t) {
+          if (rraw !== l.raw) { cyApply(s, rraw); applied++; }
+          ts[s.name] = r.t;
+        } else if (l.t > r.t) { push = true; }
+        else if (rraw !== l.raw) { push = true; }
+      } else if (l.raw !== null) { push = true; }
+    });
+    cySetTs(ts);
+    return { applied, push };
+  }
+
+  async function cyReadGist(gist) {
+    const f = gist && gist.files ? gist.files[CY_FILE] : null;
+    if (!f) return null;
+    let txt = f.content || "";
+    if ((f.truncated || !txt) && f.raw_url) { const r = await fetch(f.raw_url, { cache: "no-store" }); txt = await r.text(); }
+    if (!txt) return null;
+    let env; try { env = JSON.parse(txt); } catch (e) { throw new Error("동기화 파일을 읽을 수 없습니다"); }
+    return await cyDecrypt(env, PIN);
+  }
+  async function cyPut(token, gid) {
+    const env = await cyEncrypt(cyDoc(), PIN);
+    await cyApi("/gists/" + gid, { method: "PATCH", headers: cyHd(token, { "Content-Type": "application/json" }),
+      body: JSON.stringify({ description: CY_DESC, files: { [CY_FILE]: { content: JSON.stringify(env) } } }) });
+  }
+
+  /* --- 동기화 한 번: 내려받아 합치고, 이 기기가 더 최신인 항목이 있으면 올린다 --- */
+  async function cySync(manual) {
+    if (!cyLinked() || !PIN) { if (manual) toast("먼저 토큰을 붙여넣고 [연결하고 동기화]를 눌러 주세요", 2800); return false; }
+    if (CY_BUSY) return false;
+    CY_BUSY = true; CY_ERR = ""; cyPaint();
+    try {
+      const token = cyToken(), gid = cyGistId();
+      const gist = await cyApi("/gists/" + gid, { headers: cyHd(token), cache: "no-store" });
+      const remote = await cyReadGist(gist);
+      const m = cyMerge(remote);
+      let pushed = false;
+      if (m.applied) { cyReload(); renderAll(); if (view.openId && byId(view.openId)) openDrawer(view.openId); }
+      if (m.push || !remote) { await cyPut(token, gid); pushed = true; }
+      cySet(CY.last, String(Date.now()));
+      if (manual) {
+        if (m.applied && !pushed) toast("다른 기기의 최신 상태 " + m.applied + "항목을 받아 왔습니다", 3000);
+        else if (m.applied) toast("다른 기기 상태 " + m.applied + "항목을 받고, 이 기기 변경도 올렸습니다", 3400);
+        else if (pushed) toast("이 기기 상태를 Gist에 올렸습니다 — 다른 기기도 같은 상태로 보입니다", 3000);
+        else toast("이미 최신 상태입니다 · 마지막 " + cyLastText(), 2400);
+      }
+      return true;
+    } catch (e) {
+      CY_ERR = cyErrText(e);
+      if (manual) toast("동기화 실패 — " + CY_ERR, 4600);
+      return false;
+    } finally { CY_BUSY = false; cyPaint(); }
+  }
+
+  async function cyFindGist(token) {
+    const list = await cyApi("/gists?per_page=100", { headers: cyHd(token), cache: "no-store" });
+    if (!Array.isArray(list)) return "";
+    const own = list.filter((g) => g && g.files && g.files[CY_FILE]);
+    const hit = own.find((g) => String(g.description || "").indexOf("mail-board") >= 0) || own[0];
+    return hit ? hit.id : "";
+  }
+
+  /* --- 연결: 토큰 확인 → (있으면)이 기존 Gist 찾기 / (없으면) Secret Gist 새로 만들기 → 첫 동기화 --- */
+  async function cyConnect() {
+    const inp = $("cyToken");
+    let token = ((inp && inp.value) || "").trim();
+    if (!token) token = cyToken();
+    if (!token || token.length < 20 || /\s/.test(token)) { toast("만든 토큰을 그대로 붙여넣어 주세요", 2600); return; }
+    const btn = $("cyConnect"); if (btn) { btn.disabled = true; btn.textContent = "연결 중…"; }
+    CY_ERR = ""; cyPaint();
+    try {
+      const me = await cyApi("/user", { headers: cyHd(token), cache: "no-store" }).catch(() => null);
+      cySet(CY.token, token);
+      if (inp) inp.value = "";
+      /* 이 기기에 이미 쌓인 상태는 ‘지금’ 것을 기준으로 삼아, 첫 연결에서 다른 기기의 빈 상태가 덮어쓰지 않게 한다 */
+      const ts = cyTs();
+      CY_SECTIONS.forEach((s) => { let raw = null; try { raw = localStorage.getItem(s.key); } catch (e) { raw = null; } if (raw !== null && !ts[s.name]) ts[s.name] = Date.now(); });
+      cySetTs(ts);
+      let gid = await cyFindGist(token);
+      if (!gid) {
+        const cached = cyGistId();
+        if (cached) {
+          const ok = await cyApi("/gists/" + cached, { headers: cyHd(token), cache: "no-store" })
+            .then(() => true).catch((e) => { if (e && e.status === 404) return false; throw e; });
+          if (ok) gid = cached;
+        }
+      }
+      if (!gid) {
+        const env = await cyEncrypt(cyDoc(), PIN);
+        const g = await cyApi("/gists", { method: "POST", headers: cyHd(token, { "Content-Type": "application/json" }),
+          body: JSON.stringify({ description: CY_DESC, public: false, files: { [CY_FILE]: { content: JSON.stringify(env) } } }) });
+        gid = g && g.id;
+        if (!gid) throw new Error("Gist를 만들지 못했습니다");
+      }
+      cySet(CY.gistId, gid);
+      const ok = await cySync(false);
+      if (ok) toast("연결됐습니다" + (me && me.login ? " (@" + me.login + ")" : "") + " — 마지막 " + cyLastText(), 3600);
+    } catch (e) {
+      CY_ERR = cyErrText(e);
+      toast("연결 실패 — " + CY_ERR, 5000);
+    } finally {
+      if (btn) { btn.disabled = false; }
+      cyPaint();
+    }
+  }
+  function cyOff() {
+    cySet(CY.token, null); cySet(CY.gistId, null); cySet(CY.ts, null); cySet(CY.last, null);
+    CY_ERR = ""; CY_BUSY = false;
+    if ($("cyToken")) $("cyToken").value = "";
+    cyPaint();
+    toast("이 기기의 연결을 해제했습니다 — Gist에 올린 상태는 그대로 있고, 다시 연결하면 다시 받아옵니다", 3800);
+  }
+
+  function cyPaint() {
+    const btn = $("cloudBtn");
+    const linked = cyLinked();
+    if (btn) {
+      btn.classList.toggle("on", linked && !CY_ERR);
+      btn.classList.toggle("err", linked && !!CY_ERR);
+      btn.classList.toggle("busy", CY_BUSY);
+      btn.title = linked
+        ? ("PC·모바일 동기화 " + (CY_ERR ? "오류 — " + CY_ERR : "연결됨") + " · 마지막 " + cyLastText())
+        : "PC·모바일 상태 동기화 (미연결)";
+    }
+    const pill = $("cyPill");
+    if (pill) {
+      pill.textContent = linked ? (CY_ERR ? "오류" : (CY_BUSY ? "동기화 중" : "연결됨")) : "미연결";
+      pill.classList.toggle("on", linked && !CY_ERR && !CY_BUSY);
+      pill.classList.toggle("err", linked && !!CY_ERR);
+    }
+    if ($("cyStateTxt")) {
+      $("cyStateTxt").textContent = linked
+        ? (CY_ERR || ("Gist와 상태를 주고받는 중입니다 · 마지막 " + cyLastText()))
+        : "이 기기만 쓰는 중입니다 — 연결하면 PC·휴대폰이 같은 상태를 봅니다";
+    }
+    if ($("cyGist")) $("cyGist").innerHTML = linked
+      ? '<a class="cy-link" href="https://gist.github.com/' + encodeURIComponent(cyGistId()) + '" target="_blank" rel="noopener noreferrer">Gist 열기</a>'
+      : "";
+    if ($("cyLast")) $("cyLast").textContent = linked ? "마지막 동기화 " + cyLastText() : "";
+    if ($("cyConnect") && !$("cyConnect").disabled) $("cyConnect").textContent = linked ? "토큰 바꾸기" : "연결하고 동기화";
+  }
+  function cyIsOpen() { const m = $("syncModal"); return !!m && m.classList.contains("on"); }
+  function cyOpen() {
+    const m = $("syncModal"); if (!m) return;
+    m.classList.add("on"); m.setAttribute("aria-hidden", "false");
+    document.body.classList.add("locked");
+    cyPaint();
+    if (!cyLinked()) setTimeout(() => { const i = $("cyToken"); if (i && !("ontouchstart" in window)) i.focus(); }, 60);
+  }
+  function cyClose() {
+    const m = $("syncModal"); if (!m) return;
+    m.classList.remove("on"); m.setAttribute("aria-hidden", "true");
+    if (!$("drawer").classList.contains("on") && !$("lightbox").classList.contains("on") && !rmIsOpen()) document.body.classList.remove("locked");
+  }
+  /* 상태를 바꾼 직후 호출 — 그 항목의 시각을 지금으로 찍고, 연결돼 있으면 2.5초 뒤 한 번 올린다 */
+  function mbSyncMark(name) {
+    const ts = cyTs(); ts[name] = Date.now(); cySetTs(ts);
+    cyPaint();
+    if (!cyLinked() || !PIN) return;
+    clearTimeout(CY_TIMER);
+    CY_TIMER = setTimeout(() => { cySync(false); }, 2500);
+  }
+
+  $("cloudBtn").addEventListener("click", () => (cyIsOpen() ? cyClose() : cyOpen()));
+  $("syncModal").addEventListener("click", (e) => { if (e.target.closest("[data-cy-close]")) cyClose(); });
+  $("cyConnect").addEventListener("click", cyConnect);
+  $("cySync").addEventListener("click", () => cySync(true));
+  $("cyOff").addEventListener("click", cyOff);
+  $("cyToken").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); cyConnect(); } });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && cyIsOpen()) cyClose(); });
+  /* 탭으로 돌아오면 한 번 맞춘다(휴대폰에서 보다가 PC로 돌아온 경우) */
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && DATA && PIN && cyLinked()) cySync(false); });
+  cyPaint();
+
   /* ---------------- 시작 ---------------- */
   (async function boot() {
     let saved = null;
@@ -3820,6 +4201,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         $("remember").checked = true;
         $("gate").hidden = true; $("app").hidden = false;
         renderAll(); scheduleAuto(); paintBell(); notifyNewP1(); wxLoad(); briefTick();
+        cyPaint(); cySync(false);
         return;
       } catch (e) { localStorage.removeItem(LS.pin); }
     }
