@@ -1038,9 +1038,10 @@
     .hd-home > div{min-width:0}
     .hd .mark{width:26px; height:26px; border-radius:8px}
     .hd .mark .co-logo{width:19px; height:19px}
-    /* 모바일 한 줄에 아이콘이 7개면 브랜드 타이틀이 잘린다('CHUNIL Smart Mail Portal'을 줄바꿈 없이 지키기 위해).
-       새로고침은 1분마다 자동, 분류 규칙과 발표 모드는 PC에서 쓰는 기능이라 폰에서는 접는다. */
-    #refreshBtn, #rulesBtn, #deckBtn{display:none}
+    /* 모바일 한 줄에 아이콘이 7개면 브랜드 타이틀('CHUNIL Smart Mail Portal')이 잘린다.
+       PC에서 쓰는 기능만 접어 자리를 만든다 — 새로고침은 1분마다 자동, 분류 규칙·발표 모드·
+       상태 동기화(gist 토큰 설정)는 PC 화면에서 쓰는 것이라 폰 헤더에서는 숨긴다. */
+    #refreshBtn, #rulesBtn, #deckBtn, #cloudBtn{display:none}
     .hd h1{font-size:12px; letter-spacing:-.1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
     .hd h1 .brand-a{letter-spacing:1px}
     .hd .sub{display:none}
