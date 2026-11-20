@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<title>CHUNIL · Smart Mail Hub</title>
+<title>CHUNIL Smart Mail Portal</title>
 <style>
   :root{
     /* WhaTap 톤 — 쿨 그레이 캔버스 + 딥 네이비 탑바 + 코발트 블루/민트 포인트 */
@@ -47,9 +47,8 @@
     box-shadow:0 1px 2px rgba(16,24,40,.06), 0 7px 18px rgba(16,24,40,.07); display:flex; align-items:center; justify-content:center}
   .gate-logo .co-logo{width:40px; height:40px}
   .gate-card h1{font-size:16.5px; margin:0; letter-spacing:-.2px; line-height:1.25; font-weight:800; color:var(--ink)}
-  .gate-card h1 .brand-a{letter-spacing:1.5px; font-weight:800}
-  .gate-card h1 .gsep{color:#c4ccd9; font-weight:600; margin:0 6px; letter-spacing:0}
-  .gate-card h1 .brand-b{letter-spacing:-.2px; font-weight:700}
+  .gate-card h1 .brand-a{letter-spacing:1.3px; font-weight:800; margin-right:1px}
+  .gate-card h1 .brand-b{letter-spacing:-.2px; font-weight:700; color:var(--ink-2)}
   .gate-sub{margin:0 0 20px; color:var(--ink-3); font-size:11.4px; letter-spacing:-.2px; line-height:1.55}
   .field{margin-bottom:13px}
   .flabel{display:block; font-size:11.5px; font-weight:700; color:var(--ink-2); letter-spacing:-.1px; margin-bottom:6px}
@@ -79,7 +78,6 @@
     .gate-logo .co-logo{width:36px; height:36px}
     .gate-card h1{font-size:15.2px}
     .gate-card h1 .brand-a{letter-spacing:1.1px}
-    .gate-card h1 .gsep{margin:0 4px}
     .gate-sub{font-size:11px}
   }
 
@@ -100,9 +98,8 @@
   .hd-home:active{box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
   .hd-home:focus-visible{outline:2px solid rgba(255,255,255,.65); outline-offset:2px}
   .hd h1{font-size:14.5px; font-weight:700; margin:0; letter-spacing:-.1px; color:#fff; display:flex; align-items:baseline; white-space:nowrap}
-  .hd h1 .brand-a{letter-spacing:1.3px; font-weight:800}
-  .hd h1 .gsep{color:rgba(255,255,255,.42); font-weight:600; margin:0 5px}
-  .hd h1 .brand-b{font-weight:600; letter-spacing:.1px; color:rgba(255,255,255,.93)}
+  .hd h1 .brand-a{letter-spacing:1.2px; font-weight:800; margin-right:2px}
+  .hd h1 .brand-b{font-weight:600; letter-spacing:.1px; color:rgba(255,255,255,.95)}
   .hd h1 .t-short{display:none}
   .hd .sub{font-size:11px; color:rgba(255,255,255,.58); margin-top:1px}
   .hd-right{margin-left:auto; display:flex; align-items:center; gap:7px}
@@ -1044,7 +1041,6 @@
     .hd .mark .co-logo{width:19px; height:19px}
     .hd h1{font-size:12.5px; letter-spacing:-.1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
     .hd h1 .brand-a{letter-spacing:1px}
-    .hd h1 .gsep{margin:0 4px}
     .hd h1 .t-long{display:none}
     .hd h1 .t-short{display:inline}
     .hd .sub{display:none}
@@ -1197,9 +1193,9 @@
   <form class="gate-card" id="gateForm" autocomplete="off" novalidate>
     <div class="gate-head">
       <div class="gate-logo" aria-hidden="true"><span class="co-logo"></span></div>
-      <h1><span class="brand-a">CHUNIL</span><span class="gsep">·</span><span class="brand-b">Smart Mail Hub</span></h1>
+      <h1><span class="brand-a">CHUNIL</span><span class="brand-b">Smart Mail Portal</span></h1>
     </div>
-    <p class="gate-sub">천일정기화물자동차㈜ 통합 업무 관제 · 사내 계정 로그인</p>
+    <p class="gate-sub">천일정기화물자동차㈜ · 사내 웹메일 계정 로그인</p>
 
     <div class="field">
       <label class="flabel" for="loginId">사내 메일 아이디</label>
@@ -1232,7 +1228,7 @@
       <div class="hd-home" id="homeBtn" role="button" tabindex="0" title="홈으로 (첫 화면·필터 초기화)" aria-label="홈으로 (첫 화면·필터 초기화)">
         <div class="mark" aria-hidden="true"><span class="co-logo"></span></div>
         <div>
-          <h1><span class="brand-a">CHUNIL</span><span class="gsep">·</span><span class="brand-b t-long">Smart Mail Hub</span><span class="brand-b t-short">Mail Hub</span></h1>
+          <h1><span class="brand-a">CHUNIL</span><span class="brand-b t-long">Smart Mail Portal</span><span class="brand-b t-short">Mail Portal</span></h1>
           <div class="sub" id="who">환영합니다, 김성규 과장님 · 천일정기화물자동차 납입1팀</div>
         </div>
       </div>
@@ -1552,7 +1548,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   /* ---------------- 화면 상단 알림 카드 + 탭 제목 깜빡임 ----------------
      회사 PC에서 Windows 알림(Notification)이 차단되어 팝업이 안 뜨는 경우에도
      바로 알아챌 수 있도록, 탭 제목 깜빡임과 상단 플로팅 카드로도 알린다. */
-  const BASE_TITLE = "CHUNIL · Smart Mail Hub";
+  const BASE_TITLE = "CHUNIL Smart Mail Portal";
   let titleTimer = null;
   let alertTargetId = null;
 
