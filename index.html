@@ -113,18 +113,19 @@
   /* 🔴 즉시 확인 점멸 — 아직 ✅ 확인하지 않은 🔴 메일이 1건 이상이면
      상단 🔴 KPI 카드와 아래 🔴 탭이 부드럽게 맥동한다. 모두 확인해 0건이 되면
      JS가 .p1-live 클래스를 떼어 그 자리에서 즉시 멈춘다. */
-  @keyframes p1Pulse{0%,100%{box-shadow:0 0 0 0 rgba(229,72,77,0), 0 0 0 0 rgba(229,72,77,0)}
-    50%{box-shadow:0 0 0 4px rgba(229,72,77,.30), 0 0 16px 2px rgba(229,72,77,.22)}}
+  /* 0%/100% 프레임은 비워 둔다 → 카드의 원래 배경·테두리(선택 시 브랜드색)에서 50% 지점으로만 점멸 */
+  @keyframes p1Pulse{50%{box-shadow:0 0 0 4px rgba(229,72,77,.34), 0 0 18px 3px rgba(229,72,77,.24);
+      background-color:#fff1f2; border-color:rgba(229,72,77,.45)}}
   @keyframes p1Dot{0%,100%{opacity:.4; transform:scale(1)} 50%{opacity:1; transform:scale(1.8)}}
   @keyframes p1Label{0%,100%{color:var(--ink-2)} 50%{color:var(--red)}}
   @keyframes p1Ring{0%,100%{box-shadow:inset 0 0 0 1.5px rgba(229,72,77,0); background:transparent}
     50%{box-shadow:inset 0 0 0 1.5px rgba(229,72,77,.65); background:rgba(229,72,77,.09)}}
   @keyframes p1Badge{0%,100%{background:var(--gray-weak); color:var(--ink-2)} 50%{background:var(--red); color:#fff}}
-  button.kpi-card.p1-live{animation:p1Pulse 1.7s ease-in-out infinite}
-  button.kpi-card.p1-live .lab{animation:p1Label 1.7s ease-in-out infinite}
-  button.kpi-card.p1-live .val::after{background:var(--red); animation:p1Dot 1.7s ease-in-out infinite}
-  .seg button[data-tab="p1"].p1-live{animation:p1Ring 1.7s ease-in-out infinite; border-radius:5px}
-  .seg button[data-tab="p1"].p1-live .n{animation:p1Badge 1.7s ease-in-out infinite; font-weight:800}
+  button.kpi-card.p1-live{animation:p1Pulse 1.2s ease-in-out infinite}
+  button.kpi-card.p1-live .lab{animation:p1Label 1.2s ease-in-out infinite}
+  button.kpi-card.p1-live .val::after{background:var(--red); animation:p1Dot 1.2s ease-in-out infinite}
+  .seg button[data-tab="p1"].p1-live{animation:p1Ring 1.2s ease-in-out infinite; border-radius:5px}
+  .seg button[data-tab="p1"].p1-live .n{animation:p1Badge 1.2s ease-in-out infinite; font-weight:800}
   @media (prefers-reduced-motion:reduce){
     button.kpi-card.p1-live, button.kpi-card.p1-live .lab, button.kpi-card.p1-live .val::after,
     .seg button[data-tab="p1"].p1-live, .seg button[data-tab="p1"].p1-live .n{animation:none !important}
