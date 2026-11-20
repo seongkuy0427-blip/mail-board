@@ -82,6 +82,23 @@
   .hd h1{font-size:14.5px; font-weight:700; margin:0; letter-spacing:-.15px; color:#fff}
   .hd .sub{font-size:11px; color:rgba(255,255,255,.58); margin-top:1px}
   .hd-right{margin-left:auto; display:flex; align-items:center; gap:7px}
+  /* ---------- 사용자 메뉴 (헤더 맨 오른쪽) ---------- */
+  .hd-user{position:relative; flex:none}
+  .user-btn{display:inline-flex; align-items:center; gap:5px; height:30px; padding:0 9px 0 10px; border-radius:6px;
+    border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.06); color:#e8edf6; font-family:inherit;
+    font-size:11.6px; font-weight:700; letter-spacing:-.15px; cursor:pointer; white-space:nowrap; transition:background .12s}
+  .user-btn:hover{background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.26); color:#fff}
+  .user-btn .u-caret{opacity:.72; font-size:9px}
+  .user-btn .u-short{display:none}
+  .user-menu{position:absolute; right:0; top:calc(100% + 7px); min-width:190px; background:#fff; border:1px solid var(--line);
+    border-radius:8px; box-shadow:0 10px 28px rgba(16,24,40,.18); padding:6px; z-index:60; display:none; text-align:left}
+  .user-menu.on{display:block}
+  .um-head{padding:8px 9px 9px; border-bottom:1px solid var(--line-2); margin-bottom:5px}
+  .um-head b{display:block; font-size:12.6px; color:var(--ink); letter-spacing:-.2px}
+  .um-head span{display:block; margin-top:2px; font-size:11px; color:var(--ink-3); letter-spacing:-.2px}
+  .um-item{display:flex; align-items:center; gap:7px; width:100%; padding:8px 9px; border:0; background:transparent; border-radius:6px;
+    font-family:inherit; font-size:12.4px; color:var(--ink); font-weight:700; cursor:pointer; text-align:left}
+  .um-item:hover{background:var(--red-weak); color:#b3342f}
   .sync{display:none; font-size:10.5px; color:rgba(255,255,255,.55); text-align:right; line-height:1.3; font-variant-numeric:tabular-nums}
   .sync b{color:#fff; font-weight:600}
   .icon-btn{width:30px;height:30px;border-radius:6px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);
@@ -994,6 +1011,10 @@
     .hd .sub{display:none}
     .sync{display:none}
     .hd-right{flex:none; gap:4px; margin-left:auto}
+    .user-btn{height:28px; padding:0 7px 0 8px; font-size:11px; border-radius:5px}
+    .user-btn .u-full{display:none}
+    .user-btn .u-short{display:inline}
+    .user-menu{min-width:170px}
     .icon-btn{width:28px; height:28px; font-size:12.5px; border-radius:5px}
     .brief-btn{height:28px; padding:0 6px; font-size:10.5px; border-radius:7px}
     .brief-btn .bf-t{display:none}
@@ -1137,7 +1158,7 @@
   <form class="gate-card" id="gateForm" autocomplete="off" novalidate>
     <div class="gate-head">
       <div class="gate-logo">📋</div>
-      <h1>천일정기화물 업무 메일 대시보드</h1>
+      <h1>천일정기화물자동차 업무 메일 대시보드</h1>
     </div>
     <p class="gate-sub">사내 웹메일 계정으로 로그인하세요</p>
 
@@ -1173,7 +1194,7 @@
         <div class="mark">📋</div>
         <div>
           <h1>업무 대시보드</h1>
-          <div class="sub" id="who">천일정기화물 납입1팀</div>
+          <div class="sub" id="who">환영합니다, 김성규 과장님 · 천일정기화물자동차 납입1팀</div>
         </div>
       </div>
       <div class="hd-right">
@@ -1186,8 +1207,16 @@
         <button class="deck-btn" id="deckBtn" title="발표 모드 — 임원·사내 보고용 슬라이드" aria-label="발표 모드"><span>📊</span><span class="dk-t">발표</span></button>
         <!-- === PRESENTATION_END (헤더 버튼) === -->
         <button class="icon-btn" id="refreshBtn" title="새로고침" aria-label="새로고침">↻</button>
-        <button class="icon-btn" id="lockBtn" title="잠금" aria-label="잠금">🔒</button>
         <button class="icon-btn" id="rulesBtn" title="분류 규칙 설정 (발신자·제목 키워드)" aria-label="분류 규칙 설정">⚙️</button>
+        <div class="hd-user" id="userWrap">
+          <button type="button" class="user-btn" id="userBtn" aria-haspopup="menu" aria-expanded="false" title="계정 메뉴">
+            <span class="u-full" id="userLblFull">김성규 과장</span><span class="u-short" id="userLblShort">김성규</span><span class="u-caret">▾</span>
+          </button>
+          <div class="user-menu" id="userMenu" role="menu" aria-hidden="true">
+            <div class="um-head"><b id="userMenuName">김성규 과장</b><span id="userMenuSub">천일정기화물자동차 납입1팀</span></div>
+            <button type="button" class="um-item" id="logoutBtn" role="menuitem">🚪 로그아웃</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="wrap hd-sub">
@@ -1420,7 +1449,7 @@
 (() => {
   "use strict";
 
-  const LS = { pin: "mb_pin_v1", loginId: "mb_login_id_v1", state: "mb_state_v1", cal: "mb_calopen_v1", bell: "mb_bell_v1", seen: "mb_seen_p1_v1", seenAll: "mb_seen_all_v1", cal2: "mb_cal_items_v1", cus: "mb_cal_custom_v1", pinList: "mb_pinned_v1", wx: "mb_wxopen_v1", rules: "mb_rules_v1", brief: "mb_brief_hide_v1" };
+  const LS = { pin: "mb_pin_v1", pin2: "mb_pin_v2", loginId: "mb_login_id_v1", state: "mb_state_v1", cal: "mb_calopen_v1", bell: "mb_bell_v1", seen: "mb_seen_p1_v1", seenAll: "mb_seen_all_v1", cal2: "mb_cal_items_v1", cus: "mb_cal_custom_v1", pinList: "mb_pinned_v1", wx: "mb_wxopen_v1", rules: "mb_rules_v1", brief: "mb_brief_hide_v1" };
   const AUTO_REFRESH_MS = 60 * 1000;
   /* 탭을 다시 열었을 때 이미 받아온 지 30초가 안 됐으면 중복 호출을 건너뛴다 */
   const RESUME_MIN_MS = 30 * 1000;
@@ -1548,29 +1577,45 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   }
 
   /* ---------------- 잠금 해제 ---------------- */
-  async function unlock(pin, remember) {
+  async function unlock(id, pin, remember) {
     const btn = $("unlockBtn");
     $("gateErr").textContent = ""; btn.disabled = true; btn.textContent = "확인 중…";
     try {
       if (!ENC) ENC = await fetchEnc();
       DATA = await decryptData(ENC, pin); PIN = pin;
+      LOGIN_ID = id || "kimpro";
       lastSyncAt = Date.now();
-      if (remember) localStorage.setItem(LS.pin, b64enc(pin)); else localStorage.removeItem(LS.pin);
+      /* 자동 로그인은 이번에 사용자가 직접 체크한 경우에만 새 키(mb_pin_v2)로 저장한다 */
+      try {
+        localStorage.removeItem(LS.pin);
+        if (remember) { localStorage.setItem(LS.pin2, b64enc(pin)); localStorage.setItem(LS.loginId, LOGIN_ID); }
+        else localStorage.removeItem(LS.pin2);
+      } catch (e) {}
       $("gate").hidden = true; $("app").hidden = false;
+      applyAccount(LOGIN_ID);
       renderAll(); scheduleAuto(); paintBell(); notifyNewP1(); wxLoad(); briefTick();
       cyPaint(); cySync(false);
     } catch (e) {
       const msg = (e && e.name === "OperationError") ? "아이디 또는 비밀번호가 맞지 않습니다." : (e && e.message ? e.message : "열지 못했습니다.");
       $("gateErr").textContent = msg;
-      if (e && e.name === "OperationError" && PIN !== null) { localStorage.removeItem(LS.pin); PIN = null; }
+      if (e && e.name === "OperationError" && PIN !== null) { try { localStorage.removeItem(LS.pin2); } catch (e2) {} PIN = null; }
     } finally { btn.disabled = false; btn.textContent = "로그인"; }
   }
+  /* 로그아웃 — 자동 로그인 기억값을 지우고 로그인 화면으로 돌아간다 */
+  function logout() {
+    try { localStorage.removeItem(LS.pin); localStorage.removeItem(LS.pin2); } catch (e) {}
+    lock();
+    toast("로그아웃했습니다");
+  }
   function lock() {
-    localStorage.removeItem(LS.pin);
+    try { localStorage.removeItem(LS.pin); localStorage.removeItem(LS.pin2); } catch (e) {}
+    userMenuClose();
+    PIN = null; LOGIN_ID = "";
     if (briefIsOpen()) briefClose("");
     DATA = null; PIN = null; closeDrawer(); cyClose();
     hideAlertBanner();   /* 잠금 화면에 메일 제목이 남지 않게 알림 카드·탭 깜빡임을 끈다 */
     $("app").hidden = true; $("gate").hidden = false; $("pin").value = ""; $("gateErr").textContent = "";
+    $("remember").checked = false;
     (gateRememberId() || $("loginId").value ? $("pin") : $("loginId")).focus();
   }
 
@@ -3175,7 +3220,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       " · 1분마다 자동 새로고침 (탭을 다시 열면 바로 갱신) · PIN 암호화(AES-256-GCM)<br>진행상태·회신여부·메모는 이 기기 브라우저에만 저장됩니다.";
   }
   function renderAll() {
-    $("who").textContent = (DATA.owner || DATA.account || "") + (DATA.source ? " · " + DATA.source : "");
+    applyAccount(LOGIN_ID);
     paintWebmailSearch();
     syncTogs();
     renderKpi(); renderCalendar(); renderSeg(); renderList(); renderFoot();
@@ -3699,6 +3744,45 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   });
 
   /* ---------------- 이벤트 ---------------- */
+  /* ---------------- 로그인 사용자 표시 · 계정 메뉴 ----------------
+     로그인한 아이디로 헤더 부제와 우측 메뉴 이름을 정한다.
+     kimpro/kimpro@chunil.co.kr → 김성규 과장 · 천일정기화물자동차 납입1팀,
+     그 외 아이디 → ‘{아이디} 님 · 천일정기화물자동차’ (전사 확장 대비). */
+  let LOGIN_ID = "";
+  function accountLabel(id) {
+    const raw = String(id || "").trim();
+    const local = raw.indexOf("@") >= 0 ? raw.split("@")[0] : raw;
+    if (local.toLowerCase() === "kimpro") {
+      return { name: "김성규 과장", short: "김성규", welcome: "김성규 과장님", team: "천일정기화물자동차 납입1팀" };
+    }
+    const who = local || "사용자";
+    return { name: who, short: who, welcome: who + " 님", team: "천일정기화물자동차" };
+  }
+  function applyAccount(id) {
+    if (id) LOGIN_ID = id;
+    const a = accountLabel(LOGIN_ID);
+    $("userLblFull").textContent = a.name;
+    $("userLblShort").textContent = a.short;
+    $("userMenuName").textContent = a.name;
+    $("userMenuSub").textContent = a.team;
+    $("who").textContent = "환영합니다, " + a.welcome + " · " + a.team;
+  }
+  function userMenuClose() {
+    const m = $("userMenu"); if (!m || !m.classList.contains("on")) return;
+    m.classList.remove("on"); m.setAttribute("aria-hidden", "true");
+    $("userBtn").setAttribute("aria-expanded", "false");
+  }
+  function userMenuToggle() {
+    const m = $("userMenu"), on = !m.classList.contains("on");
+    m.classList.toggle("on", on); m.setAttribute("aria-hidden", on ? "false" : "true");
+    $("userBtn").setAttribute("aria-expanded", on ? "true" : "false");
+  }
+  $("userBtn").addEventListener("click", (e) => { e.stopPropagation(); userMenuToggle(); });
+  $("userMenu").addEventListener("click", (e) => e.stopPropagation());
+  $("logoutBtn").addEventListener("click", () => { userMenuClose(); logout(); });
+  document.addEventListener("click", () => userMenuClose());
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") userMenuClose(); });
+
   /* 로그인 화면 — 아이디는 기억(선택), 잠금 해제는 기존과 같이 비밀번호로 data.enc.json을 복호화한다.
      사내 메일 서버 인증은 아직 연동 전이므로, 지금은 비밀번호(개인 암호화 키)만 실제로 검사된다. */
   function gateRememberId() { try { return localStorage.getItem(LS.loginId); } catch (e) { return null; } }
@@ -3719,7 +3803,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       if ($("rememberId").checked) localStorage.setItem(LS.loginId, id);
       else localStorage.removeItem(LS.loginId);
     } catch (err) {}
-    unlock(pin, $("remember").checked);
+    unlock(id, pin, $("remember").checked);
   });
   $("refreshBtn").addEventListener("click", () => refresh(true));
   $("rulesBtn").addEventListener("click", rmOpen);
@@ -3805,7 +3889,6 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   });
   $("lightbox").addEventListener("click", (e) => { if (e.target.id !== "lbImg") closeLightbox(); });
   $("lbClose").addEventListener("click", closeLightbox);
-  $("lockBtn").addEventListener("click", lock);
   $("q").addEventListener("input", (e) => { view.q = e.target.value; paintWebmailSearch(); renderList(); });
   $("sort").addEventListener("change", (e) => { view.sort = e.target.value; renderSeg(); renderList(); });
   $("replyChk").addEventListener("change", (e) => {
@@ -4608,19 +4691,24 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   (async function boot() {
     gatePrefill();
     let saved = null;
-    try { saved = localStorage.getItem(LS.pin); } catch (e) {}
+    try {
+      localStorage.removeItem(LS.pin);          /* 구버전 자동 로그인 키는 무시하고 지운다 */
+      saved = localStorage.getItem(LS.pin2);    /* 이번 버전에서 직접 체크해 둔 경우에만 자동 진입 */
+    } catch (e) {}
     if (saved) {
       try {
         ENC = await fetchEnc();
         DATA = await decryptData(ENC, b64dec(saved));
         PIN = b64dec(saved);
+        LOGIN_ID = gateRememberId() || "kimpro";
+        applyAccount(LOGIN_ID);
         lastSyncAt = Date.now();
         $("remember").checked = true;
         $("gate").hidden = true; $("app").hidden = false;
         renderAll(); scheduleAuto(); paintBell(); notifyNewP1(); wxLoad(); briefTick();
         cyPaint(); cySync(false);
         return;
-      } catch (e) { localStorage.removeItem(LS.pin); }
+      } catch (e) { try { localStorage.removeItem(LS.pin2); } catch (e2) {} }
     }
     try { ENC = await fetchEnc(); } catch (e) {}
   })();
