@@ -3336,6 +3336,13 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const contacts = (DATA && Array.isArray(DATA.contacts)) ? DATA.contacts : [];
     const byMail = new Map();
     map.forEach((r) => { if (r.email) byMail.set(r.email, r); });
+    /* 메일 표시 이름이 계정 아이디(clon74 등)뿐인 줄을 찾기 위한 색인 */
+    const byLocal = new Map();
+    contacts.forEach((c) => {
+      const em = String(c.email || "").toLowerCase();
+      const at = em.indexOf("@");
+      if (at > 0) byLocal.set(em.slice(0, at), c);
+    });
     contacts.forEach((c) => {
       const email = String(c.email || "").toLowerCase().trim();
       const nm = String(c.name || "").trim();
@@ -3347,7 +3354,13 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       if (!r) {
         /* 이름이 같아도 메일 주소가 서로 다르면 다른 사람으로 둔다 (동명이인) */
         const cand = map.get(baseName(nm) || bn);
-        if (cand && (!cand.email || !email)) r = cand;
+        if (cand && (!cand.email || !email || cand.email === email)) r = cand;
+      }
+      if (!r && !email && nm) {
+        /* ‘clon74’ 처럼 표시 이름이 계정 아이디뿐인 줄 — 주소록 메일 앞부분으로 찾아 붙인다 */
+        const hit = byLocal.get(nm.toLowerCase());
+        if (hit) r = byMail.get(String(hit.email || "").toLowerCase()) || null;
+        if (r) { if (!r.email) r.email = String(hit.email || ""); }
       }
       if (!r) {
         r = { key: bn, email: "", name: "", count: 0, live: 0, base: 9, vipLabel: "", last: "", dept: "", src: "contact", kind: kind, title: "" };
