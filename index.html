@@ -1887,7 +1887,8 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     html += '<button type="button" class="bf-wx" data-bf-go="wx" title="눌러서 시간별·7일 예보 보기">' +
       '<span class="bf-wx-ico">' + (w ? w.ico : "🌤️") + '</span>' +
       '<span class="bf-wx-t">' + (w ? w.t + "°C · " + esc(w.name) : "인천 부평") + '</span>' +
-      '<span class="bf-wx-s">' + (w ? "체감 " + w.feels + "°C" + (w.wet ? " · " + esc(w.wet) : "") : "날씨 불러오는 중…") + '</span>' +
+      '<span class="bf-wx-s">' + (w ? "체감 " + w.feels + "°C" + (w.wet ? " · " + esc(w.wet) : "")
+        : (WX_FAIL ? "날씨를 불러오지 못했습니다 · 잠시 후 자동 재시도" : "날씨 불러오는 중…")) + '</span>' +
       '<span class="bf-wx-go">예보 ▸</span></button>';
     return html;
   }
@@ -2307,7 +2308,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   const wxSnow = (c) => [71, 73, 75, 77, 85, 86].indexOf(Number(c)) !== -1;
   const wxRain = (c) => { const n = Number(c) || 0; return (n >= 51 && n <= 67) || (n >= 80 && n <= 82) || n >= 95; };
   const wxNum = (v, d) => { const n = Number(v); return Number.isFinite(n) ? n : (d || 0); };
-  let WX = null, WX_BUSY = false, WX_AT = null;
+  let WX = null, WX_BUSY = false, WX_AT = null, WX_FAIL = false;
 
   function wxOpen() { try { return localStorage.getItem(LS.wx) === "1"; } catch (e) { return false; } }
   function paintWxOpen() {
@@ -2331,8 +2332,10 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       if (!res.ok) throw new Error("HTTP " + res.status);
       WX = await res.json();
       WX_AT = new Date();
+      WX_FAIL = false;
       wxRender();
     } catch (e) {
+      WX_FAIL = true;
       if (!WX) {
         if ($("wxTemp")) $("wxTemp").textContent = "—";
         if ($("wxAlert")) $("wxAlert").innerHTML = '<span style="color:var(--orange);font-weight:600">날씨 불러오기 실패</span>';
