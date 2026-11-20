@@ -1019,7 +1019,9 @@
   "use strict";
 
   const LS = { pin: "mb_pin_v1", state: "mb_state_v1", cal: "mb_calopen_v1", bell: "mb_bell_v1", seen: "mb_seen_p1_v1", seenAll: "mb_seen_all_v1", cal2: "mb_cal_items_v1", cus: "mb_cal_custom_v1", pinList: "mb_pinned_v1", wx: "mb_wxopen_v1", rules: "mb_rules_v1" };
-  const AUTO_REFRESH_MS = 5 * 60 * 1000;
+  const AUTO_REFRESH_MS = 60 * 1000;
+  /* 탭을 다시 열었을 때 이미 받아온 지 30초가 안 됐으면 중복 호출을 건너뛴다 */
+  const RESUME_MIN_MS = 30 * 1000;
   const URG = { urgent: 0, high: 1, normal: 2 };
   const ST_LABEL = { todo: "대기", doing: "진행중", done: "완료" };
   const REPLY_LABEL = { needs_reply: "회신 필요", replied: "회신 완료", no_reply_needed: "회신 불필요" };
@@ -1055,6 +1057,7 @@
   };
 
   let ENC = null, DATA = null, PIN = null;
+  let lastSyncAt = 0;
   let STORE = loadState();
   let view = { tab: "p1", q: "", sort: "urgency", day: null, ym: null, sender: "all", group: false, replyOnly: false, showDone: false, openId: null, calOpen: false, cusId: null, cusInbox: true, cusSent: true, kpi: "" };
 try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
@@ -1149,6 +1152,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     try {
       if (!ENC) ENC = await fetchEnc();
       DATA = await decryptData(ENC, pin); PIN = pin;
+      lastSyncAt = Date.now();
       if (remember) localStorage.setItem(LS.pin, b64enc(pin)); else localStorage.removeItem(LS.pin);
       $("gate").hidden = true; $("app").hidden = false;
       renderAll(); scheduleAuto(); paintBell(); notifyNewP1(); wxLoad();
@@ -1174,6 +1178,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     try {
       const enc = await fetchEnc();
       DATA = await decryptData(enc, PIN); ENC = enc;
+      lastSyncAt = Date.now();
       ADDR = null;
       $("sync").innerHTML = "마지막 동기화<br><b>" + stamp(new Date()) + "</b>";
       renderAll();
@@ -1919,7 +1924,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   }
 
   /* ---------------- 🌤️ 인천 부평 날씨·예보 (Open-Meteo 무료 API · 키 없음) ----------------
-     잠금 해제 후 1회, 이후에는 5분 자동 갱신(refresh) 때마다 함께 받아 온다.
+     잠금 해제 후 1회, 이후에는 1분 자동 갱신(refresh) 때마다 함께 받아 온다.
      비·눈·강풍이 7일 안에 있으면 헤더에 주의 배지를 달고, 표는 시간별 24시간 + 7일 주간. */
   const WX_URL = "https://api.open-meteo.com/v1/forecast?latitude=37.507&longitude=126.722"
     + "&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m"
@@ -1958,8 +1963,10 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     try { localStorage.setItem(LS.wx, wxOpen() ? "0" : "1"); } catch (e) {}
     paintWxOpen();
   }
-  async function wxLoad() {
+  async function wxLoad(force) {
     if (WX_BUSY) return;
+    /* 메일은 1분마다 갱신해도 날씨는 10분이면 충분 — 매번 부르지 않는다 */
+    if (!force && WX_AT && Date.now() - WX_AT.getTime() < 10 * 60 * 1000) return;
     WX_BUSY = true;
     try {
       const res = await fetch(WX_URL + "&t=" + Date.now(), { cache: "no-store" });
@@ -2051,7 +2058,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         (x.wind >= 14 ? '<span class="d-w">💨 강풍</span>' : "") + "</div>";
     }).join("");
 
-    $("wxFoot").textContent = "Open-Meteo · 갱신 " + stamp(WX_AT || new Date()) + " · 5분마다 자동";
+    $("wxFoot").textContent = "Open-Meteo · 갱신 " + stamp(WX_AT || new Date()) + " · 10분마다 자동";
     paintWxOpen();
   }
 
@@ -2451,7 +2458,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   function renderFoot() {
     $("foot").innerHTML = "데이터 갱신 " + esc((DATA && DATA.updatedAt) || "-") +
       ((DATA && DATA.criteria && DATA.criteria.verifiedAt) ? " · 판정 확인 " + esc(DATA.criteria.verifiedAt) : "") +
-      " · 5분마다 자동 새로고침 · PIN 암호화(AES-256-GCM)<br>진행상태·회신여부·메모는 이 기기 브라우저에만 저장됩니다.";
+      " · 1분마다 자동 새로고침 (탭을 다시 열면 바로 갱신) · PIN 암호화(AES-256-GCM)<br>진행상태·회신여부·메모는 이 기기 브라우저에만 저장됩니다.";
   }
   function renderAll() {
     $("who").textContent = (DATA.owner || DATA.account || "") + (DATA.source ? " · " + DATA.source : "");
@@ -2631,7 +2638,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     } catch (err) { toast("이 브라우저에 저장하지 못했습니다 — 저장 공간을 확인해 주세요", 3000); return; }
     RULES = null; rulesLoad();
     renderAll();
-    /* 내 규칙 때문에 🔴이 된 예전 메일이 5분 뒤 ‘새 메일’ 팝업으로 뜨지 않게, 지금 🔴을 본 것으로 표시 */
+    /* 내 규칙 때문에 🔴이 된 예전 메일이 1분 뒤 ‘새 메일’ 팝업으로 뜨지 않게, 지금 🔴을 본 것으로 표시 */
     try { const s = loadSeen() || new Set(); liveP1Ids().forEach((id) => s.add(id)); saveSeen(s); seenP1 = s; } catch (err) {}
     rmClose();
     toast("규칙을 저장했습니다 · 🔴 " + p1Items().length + " · 🟡 " + p2Items().length + " · ⚪ " + p3Items().length + "건으로 다시 분류했습니다", 3200);
@@ -2901,7 +2908,12 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   /* 사용자가 화면을 클릭하거나 키를 누르면 탭 제목 깜빡임을 원래 제목으로 복구 */
   document.addEventListener("pointerdown", () => { if (titleTimer) stopTitleFlash(); }, true);
   document.addEventListener("keydown", () => { if (titleTimer) stopTitleFlash(); }, true);
-  document.addEventListener("visibilitychange", () => { if (!document.hidden && titleTimer) stopTitleFlash(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) return;
+    if (titleTimer) stopTitleFlash();
+    /* 탭으로 돌아오면 새로고침을 기다리지 않고 바로 최신 상태로 */
+    if (DATA && PIN && Date.now() - lastSyncAt > RESUME_MIN_MS) refresh(false);
+  });
   $("lightbox").addEventListener("click", (e) => { if (e.target.id !== "lbImg") closeLightbox(); });
   $("lbClose").addEventListener("click", closeLightbox);
   $("lockBtn").addEventListener("click", lock);
@@ -3375,6 +3387,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         ENC = await fetchEnc();
         DATA = await decryptData(ENC, b64dec(saved));
         PIN = b64dec(saved);
+        lastSyncAt = Date.now();
         $("remember").checked = true;
         $("gate").hidden = true; $("app").hidden = false;
         renderAll(); scheduleAuto(); paintBell(); notifyNewP1(); wxLoad();
