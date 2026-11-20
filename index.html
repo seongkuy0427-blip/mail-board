@@ -3351,32 +3351,21 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       const kind = String(c.kind || "");
       const bn = email ? ("e:" + email) : (baseName(nm) || ("n:" + nm));
       let r = (email && byMail.get(email)) || null;
-      if (!r) {
-        /* 이름이 같아도 메일 주소가 서로 다르면 다른 사람으로 둔다 (동명이인) */
-        const cand = map.get(baseName(nm) || bn);
-        if (cand && (!cand.email || !email || cand.email === email)) r = cand;
-      }
-      /* 주소록의 메일 주소가 다른 이름으로 잡힌 줄에 이미 있으면, 이름 없는 줄을 그쪽으로 합친다
-         (예: 메일에는 '이동현', 주소록에는 '이동헌' — 같은 ldh@chunil.co.kr) */
+      /* 이름만 있는 줄(메일에서 이름만 보인 사람)과 주소록 줄이 같은 사람이면 한 줄로 합친다
+         (예: 메일 표시 이름 '이동현' · 주소록 '이동헌' — 같은 ldh@chunil.co.kr) */
+      const nmRow = nm ? map.get(baseName(nm)) : null;
+      if (!r && nmRow && (!email || !nmRow.email)) r = nmRow;
       if (r && email) {
-        const emRow = byMail.get(email);
-        if (emRow && emRow !== r) {
-          emRow.count += r.count; emRow.live += r.live;
-          if (r.base < emRow.base) emRow.base = r.base;
-          if (!emRow.vipLabel && r.vipLabel) emRow.vipLabel = r.vipLabel;
-          if (!emRow.dept && r.dept) emRow.dept = r.dept;
-          if (!emRow.kind && r.kind) emRow.kind = r.kind;
-          if (!emRow.title && r.title) emRow.title = r.title;
-          if (r.last > emRow.last) emRow.last = r.last;
-          map.delete(r.key);
-          r = emRow;
+        const other = (nmRow && nmRow !== r && !nmRow.email) ? nmRow : null;
+        if (other) {
+          r.count += other.count; r.live += other.live;
+          if (other.base < r.base) r.base = other.base;
+          if (!r.vipLabel && other.vipLabel) r.vipLabel = other.vipLabel;
+          if (!r.dept && other.dept) r.dept = other.dept;
+          if (!r.title && other.title) r.title = other.title;
+          if (other.last > r.last) r.last = other.last;
+          map.delete(other.key);
         }
-      }
-      if (!r && !email && nm) {
-        /* ‘clon74’ 처럼 표시 이름이 계정 아이디뿐인 줄 — 주소록 메일 앞부분으로 찾아 붙인다 */
-        const hit = byLocal.get(nm.toLowerCase());
-        if (hit) r = byMail.get(String(hit.email || "").toLowerCase()) || null;
-        if (r) { if (!r.email) r.email = String(hit.email || ""); }
       }
       if (!r) {
         r = { key: bn, email: "", name: "", count: 0, live: 0, base: 9, vipLabel: "", last: "", dept: "", src: "contact", kind: kind, title: "" };
@@ -3392,6 +3381,18 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       if (ttl && !r.title) r.title = ttl;
       if (!r.src) r.src = "contact";
       if (r.email) byMail.set(r.email, r);
+    });
+    /* 표시 이름이 계정 아이디뿐인 줄(clon74 등)은 주소록의 그 메일 주소 줄로 합친다 */
+    map.forEach((r) => {
+      if (r.email || !r.name || !byLocal.has(r.name.toLowerCase())) return;
+      const hit = byLocal.get(r.name.toLowerCase());
+      const target = byMail.get(String(hit.email || "").toLowerCase());
+      if (!target || target === r) return;
+      target.count += r.count; target.live += r.live;
+      if (r.base < target.base) target.base = r.base;
+      if (!target.title && r.title) target.title = r.title;
+      if (!target.dept && r.dept) target.dept = r.dept;
+      map.delete(r.key);
     });
     /* 같은 이메일이 이름만 다르게 잡힌 줄은 하나로 합친다 */
     const merged = [], byEmail = new Map();
