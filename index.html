@@ -1380,7 +1380,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const s = pinLoad(), key = String(id), on = !s.has(key);
     if (on) s.add(key); else s.delete(key);
     pinSave();
-    renderSeg(); renderList();
+    renderKpi(); renderSeg(); renderList();
     if (view.openId === id) $("drawerContent").innerHTML = drawerHtml(it);
     toast(on ? "📌 고정 — ‘📌 고정’ 탭에 계속 남습니다 · " + shortTitle(it)
              : "📌 고정을 풀었습니다 · " + shortTitle(it));
@@ -1676,14 +1676,14 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       m[id] = date || calDefaultDate(it); calSave();
       toast("📅 캘린더에 등록 — " + m[id] + " · " + shortTitle(it));
     }
-    renderCalendar(); renderList();
+    renderCalendar(); renderKpi(); renderList();
     if (view.openId === id) $("drawerContent").innerHTML = drawerHtml(it);
   }
   function calSetDate(id, date) {
     if (!date) return;
     const it = byId(id); if (!it) return;
     const m = calLoad(); m[id] = date; calSave();
-    renderCalendar(); renderList();
+    renderCalendar(); renderKpi(); renderList();
     if (view.openId === id) $("drawerContent").innerHTML = drawerHtml(it);
     toast("📅 등록 날짜를 " + date + "(으)로 바꿨습니다");
   }
@@ -1807,7 +1807,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const list = cusLoad();
     list.push({ id: "c-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: d, title: t.slice(0, 80), memo: String(memo || "").trim().slice(0, 120), createdAt: new Date().toISOString() });
     cusSave();
-    renderCalendar(); renderList();
+    renderCalendar(); renderKpi(); renderList();
     toast("📌 일정을 넣었습니다 — " + d + " · " + t.slice(0, 24));
     return true;
   }
@@ -1816,7 +1816,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     if (i < 0) return;
     const c = list.splice(i, 1)[0];
     cusSave();
-    renderCalendar(); renderList();
+    renderCalendar(); renderKpi(); renderList();
     toast("일정을 지웠습니다 — " + (c.title || ""));
   }
   function cusRow(c) {
