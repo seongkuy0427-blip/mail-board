@@ -3356,6 +3356,22 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         const cand = map.get(baseName(nm) || bn);
         if (cand && (!cand.email || !email || cand.email === email)) r = cand;
       }
+      /* 주소록의 메일 주소가 다른 이름으로 잡힌 줄에 이미 있으면, 이름 없는 줄을 그쪽으로 합친다
+         (예: 메일에는 '이동현', 주소록에는 '이동헌' — 같은 ldh@chunil.co.kr) */
+      if (r && email) {
+        const emRow = byMail.get(email);
+        if (emRow && emRow !== r) {
+          emRow.count += r.count; emRow.live += r.live;
+          if (r.base < emRow.base) emRow.base = r.base;
+          if (!emRow.vipLabel && r.vipLabel) emRow.vipLabel = r.vipLabel;
+          if (!emRow.dept && r.dept) emRow.dept = r.dept;
+          if (!emRow.kind && r.kind) emRow.kind = r.kind;
+          if (!emRow.title && r.title) emRow.title = r.title;
+          if (r.last > emRow.last) emRow.last = r.last;
+          map.delete(r.key);
+          r = emRow;
+        }
+      }
       if (!r && !email && nm) {
         /* ‘clon74’ 처럼 표시 이름이 계정 아이디뿐인 줄 — 주소록 메일 앞부분으로 찾아 붙인다 */
         const hit = byLocal.get(nm.toLowerCase());
@@ -3368,7 +3384,8 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       }
       if (!r.email) r.email = email;
       /* 이름이 메일주소나 비어 있으면 주소록의 한글 이름을 우선한다 */
-      if (nm && !isMailName(nm) && (isMailName(r.name) || nm.length > r.name.length)) r.name = nm;
+      /* 주소록 이름을 우선 — 단, 메일 표시 이름이 그 이름으로 시작하면(직급이 붙은 형태) 그대로 둔다 */
+      if (nm && !isMailName(nm) && (isMailName(r.name) || r.name.indexOf(nm) !== 0)) r.name = nm;
       if (dept && !r.dept) r.dept = dept;
       if (kind && !r.kind) r.kind = kind;
       const ttl = String(c.title || "").trim();
