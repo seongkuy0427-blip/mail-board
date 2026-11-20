@@ -276,20 +276,21 @@
 
   /* ---------- 탭 / 칩 ---------- */
   /* 탭 — 와탭식 언더라인 탭 (넓은 화면에서는 한 줄, 좁으면 가로 스크롤) */
-  .seg{display:flex; gap:2px; margin:8px 0 10px; flex-wrap:nowrap; overflow-x:auto; border-bottom:1px solid var(--line);
+  .seg{display:flex; gap:2px; margin:8px 0 10px; padding-top:7px; flex-wrap:nowrap; overflow-x:auto; border-bottom:1px solid var(--line);
     scrollbar-width:none; -ms-overflow-style:none}
   .seg::-webkit-scrollbar{display:none}
   .seg button{display:inline-flex; align-items:center; gap:6px; padding:8px 13px; border:0; border-bottom:2px solid transparent;
     border-radius:0; background:transparent; color:var(--ink-3); font-size:12.5px; cursor:pointer; font-weight:600;
-    margin-bottom:-1px; white-space:nowrap; flex:none; transition:color .12s, border-color .12s}
+    margin-bottom:-1px; white-space:nowrap; flex:none; position:relative; overflow:visible; transition:color .12s, border-color .12s}
   .seg button:hover{color:var(--ink); background:#f8fafc}
   .seg button .n{font-size:10.5px; font-weight:700; padding:1px 6px; border-radius:999px; background:var(--gray-weak); color:var(--ink-2); font-variant-numeric:tabular-nums}
   .seg button.on{background:transparent; color:var(--brand); border-bottom-color:var(--brand)}
   .seg button.on .n{background:var(--brand-weak); color:var(--brand)}
   .seg button[data-tab="p3"]{color:var(--ink-3)}
-  /* 🆕 신규 메일 — 탭 라벨 옆 NEW n 배지 (누르면 그 탭의 NEW만 지운다) */
-  .seg button .newb{font-size:9.5px; font-weight:800; padding:1px 6px; border-radius:999px; background:var(--mint); color:#fff;
-    letter-spacing:.02em; line-height:1.5; font-variant-numeric:tabular-nums; cursor:pointer}
+  /* 🆕 신규 메일 — 탭 우상단 모서리에 살짝 겹쳐 뜨는 작은 NEW 배지 (누르면 그 탭의 NEW만 지운다) */
+  .seg button .newb{position:absolute; top:-5px; right:-2px; font-size:9px; font-weight:800; padding:1px 5px; line-height:1.2;
+    border-radius:999px; background:var(--mint); color:#fff; letter-spacing:.02em; font-variant-numeric:tabular-nums;
+    box-shadow:0 1px 2px rgba(16,24,40,.18); cursor:pointer; white-space:nowrap}
   .seg button .newb:hover{filter:brightness(.93)}
   /* 🆕 NEW 지우기 — 지금 보는 탭에 NEW가 있을 때만 나타나는 작은 버튼 */
   .newclear{display:none; align-items:center; gap:5px; border:1px solid #bfe9de; background:var(--green-weak); color:#05796a;
@@ -802,7 +803,7 @@
     .row .rmeta{font-size:10px}
     .row .rside{gap:3px}
     .row .newpill{height:13px; padding:0 4px; font-size:8px}
-    .seg button .newb{font-size:9px; padding:0 4px}
+    .seg button .newb{font-size:8.5px; padding:1px 4px}
     .bulkbar{padding:6px 8px; gap:6px}
     .bulk-all{flex:1 1 100%}
     .bulk-sp{display:none}
@@ -2117,7 +2118,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       const nn = list ? newCount(list) : 0;
       return '<button data-tab="' + k + '" class="' + (!view.kpi && view.tab === k ? "on" : "") + '">' + label +
         '<span class="n">' + n + '</span>' +
-        (nn ? '<span class="newb" data-clear-new="' + k + '" title="이 탭의 NEW 표시를 모두 지우기 (메일은 그대로)">NEW ' + nn + '</span>' : "") +
+        (nn ? '<span class="newb" data-clear-new="' + k + '" title="이 탭의 NEW 표시를 모두 지우기 (메일은 그대로)">NEW' + (nn > 1 ? " " + nn : "") + '</span>' : "") +
         "</button>";
     }).join("");
     paintNewClear();
