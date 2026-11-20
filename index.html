@@ -1556,6 +1556,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     localStorage.removeItem(LS.pin);
     if (briefIsOpen()) briefClose("");
     DATA = null; PIN = null; closeDrawer(); cyClose();
+    hideAlertBanner();   /* 잠금 화면에 메일 제목이 남지 않게 알림 카드·탭 깜빡임을 끈다 */
     $("app").hidden = true; $("gate").hidden = false; $("pin").value = ""; $("gateErr").textContent = "";
     (gateRememberId() || $("loginId").value ? $("pin") : $("loginId")).focus();
   }
