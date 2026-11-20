@@ -287,6 +287,19 @@
   .seg button.on{background:transparent; color:var(--brand); border-bottom-color:var(--brand)}
   .seg button.on .n{background:var(--brand-weak); color:var(--brand)}
   .seg button[data-tab="p3"]{color:var(--ink-3)}
+  /* 🆕 신규 메일 — 탭 라벨 옆 NEW n 배지 (누르면 그 탭의 NEW만 지운다) */
+  .seg button .newb{font-size:9.5px; font-weight:800; padding:1px 6px; border-radius:999px; background:var(--mint); color:#fff;
+    letter-spacing:.02em; line-height:1.5; font-variant-numeric:tabular-nums; cursor:pointer}
+  .seg button .newb:hover{filter:brightness(.93)}
+  /* 🆕 NEW 지우기 — 지금 보는 탭에 NEW가 있을 때만 나타나는 작은 버튼 */
+  .newclear{display:none; align-items:center; gap:5px; border:1px solid #bfe9de; background:var(--green-weak); color:#05796a;
+    font-family:inherit; font-size:11.5px; font-weight:700; padding:7px 10px; border-radius:6px; cursor:pointer; white-space:nowrap;
+    transition:filter .12s, transform .06s}
+  .newclear.on{display:inline-flex}
+  .newclear:hover{filter:brightness(.97)}
+  .newclear:active{transform:scale(.97)}
+  .newclear:focus-visible{outline:2px solid var(--mint); outline-offset:1px}
+  .newclear .n{background:var(--mint); color:#fff; border-radius:999px; padding:0 5px; font-size:10px; font-weight:800; font-variant-numeric:tabular-nums}
   .chip-row{display:flex; gap:5px; flex-wrap:wrap; align-items:center; margin:0 0 7px}
   .chip{display:inline-flex; align-items:center; gap:4px; padding:5px 10px; border-radius:6px; border:1px solid var(--line);
     background:#fff; color:var(--ink-2); font-size:11.5px; cursor:pointer; font-weight:600}
@@ -345,6 +358,9 @@
   .row .rmeta{font-size:10.5px; color:var(--ink-3); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums}
   .row .rmeta b{color:var(--ink-2); font-weight:500}
   .row .rside{flex:none; display:flex; align-items:center; gap:4px}
+  /* 🆕 새로 들어온 메일 — 제목 앞 민트색 NEW 필 (열어보거나 ✅ 확인하면 사라진다) */
+  .row .newpill{flex:none; display:inline-flex; align-items:center; height:15px; padding:0 6px; border-radius:999px;
+    background:var(--mint); color:#fff; font-size:8.8px; font-weight:800; letter-spacing:.04em; line-height:1}
   /* 🟡 흐름 참고 · ⚪ 단순 공유 — 전체 선택 · 일괄 ✅ 확인 바 */
   .bulkbar{display:flex; align-items:center; flex-wrap:wrap; gap:6px 8px; margin:0 0 7px; padding:7px 10px;
     background:#f8fafc; border:1px solid var(--line); border-radius:6px}
@@ -785,6 +801,8 @@
     .row .rtitle{font-size:12.6px}
     .row .rmeta{font-size:10px}
     .row .rside{gap:3px}
+    .row .newpill{height:13px; padding:0 4px; font-size:8px}
+    .seg button .newb{font-size:9px; padding:0 4px}
     .bulkbar{padding:6px 8px; gap:6px}
     .bulk-all{flex:1 1 100%}
     .bulk-sp{display:none}
@@ -906,6 +924,7 @@
     <div class="rank-note" id="rankNote"></div>
 
     <div class="toolbar">
+      <button type="button" class="newclear" id="newClear" title="지금 보는 탭의 NEW 표시를 모두 지웁니다 (메일은 그대로 남습니다)">🆕 NEW 지우기</button>
       <label class="tog" id="doneTog"><input type="checkbox" id="doneChk"> 완료 포함</label>
       <label class="tog" id="replyTog"><input type="checkbox" id="replyChk"> 회신 필요만 보기</label>
       <div class="search"><span>🔍</span><input id="q" type="search" placeholder="제목 · 발신자 · 품번 · 내용 검색 (단순 공유 · 이전 기록도 검색)"></div>
@@ -999,7 +1018,7 @@
 (() => {
   "use strict";
 
-  const LS = { pin: "mb_pin_v1", state: "mb_state_v1", cal: "mb_calopen_v1", bell: "mb_bell_v1", seen: "mb_seen_p1_v1", cal2: "mb_cal_items_v1", cus: "mb_cal_custom_v1", pinList: "mb_pinned_v1", wx: "mb_wxopen_v1", rules: "mb_rules_v1" };
+  const LS = { pin: "mb_pin_v1", state: "mb_state_v1", cal: "mb_calopen_v1", bell: "mb_bell_v1", seen: "mb_seen_p1_v1", seenAll: "mb_seen_all_v1", cal2: "mb_cal_items_v1", cus: "mb_cal_custom_v1", pinList: "mb_pinned_v1", wx: "mb_wxopen_v1", rules: "mb_rules_v1" };
   const AUTO_REFRESH_MS = 5 * 60 * 1000;
   const URG = { urgent: 0, high: 1, normal: 2 };
   const ST_LABEL = { todo: "대기", doing: "진행중", done: "완료" };
@@ -1187,6 +1206,70 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     return p === 1 || (p === 2 && String(i.recipientRole || "").toLowerCase() === "to");
   }
   function liveP1Ids() { return new Set(liveItems().filter(isAlertable).map((i) => i.id)); }
+
+  /* ---------------- 🆕 신규 메일 NEW 표시 ----------------
+     알림 카드·팝업은 내 업무(🔴 + 🟡 수신 To)만 울리고, 나머지 새로 들어온 메일은
+     행의 NEW 필과 탭의 NEW n 배지로 식별한다. "본 메일" 기준은 이 기기에 남긴다.
+     저장 위치: localStorage `mb_seen_all_v1`. */
+  let seenAll = null, seenAllLoaded = false;
+  function loadSeenAll() {
+    try {
+      const raw = localStorage.getItem(LS.seenAll);
+      if (raw === null) return null;
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? new Set(arr.map(String)) : null;
+    } catch (e) { return null; }
+  }
+  function saveSeenAll() { try { localStorage.setItem(LS.seenAll, JSON.stringify([...seenAll])); } catch (e) {} }
+  /* 저장된 기록이 없을 때(최초 1회)는 지금 있는 메일을 모두 본 것으로 기준점만 저장한다 —
+     기존 메일에 NEW가 한꺼번에 뜨지 않게. 복호화 전(DATA 없음)에는 기준점을 잡지 않는다. */
+  function seenAllSet() {
+    if (!seenAllLoaded) {
+      if (!DATA) return new Set();
+      seenAllLoaded = true;
+      seenAll = loadSeenAll();
+      if (seenAll === null) { seenAll = new Set(liveItems().map((i) => String(i.id))); saveSeenAll(); }
+    }
+    return seenAll;
+  }
+  const isNewMail = (it) => !!it && it.id != null && !isArchived(it) && !seenAllSet().has(String(it.id));
+  function newCount(list) { return (list || []).filter(isNewMail).length; }
+  /* 이 메일을 본 것으로 표시 — 상세를 열거나 ✅ 확인하거나 NEW 지우기를 누를 때 */
+  function markSeenAll(ids) {
+    const s = seenAllSet();
+    let changed = false;
+    (ids || []).forEach((id) => { if (id == null) return; const k = String(id); if (!s.has(k)) { s.add(k); changed = true; } });
+    if (changed) saveSeenAll();
+    return changed;
+  }
+  /* 지금 화면(탭·KPI 모아보기)에서 NEW를 따질 메일 목록 */
+  function viewNewScope() {
+    if (view.kpi) return kpiListForView();
+    if (view.cusId) return [];
+    if (view.tab === "p1") return p1Items();
+    if (view.tab === "p2") return p2Items();
+    if (view.tab === "p3") return p3Items();
+    if (view.tab === "pin") return pinnedItems();
+    return [];
+  }
+  function paintNewClear() {
+    const b = $("newClear"); if (!b) return;
+    const n = newCount(viewNewScope());
+    b.classList.toggle("on", n > 0);
+    b.innerHTML = "🆕 NEW 지우기<span class=\"n\">" + n + "</span>";
+    b.title = "지금 보는 탭의 NEW 표시를 모두 지웁니다 (메일은 그대로 남습니다)";
+  }
+  /* '모두 읽음 / NEW 지우기' — 그 탭의 메일을 모두 확인한 것으로 표시 */
+  function clearNew(tab) {
+    const key = tab || (view.kpi ? "kpi" : view.tab);
+    const list = key === "kpi" ? kpiListForView()
+      : key === "p1" ? p1Items() : key === "p2" ? p2Items() : key === "p3" ? p3Items() : key === "pin" ? pinnedItems() : [];
+    const n = newCount(list);
+    if (!n) { toast("이 화면에는 새로 들어온 메일이 없습니다"); return; }
+    markSeenAll(list.map((it) => it.id));
+    renderSeg(); renderKpi(); renderList();
+    toast("🆕 NEW " + n + "건을 확인한 것으로 표시했습니다 (메일은 그대로 남습니다)", 2400);
+  }
   function bellOn() { try { return localStorage.getItem(LS.bell) === "1"; } catch (e) { return false; } }
   function notifReady() { return ("Notification" in window) && Notification.permission === "granted"; }
   function paintBell() {
@@ -1430,6 +1513,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   function setDone(id, done) {
     const it = byId(id); if (!it) return;
     itemState(id).status = done ? "done" : "todo"; saveState();
+    markSeenAll([id]);
     renderKpi(); renderSeg(); renderCalendar(); renderList();
     if (view.openId === id) $("drawerContent").innerHTML = drawerHtml(it);
     toast(done ? "✅ 확인 — 기본 목록에서 치었습니다 (검색·‘완료 포함’에서 다시 볼 수 있음)" : "↩ 완료를 취소해 목록으로 돌렸습니다");
@@ -1456,6 +1540,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     if (!list.length) return;
     list.forEach((id) => { itemState(id).status = "done"; });
     saveState();
+    markSeenAll(list);
     const key = bulkTab(); if (key) bulkSel[key].clear();
     renderKpi(); renderSeg(); renderCalendar(); renderList();
     toast("✅ " + list.length + "건 확인 처리 — 기본 목록에서 치웠습니다 (‘완료 포함’을 켜면 다시 볼 수 있어요)", 2800);
@@ -2018,10 +2103,17 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
 
   /* ---------------- 렌더: 탭 · 칩 ---------------- */
   function renderSeg() {
-    const tabs = [["p1", "🔴 즉시 확인", p1Items().length], ["p2", "🟡 흐름 참고", p2Items().length], ["p3", "⚪ 단순 공유", p3Items().length],
-      ["fu", "⏳ 미회신 추적", fuPending().length], ["pin", "📌 고정", pinnedItems().length]];
-    $("seg").innerHTML = tabs.map(([k, label, n]) =>
-      '<button data-tab="' + k + '" class="' + (!view.kpi && view.tab === k ? "on" : "") + '">' + label + '<span class="n">' + n + "</span></button>").join("");
+    const rows = [["p1", "🔴 즉시 확인", p1Items()], ["p2", "🟡 흐름 참고", p2Items()], ["p3", "⚪ 단순 공유", p3Items()],
+      ["fu", "⏳ 미회신 추적", null], ["pin", "📌 고정", pinnedItems()]];
+    $("seg").innerHTML = rows.map(([k, label, list]) => {
+      const n = list ? list.length : fuPending().length;
+      const nn = list ? newCount(list) : 0;
+      return '<button data-tab="' + k + '" class="' + (!view.kpi && view.tab === k ? "on" : "") + '">' + label +
+        '<span class="n">' + n + '</span>' +
+        (nn ? '<span class="newb" data-clear-new="' + k + '" title="이 탭의 NEW 표시를 모두 지우기 (메일은 그대로)">NEW ' + nn + '</span>' : "") +
+        "</button>";
+    }).join("");
+    paintNewClear();
     /* ⏳ 미회신 추적 탭에서는 회신 필터·정렬이 의미 없으므로 숨긴다 */
     const isFu = view.tab === "fu";
     $("replyTog").style.display = isFu ? "none" : "";
@@ -2084,6 +2176,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       '<span class="' + rankCls + '">' + esc(rankTxt) + "</span>" +
       '<span class="rmain"><span class="rt">' +
         (pin ? '<span class="pinmark" title="📌 고정됨 — 고정 탭에 계속 남습니다">📌</span>' : "") +
+        (isNewMail(it) ? '<span class="newpill" title="새로 들어온 메일 — 열어보거나 ✅ 확인하면 사라집니다">NEW</span>' : "") +
         '<span class="rtitle">' + esc(it.title) + "</span>" +
         (thr > 1 ? '<span class="thr">+' + (thr - 1) + "</span>" : "") + "</span>" +
         '<span class="rmeta"><b>' + esc(it.sender) + "</b> · " + esc(it.receivedAt) +
@@ -2211,13 +2304,14 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   }
 
   function renderList() {
-    if (view.kpi && renderKpiList()) return;
-    if (view.tab === "pin") { renderPinList(); return; }
-    if (view.tab === "fu") { renderFuList(); return; }
+    if (view.kpi && renderKpiList()) { paintNewClear(); return; }
+    if (view.tab === "pin") { renderPinList(); paintNewClear(); return; }
+    if (view.tab === "fu") { renderFuList(); paintNewClear(); return; }
     const acus = activeCus();
     if (acus) {
       $("listWrap").innerHTML = cusMatchHtml(acus);
       $("dayChip").classList.remove("on");
+      paintNewClear();
       return;
     }
     const q = view.q.trim(), main = currentList();
@@ -2254,6 +2348,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     }
     $("listWrap").innerHTML = html;
     $("dayChip").classList.remove("on");
+    paintNewClear();
   }
 
   /* ---------------- 렌더: ⏳ 미회신 추적 ---------------- */
@@ -2678,12 +2773,16 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       return;
     }
     const it = byId(id); if (!it) return;
+    /* 상세를 열면 그 메일은 본 것 — 목록의 NEW 필과 탭의 NEW n이 바로 사라진다 */
+    const wasNew = isNewMail(it);
+    if (wasNew) markSeenAll([it.id]);
     view.openId = id;
     $("drawerContent").innerHTML = drawerHtml(it);
     $("drawer").classList.add("on");
     $("drawer").setAttribute("aria-hidden", "false");
     $("backdrop").classList.add("on");
     document.body.classList.add("locked");
+    if (wasNew) { renderSeg(); renderList(); }
   }
   function closeDrawer() {
     view.openId = null;
@@ -2829,6 +2928,9 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   });
 
   $("seg").addEventListener("click", (e) => {
+    /* 탭의 NEW n 배지를 누르면 탭 이동 없이 그 탭의 NEW만 지운다 */
+    const cb = e.target.closest("[data-clear-new]");
+    if (cb) { e.preventDefault(); e.stopPropagation(); clearNew(cb.dataset.clearNew); return; }
     const b = e.target.closest("[data-tab]"); if (!b) return;
     view.kpi = "";
     view.tab = b.dataset.tab;
@@ -2837,6 +2939,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     if (view.tab === "fu") view.replyOnly = false;
     syncTogs(); renderKpi(); renderSeg(); renderCalendar(); renderList();
   });
+  $("newClear").addEventListener("click", () => clearNew(view.kpi ? "kpi" : view.tab));
   $("chipRow").addEventListener("click", (e) => {
     const b = e.target.closest("[data-sender]"); if (!b) return;
     view.sender = b.dataset.sender; renderChips(); renderList();
