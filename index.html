@@ -4193,7 +4193,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       cySetTs(ts);
       cySet(CY.last, String(Date.now()));
       CY_PINLOCK = false; CY_ERR = "";
-      toast("이 기기 상태로 Gist를 새로 쓴습니다 — 다른 기기도 이 PIN으로 다시 받아갑니다", 3800);
+      toast("이 기기 상태로 Gist를 새로 썼습니다 — 다른 기기도 이 PIN으로 다시 받아갑니다", 3800);
     } catch (e) {
       CY_ERR = cyErrText(e);
       toast("덮어쓰기 실패 — " + CY_ERR, 4400);
