@@ -499,6 +499,237 @@
   .dr-foot .reply-row{flex:1 1 auto}
   .dr-foot .sp{margin-left:auto; font-size:10.3px; color:var(--ink-3)}
 
+  /* ---------- ⚙️ 분류 규칙 설정 ---------- */
+  #rulesModal{position:fixed; inset:0; z-index:72; display:none; align-items:center; justify-content:center; padding:16px}
+  #rulesModal.on{display:flex}
+  .rm-back{position:absolute; inset:0; background:rgba(16,24,40,.42)}
+  .rm-card{position:relative; width:min(780px,100%); height:min(88vh,780px); background:#fff; border:1px solid var(--line);
+    border-radius:16px; box-shadow:0 18px 50px rgba(16,32,64,.3); display:flex; flex-direction:column; overflow:hidden}
+  .rm-head{display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--line); background:#fbfcfe; flex:none}
+  .rm-head h2{font-size:14.5px; margin:0; letter-spacing:-.2px; flex:1}
+  .rm-head .rm-x{width:28px; height:28px; border-radius:8px; border:1px solid var(--line); background:#fff; cursor:pointer; font-size:13px; color:var(--ink-2)}
+  .rm-tabs{display:flex; gap:6px; padding:10px 16px 0; flex:none; flex-wrap:wrap}
+  .rm-tab{padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:#fff; color:var(--ink-2);
+    font-size:12px; font-weight:600; cursor:pointer; font-family:inherit}
+  .rm-tab.on{background:var(--ink); border-color:var(--ink); color:#fff}
+  .rm-body{flex:1; min-height:0; overflow-y:auto; padding:10px 16px 14px}
+  .rm-note{font-size:11.3px; color:var(--ink-3); line-height:1.6; background:#f7f9fc; border:1px solid var(--line);
+    border-radius:9px; padding:8px 10px; margin:0 0 9px}
+  .rm-note b{color:var(--ink-2); font-weight:600}
+  .rm-search{display:flex; align-items:center; gap:5px; border:1px solid var(--line); border-radius:9px;
+    padding:5px 8px; background:#fbfcfe; font-size:12px; color:var(--ink-3); margin-bottom:8px}
+  .rm-search input{border:none; outline:none; background:transparent; font-size:12px; font-family:inherit; color:var(--ink); width:100%; min-width:0}
+  .rm-add{display:flex; gap:5px; flex-wrap:wrap; align-items:center; padding:8px; border:1px dashed #cfd9e8;
+    border-radius:10px; background:#fbfcfe; margin-bottom:9px}
+  .rm-add .lbl{font-size:10.8px; color:var(--ink-3); font-weight:700}
+  .rm-add input[type=text], .rm-add input[type=email]{border:1px solid var(--line); border-radius:7px; padding:5px 7px;
+    font-size:11.8px; font-family:inherit; color:var(--ink); background:#fff; outline:none; min-width:0}
+  .rm-add input:focus{border-color:var(--brand)}
+  .rm-sel{border:1px solid var(--line); border-radius:7px; padding:5px 6px; font-size:11.5px; font-family:inherit; color:var(--ink-2); background:#fff}
+  .snd-row{display:flex; align-items:center; gap:7px; padding:6px 8px; border:1px solid var(--line);
+    border-radius:9px; margin-bottom:5px; background:#fff; flex-wrap:wrap}
+  .snd-row.on{border-color:#c9dbfb; background:#f7faff}
+  .snd-main{flex:1 1 165px; min-width:0}
+  .snd-main .nm{font-size:12.3px; color:var(--ink); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .snd-main .em{font-size:10.5px; color:var(--ink-3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .snd-tag{font-size:9.6px; font-weight:700; padding:1px 5px; border-radius:999px; background:var(--violet-weak);
+    color:var(--violet); border:1px solid #e0d7f7; margin-left:4px; vertical-align:1px; white-space:nowrap}
+  .snd-tag.gray{background:var(--gray-weak); color:var(--ink-3); border-color:#e1e6ee}
+  .snd-tag.b{background:var(--brand-weak); color:var(--brand); border-color:#d3e1fb}
+  .snd-n{font-size:10px; color:var(--ink-3); margin-left:4px; font-weight:500}
+  .toonly{display:inline-flex; align-items:center; gap:3px; font-size:10.5px; color:var(--ink-3); white-space:nowrap; cursor:pointer}
+  .toonly input{accent-color:var(--brand); margin:0; width:13px; height:13px; cursor:pointer}
+  .toonly.off{opacity:.35; cursor:default}
+  .pseg{display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; flex:none}
+  .pseg button{border:none; border-right:1px solid var(--line); background:#fff; color:var(--ink-3);
+    font-family:inherit; font-size:11px; padding:4px 7px; cursor:pointer; white-space:nowrap}
+  .pseg button:last-child{border-right:none}
+  .pseg button:hover{background:#f4f7fc}
+  .pseg button.on[data-rm-p="0"]{background:var(--gray-weak); color:var(--ink); font-weight:700}
+  .pseg button.on[data-rm-p="1"]{background:var(--red); color:#fff; font-weight:700}
+  .pseg button.on[data-rm-p="2"]{background:var(--brand); color:#fff; font-weight:700}
+  .pseg button.on[data-rm-p="3"]{background:#5d6b7e; color:#fff; font-weight:700}
+  .kw-row{display:flex; align-items:center; gap:7px; padding:6px 8px; border:1px solid var(--line); border-radius:9px; margin-bottom:5px; flex-wrap:wrap}
+  .kw-row .kw-t{flex:1 1 90px; font-size:12.3px; font-weight:600; color:var(--ink); word-break:break-all}
+  .kw-row .kw-del{border:1px solid var(--line); background:#fff; color:var(--ink-3); border-radius:7px;
+    width:24px; height:24px; cursor:pointer; font-size:11px; flex:none}
+  .rm-empty{text-align:center; color:var(--ink-3); font-size:11.8px; padding:22px 10px; border:1px dashed var(--line); border-radius:10px}
+  .rm-count{font-size:10.8px; color:var(--ink-3); margin:0 0 6px 2px}
+  .rm-foot{display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:10px 16px; border-top:1px solid var(--line); background:#fbfcfe; flex:none}
+  .rm-foot .rm-sum{font-size:10.8px; color:var(--ink-3); margin-right:auto; line-height:1.45}
+  .rm-foot .rm-sum b{color:var(--ink-2); font-weight:600}
+  .b-rule{background:var(--violet-weak); color:var(--violet); border:1px solid #e0d7f7}
+  .row .rmeta .rm-mark{color:var(--violet); font-weight:600}
+  @media (max-width:760px){
+    #rulesModal{padding:0}
+    .rm-card{width:100%; height:100%; max-height:none; border-radius:0; border:none}
+    .rm-body{padding:8px 12px 12px}
+    .rm-head{padding:11px 12px}
+    .rm-tabs{padding:9px 12px 0}
+    .rm-foot{padding:9px 12px}
+    .rm-foot .rm-sum{flex:1 1 100%; margin-bottom:3px}
+    .pseg button{padding:5px 6px; font-size:10.5px}
+    .snd-row{gap:6px}
+  }
+
+  /* === PRESENTATION_START (CSS) ==========================================
+     📊 발표 모드 — 임원·사내 보고용 16:9 슬라이드 덱.
+     보고가 끝나면 이 블록을 HTML·JS의 같은 마커 구간과 함께 통째로 지우면 됩니다.
+     ====================================================================== */
+  /* 헤더의 📊 발표 버튼 */
+  .deck-btn{height:32px; padding:0 11px; border-radius:9px; border:1px solid #c7d9f8;
+    background:linear-gradient(180deg,#f3f8ff,#e4eefd); color:#1b4c9c; cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center; gap:4px;
+    font-size:11.5px; font-weight:800; white-space:nowrap; font-family:inherit;
+    box-shadow:inset 0 1px 0 #fff; transition:background .12s, transform .06s, box-shadow .12s}
+  .deck-btn:hover{background:linear-gradient(180deg,#eaf3ff,#d7e6fd); box-shadow:0 2px 9px rgba(31,95,208,.2), inset 0 1px 0 #fff}
+  .deck-btn:active{transform:scale(.97)}
+
+  /* 무대 */
+  #deck{position:fixed; inset:0; z-index:76; display:none; flex-direction:column; color:#fff;
+    background:radial-gradient(125% 95% at 12% -10%, #1d2f52 0%, #131f34 42%, #0a111d 100%)}
+  #deck.on{display:flex}
+
+  /* 상단 바 */
+  .deck-top{display:flex; align-items:center; gap:11px; padding:12px 24px; flex:none;
+    border-bottom:1px solid rgba(255,255,255,.07)}
+  .deck-top .dk-mark{width:7px; height:7px; border-radius:999px; background:#5b8cf7; flex:none;
+    box-shadow:0 0 0 4px rgba(91,140,247,.16)}
+  .deck-top .dk-brand{font-size:11.5px; color:rgba(255,255,255,.5); letter-spacing:.01em;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .deck-top .dk-brand b{color:rgba(255,255,255,.86); font-weight:700}
+  .deck-top .dk-close{margin-left:auto; flex:none; height:32px; padding:0 14px; border-radius:9px; cursor:pointer;
+    border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.05); color:#e8eefb;
+    font-size:11.8px; font-weight:600; font-family:inherit; white-space:nowrap; transition:background .14s}
+  .deck-top .dk-close:hover{background:rgba(255,255,255,.13)}
+
+  /* 슬라이드 카드 — 16:9 */
+  .deck-stage{position:relative; flex:1; min-height:0; padding:16px 24px 4px}
+  .slide{position:absolute; inset:0; margin:auto;
+    width:min(1120px, calc(100vw - 48px), calc((100vh - 200px) * 1.7778));
+    aspect-ratio:16/9; max-height:calc(100vh - 200px);
+    background:#fff; color:var(--ink); border-radius:20px; padding:34px 44px 22px; overflow-y:auto;
+    box-shadow:0 34px 80px rgba(3,8,18,.58), inset 0 1px 0 rgba(255,255,255,.9);
+    display:flex; flex-direction:column; gap:12px;
+    opacity:0; transform:translateY(16px) scale(.985); pointer-events:none;
+    transition:opacity .36s ease, transform .36s cubic-bezier(.22,.7,.28,1)}
+  .slide.on{opacity:1; transform:none; pointer-events:auto; z-index:1}
+
+  /* 슬라이드 타이포 */
+  .sl-eyebrow{display:flex; align-items:center; gap:8px; font-size:11px; font-weight:800;
+    letter-spacing:.16em; color:#1f5fd0; text-transform:uppercase; flex:none}
+  .sl-eyebrow::before{content:""; width:20px; height:2px; border-radius:2px; background:#1f5fd0; display:block}
+  .sl-title{font-size:34px; line-height:1.24; letter-spacing:-1.1px; margin:2px 0 0; font-weight:800; color:#0f1a2b}
+  .sl-title em{font-style:normal; color:#1f5fd0}
+  .sl-title small{display:block; font-size:15px; font-weight:600; color:#8794a5; letter-spacing:0; margin-top:9px}
+  .sl-lead{font-size:14.5px; color:#4a5768; line-height:1.7; margin:0; max-width:880px; flex:none}
+  .sl-body{flex:1; min-height:0; display:flex; flex-direction:column; gap:12px; justify-content:center; padding:4px 0}
+
+  /* 카드 */
+  .sl-grid{display:grid; gap:13px}
+  .sl-grid.c3{grid-template-columns:repeat(3,1fr)}
+  .sl-grid.c2{grid-template-columns:repeat(2,1fr)}
+  .sl-card{position:relative; border:1px solid #e6ebf3; border-radius:14px; padding:16px 17px 15px;
+    background:linear-gradient(180deg,#fbfcfe,#f7f9fc); overflow:hidden}
+  .sl-card::after{content:""; position:absolute; left:0; top:0; width:100%; height:3px; background:#dbe3ee}
+  .sl-card.p1::after{background:linear-gradient(90deg,#d93b3b,#f0836d)}
+  .sl-card.p2::after{background:linear-gradient(90deg,#1f5fd0,#6fa2f8)}
+  .sl-card.p3::after{background:linear-gradient(90deg,#7b8798,#b9c3d1)}
+  .sl-card .ic{width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    font-size:17px; background:#eef3fb}
+  .sl-card.p1 .ic{background:#fdeaea}
+  .sl-card.p2 .ic{background:#eaf1fd}
+  .sl-card.p3 .ic{background:#eef1f6}
+  .sl-card h3{font-size:16px; margin:9px 0 6px; letter-spacing:-.3px; color:#0f1a2b}
+  .sl-card p, .sl-card li{font-size:12.9px; color:#4a5768; line-height:1.62; margin:0}
+  .sl-card ul{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:4px}
+  .sl-card ul li{position:relative; padding-left:11px}
+  .sl-card ul li::before{content:""; position:absolute; left:0; top:8px; width:4px; height:4px;
+    border-radius:999px; background:#a9b6c7}
+  .sl-card.p1 ul li::before{background:#d93b3b}
+  .sl-card.p2 ul li::before{background:#1f5fd0}
+  .sl-card b{color:#0f1a2b; font-weight:700}
+  .sl-sub{font-size:11.5px; color:#8794a5; margin-top:9px; line-height:1.55; padding-top:8px; border-top:1px dashed #e6ebf3}
+  .pr-badge{display:inline-flex; align-items:center; gap:4px; font-size:12.5px; font-weight:800;
+    padding:4px 10px; border-radius:999px; white-space:nowrap}
+  .pr-badge.b1{background:#fdeaea; color:#b3342f}
+  .pr-badge.b2{background:#eaf1fd; color:#1b4c9c}
+  .pr-badge.b3{background:#eef1f6; color:#5d6b7e}
+
+  /* 흐름도 · 타임라인 */
+  .flow{display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-top:2px}
+  .flow .fs{font-size:11.8px; font-weight:700; padding:7px 12px; border-radius:10px; white-space:nowrap;
+    background:#fff; border:1px solid #dbe4f1; color:#33445c}
+  .flow .fs.on{background:#1f5fd0; border-color:#1f5fd0; color:#fff; box-shadow:0 4px 12px rgba(31,95,208,.24)}
+  .flow .fs.dim{color:#8794a5; border-style:dashed}
+  .flow .fa{color:#b3bfd0; font-size:12px}
+  .tl{display:flex; align-items:center; gap:7px; margin:11px 0 2px; flex-wrap:wrap}
+  .tl-step{font-size:11.6px; font-weight:700; padding:6px 10px; border-radius:9px; background:#fff;
+    border:1px solid #dbe4f1; color:#33445c; white-space:nowrap}
+  .tl-step.now{background:#1f5fd0; border-color:#1f5fd0; color:#fff}
+  .tl-ar{color:#b3bfd0; font-size:12px}
+
+  /* 확장 로드맵 */
+  .rmap{display:grid; grid-template-columns:repeat(3,1fr); gap:11px}
+  .rmap .st{position:relative; border:1px solid #e6ebf3; border-radius:13px; padding:14px 14px 13px; background:#fbfcfe}
+  .rmap .st .n{font-size:10.2px; font-weight:800; color:#8794a5; letter-spacing:.08em}
+  .rmap .st.now{border-color:#c7d9f8; background:linear-gradient(180deg,#f4f9ff,#eaf2fe)}
+  .rmap .st.now .n{color:#1f5fd0}
+  .rmap .st h4{font-size:14px; margin:5px 0 5px; letter-spacing:-.2px; color:#0f1a2b}
+  .rmap .st p{font-size:12px; color:#4a5768; margin:0; line-height:1.55}
+  .sl-cta{display:inline-flex; align-items:center; gap:7px; align-self:flex-start; padding:12px 20px; border-radius:11px;
+    border:none; background:linear-gradient(135deg,#2563eb,#1a4fbf); color:#fff; font-size:13.5px; font-weight:800;
+    cursor:pointer; font-family:inherit; box-shadow:0 8px 20px rgba(31,95,208,.28); transition:transform .1s, box-shadow .15s}
+  .sl-cta:hover{box-shadow:0 10px 24px rgba(31,95,208,.36)}
+  .sl-cta:active{transform:scale(.98)}
+  .sl-foot{margin-top:auto; border-top:1px solid #eef1f6; padding-top:11px; font-size:12.5px; color:#4a5768; line-height:1.6}
+  .sl-foot b{color:#0f1a2b}
+
+  /* 하단 진행 바 + 내비게이션 */
+  .deck-progress{flex:none; height:3px; margin:8px 24px 0; border-radius:2px; background:rgba(255,255,255,.1); overflow:hidden}
+  .deck-progress i{display:block; height:100%; width:0;
+    background:linear-gradient(90deg,#4f7df3,#9cc0ff); transition:width .36s cubic-bezier(.22,.7,.28,1)}
+  .deck-nav{display:flex; align-items:center; justify-content:center; gap:12px; padding:11px 24px 9px; flex:none; flex-wrap:wrap}
+  .dk-nav-btn{height:34px; padding:0 14px; border-radius:9px; border:1px solid rgba(255,255,255,.16);
+    background:rgba(255,255,255,.06); color:#fff; font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;
+    transition:background .14s}
+  .dk-nav-btn:hover{background:rgba(255,255,255,.14)}
+  .dk-nav-btn:disabled{opacity:.28; cursor:default}
+  .dk-dots{display:flex; gap:6px; align-items:center}
+  .dk-dot{width:18px; height:4px; border-radius:999px; background:rgba(255,255,255,.2); cursor:pointer; border:none;
+    padding:0; transition:background .2s, width .2s}
+  .dk-dot:hover{background:rgba(255,255,255,.36)}
+  .dk-dot.on{width:30px; background:#9cc0ff}
+  .dk-ind{font-size:12px; color:rgba(255,255,255,.6); font-variant-numeric:tabular-nums; min-width:46px; text-align:center}
+  .deck-hint{font-size:10.6px; color:rgba(255,255,255,.3); text-align:center; padding:0 0 11px; flex:none}
+  .deck-hint kbd{font-family:inherit; font-size:10px; padding:1px 5px; border-radius:4px;
+    border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.06); color:rgba(255,255,255,.6)}
+
+  @media (max-width:900px){
+    .slide{width:calc(100vw - 24px); height:calc(100vh - 168px); max-height:none; aspect-ratio:auto; padding:24px 22px 18px; border-radius:16px}
+    .sl-title{font-size:23px; letter-spacing:-.6px}
+    .sl-title small{font-size:12.5px}
+    .sl-lead{font-size:12.8px}
+    .sl-grid.c3, .sl-grid.c2, .rmap{grid-template-columns:1fr}
+    .sl-card{padding:12px 13px 11px}
+    .sl-card h3{font-size:13.6px}
+    .sl-card p, .sl-card li{font-size:11.9px}
+    .sl-body{gap:9px; justify-content:flex-start}
+    .deck-top{padding:10px 14px}
+    .deck-top .dk-brand{font-size:10px}
+    .deck-top .dk-close{font-size:10.5px; padding:0 10px; height:30px}
+    .deck-progress{margin:6px 14px 0}
+    .deck-nav{padding:9px 14px 7px; gap:8px}
+    .dk-nav-btn{height:32px; padding:0 11px; font-size:11px}
+    .deck-btn{padding:0 9px; font-size:11px}
+  }
+  @media (max-width:700px){
+    .deck-btn{padding:0 8px; font-size:10.5px}
+    .deck-btn .dk-t{display:none}
+    .notif-test{display:none}
+  }
+  /* === PRESENTATION_END (CSS) === */
+
   footer{text-align:center; color:var(--ink-3); font-size:10.5px; padding:14px 0 30px; line-height:1.7}
   .toast{position:fixed; left:50%; bottom:24px; transform:translate(-50%,20px); background:#16202e; color:#fff; font-size:12.5px;
     padding:9px 14px; border-radius:9px; opacity:0; pointer-events:none; transition:.22s; z-index:60; box-shadow:0 8px 24px rgba(0,0,0,.2)}
@@ -593,6 +824,10 @@
         <div class="sync" id="sync">마지막 동기화<br><b>-</b></div>
         <button class="icon-btn" id="bellBtn" title="새 메일 알림 켜기" aria-label="새 메일 알림">🔔</button>
         <button class="notif-test" id="notifTestBtn" title="브라우저 알림 팝업이 뜨는지 바로 테스트" aria-label="알림 테스트">🔔 알림 테스트</button>
+        <button class="icon-btn" id="rulesBtn" title="분류 규칙 설정 (발신자·제목 키워드)" aria-label="분류 규칙 설정">⚙️</button>
+        <!-- === PRESENTATION_START (헤더 버튼) === -->
+        <button class="deck-btn" id="deckBtn" title="발표 모드 — 임원·사내 보고용 슬라이드" aria-label="발표 모드"><span>📊</span><span class="dk-t">발표</span></button>
+        <!-- === PRESENTATION_END (헤더 버튼) === -->
         <button class="icon-btn" id="refreshBtn" title="새로고침" aria-label="새로고침">↻</button>
         <button class="icon-btn" id="lockBtn" title="잠금" aria-label="잠금">🔒</button>
       </div>
@@ -690,6 +925,28 @@
   <div id="drawerContent"></div>
 </aside>
 <div class="toast" id="toast"></div>
+
+<!-- ============ ⚙️ 분류 규칙 설정 (이 기기에서만 저장) ============ -->
+<div id="rulesModal" role="dialog" aria-modal="true" aria-label="분류 규칙 설정" aria-hidden="true">
+  <div class="rm-back" data-rm-close="1"></div>
+  <div class="rm-card">
+    <div class="rm-head">
+      <h2>⚙️ 분류 규칙 설정</h2>
+      <button type="button" class="rm-x" id="rmX" aria-label="닫기">✕</button>
+    </div>
+    <div class="rm-tabs">
+      <button type="button" class="rm-tab on" data-rm-tab="send">👤 발신자별 등급</button>
+      <button type="button" class="rm-tab" data-rm-tab="kw">🔤 제목 키워드</button>
+    </div>
+    <div class="rm-body" id="rmBody"></div>
+    <div class="rm-foot">
+      <span class="rm-sum" id="rmSum"></span>
+      <button type="button" class="mini" id="rmReset" title="직접 지정한 규칙을 모두 지우고 기본 분류로 되돌립니다">커스텀 규칙 초기화</button>
+      <button type="button" class="btn" data-rm-close="1">닫기</button>
+      <button type="button" class="btn btn-primary" id="rmSave">저장 및 즉시 반영</button>
+    </div>
+  </div>
+</div>
 <!-- 화면 상단 알림 카드(OS 팝업이 막혀도 항상 뜼) -->
 <div id="alertBanner" role="alert" aria-live="assertive" aria-hidden="true">
   <div class="ab-ico">🔴</div>
@@ -709,11 +966,33 @@
   <div class="lb-cap" id="lbCap"></div>
 </div>
 
+<!-- === PRESENTATION_START (HTML) ========================================
+     📊 발표 모드 — 임원·사내 보고용 16:9 슬라이드 덱.
+     슬라이드 본문(카드·도식)은 스크립트의 SLIDES 배열에서 그린다.
+     ====================================================================== -->
+<div id="deck" role="dialog" aria-modal="true" aria-label="발표 모드" aria-hidden="true">
+  <div class="deck-top">
+    <span class="dk-mark"></span>
+    <span class="dk-brand"><b>업무 메일 자동 분류 대시보드</b> · 천일정기화물자동차(주) 납입1팀</span>
+    <button type="button" class="dk-close" id="deckClose">✕ 대시보드 시연으로 돌아가기</button>
+  </div>
+  <div class="deck-stage" id="deckStage"></div>
+  <div class="deck-progress"><i id="deckBar"></i></div>
+  <div class="deck-nav">
+    <button type="button" class="dk-nav-btn" id="deckPrev">← 이전</button>
+    <div class="dk-dots" id="deckDots"></div>
+    <span class="dk-ind" id="deckInd">1 / 6</span>
+    <button type="button" class="dk-nav-btn" id="deckNext">다음 →</button>
+  </div>
+  <div class="deck-hint"><kbd>←</kbd> <kbd>→</kbd> 슬라이드 이동 · <kbd>Esc</kbd> 닫기</div>
+</div>
+<!-- === PRESENTATION_END (HTML) === -->
+
 <script>
 (() => {
   "use strict";
 
-  const LS = { pin: "mb_pin_v1", state: "mb_state_v1", cal: "mb_calopen_v1", bell: "mb_bell_v1", seen: "mb_seen_p1_v1", cal2: "mb_cal_items_v1", cus: "mb_cal_custom_v1", pinList: "mb_pinned_v1", wx: "mb_wxopen_v1" };
+  const LS = { pin: "mb_pin_v1", state: "mb_state_v1", cal: "mb_calopen_v1", bell: "mb_bell_v1", seen: "mb_seen_p1_v1", cal2: "mb_cal_items_v1", cus: "mb_cal_custom_v1", pinList: "mb_pinned_v1", wx: "mb_wxopen_v1", rules: "mb_rules_v1" };
   const AUTO_REFRESH_MS = 5 * 60 * 1000;
   const URG = { urgent: 0, high: 1, normal: 2 };
   const ST_LABEL = { todo: "대기", doing: "진행중", done: "완료" };
@@ -866,6 +1145,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     try {
       const enc = await fetchEnc();
       DATA = await decryptData(enc, PIN); ENC = enc;
+      ADDR = null;
       $("sync").innerHTML = "마지막 동기화<br><b>" + stamp(new Date()) + "</b>";
       renderAll();
       wxLoad();
@@ -999,7 +1279,66 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   const archItems = () => items().filter(isArchived);
   const stateOf = (it) => itemState(it.id);
   const isDone = (it) => stateOf(it).status === "done";
-  const priorityOf = (it) => Number(it.priority) || 3;
+
+  /* ---------------- ⚙️ 내 분류 규칙 (이 기기에서만) ----------------
+     data.json 이 내려준 기본 분류(priority · vipRank)는 그대로 두고,
+     여기서 지정한 발신자 · 제목 키워드 규칙만 그 위에 덧씌운다.
+     저장 위치: localStorage `mb_rules_v1`. 규칙이 없으면 예전과 완전히 동일하게 동작한다. */
+  let RULES = null, RB_EMAIL = null, RB_NAME = null, RB_KW = null, RULES_VER = 0, ADDR = null;
+  const normName = (s) => String(s == null ? "" : s).replace(/\s+/g, "").toLowerCase();
+  const isRank = (n) => n === 1 || n === 2 || n === 3;
+  function rulesLoad() {
+    const out = { senders: [], keywords: [] };
+    let raw = null;
+    try { raw = JSON.parse(localStorage.getItem(LS.rules) || "null"); } catch (e) { raw = null; }
+    if (raw && typeof raw === "object") {
+      if (Array.isArray(raw.senders)) raw.senders.forEach((r) => {
+        if (!r || !r.key) return;
+        const p = Number(r.priority);
+        if (!isRank(p)) return;
+        out.senders.push({ key: String(r.key), name: String(r.name || ""), email: String(r.email || "").toLowerCase(), priority: p, toOnly: !!r.toOnly });
+      });
+      if (Array.isArray(raw.keywords)) raw.keywords.forEach((r) => {
+        const t = r && r.text ? String(r.text).trim() : "";
+        const p = Number(r && r.priority);
+        if (!t || !isRank(p)) return;
+        out.keywords.push({ text: t, priority: p });
+      });
+    }
+    RULES = out;
+    rebuildRules();
+    return RULES;
+  }
+  function rebuildRules() {
+    RB_EMAIL = new Map(); RB_NAME = new Map(); RB_KW = [];
+    RULES_VER++;
+    if (!RULES) return;
+    RULES.senders.forEach((s) => {
+      if (s.email) RB_EMAIL.set(s.email, s);
+      if (s.name) RB_NAME.set(normName(s.name), s);
+    });
+    RB_KW = RULES.keywords.map((k) => ({ re: k.text.toLowerCase(), priority: k.priority, text: k.text }));
+  }
+  /* 이 메일에 적용되는 ‘내 규칙’ — 없으면 null(기본 분류 그대로). 발신자 규칙을 먼저 보고 키워드 규칙을 본다. */
+  function ruleForItem(it) {
+    if (!RULES) rulesLoad();
+    if (!RB_EMAIL.size && !RB_NAME.size && !RB_KW.length) return null;
+    if (it._ruleV === RULES_VER) return it._rule || null;
+    let res = null;
+    const em = String(it.senderEmail || "").toLowerCase();
+    let s = em ? RB_EMAIL.get(em) : null;
+    if (!s) s = RB_NAME.get(normName(it.senderName || it.sender)) || null;
+    if (s && (!s.toOnly || it.recipientRole === "To")) {
+      res = { p: s.priority, kind: "sender", label: s.name || s.email || s.key };
+    } else {
+      const t = String(it.title || "").toLowerCase();
+      for (let i = 0; i < RB_KW.length; i++) if (t.indexOf(RB_KW[i].re) >= 0) { res = { p: RB_KW[i].priority, kind: "keyword", label: RB_KW[i].text }; break; }
+    }
+    it._ruleV = RULES_VER; it._rule = res;
+    return res;
+  }
+  /* 화면에 보이는 최종 우선순위 — 내 규칙이 있으면 그 값, 없으면 기존 data.json 값 */
+  const priorityOf = (it) => { const r = ruleForItem(it); return r ? r.p : (Number(it.priority) || 3); };
   const p1Items = () => liveItems().filter((i) => priorityOf(i) === 1);
   const p2Items = () => liveItems().filter((i) => priorityOf(i) === 2);
   const p3Items = () => liveItems().filter((i) => priorityOf(i) === 3);
@@ -1681,7 +2020,11 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       const v2 = p1Items().filter((i) => (Number(i.vipRank) || 3) === 2).length;
       note.style.display = "";
       note.innerHTML = "정렬 <b>1-1</b> 최우선 발신(" + v1 + "건) → <b>1-2</b> 주요 발신 · 내가 수신 " + v2 + "건 → " +
-        "<b>1-3</b> 본문 지목, 그 안에서 긴급도·마감순";
+        "<b>1-3</b> 본문 지목, 그 안에서 긴급도·마감순" +
+        (function () {
+          const mine = p1Items().filter((i) => { const r = ruleForItem(i); return r && r.p === 1; }).length;
+          return mine ? " · <span style=\"color:var(--violet); font-weight:700\">⚙️ 내 규칙 " + mine + "건</span>" : "";
+        })();
     } else if (view.tab === "fu") {
       note.style.display = "";
       note.innerHTML = "보낸편지함(10/30~11/19)에서 <b>상대에게 회신이 필요한 요청</b>을 보낸 건을 받은편지함과 대조한 결과입니다. (업무 완료 보고·자료 제출은 제외) " +
@@ -1716,6 +2059,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         '<span class="rtitle">' + esc(it.title) + "</span>" +
         (thr > 1 ? '<span class="thr">+' + (thr - 1) + "</span>" : "") + "</span>" +
         '<span class="rmeta"><b>' + esc(it.sender) + "</b> · " + esc(it.receivedAt) +
+        (ruleForItem(it) ? ' · <span class="rm-mark" title="⚙️ 내 분류 규칙이 이 메일에 적용되어 있습니다">⚙️ 내 규칙</span>' : "") +
         (it.attachmentSummary ? " · 📎 " + esc(it.attachmentSummary) : (it.attachments && it.attachments.length ? " · 📎 " + esc(it.attachments.length + "건") : "")) +
         (it.imageCount ? " · 🖼 " + it.imageCount + "장" : "") +
         "</span></span>" +
@@ -1953,11 +2297,167 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     if (!$("sync").dataset.set) { $("sync").innerHTML = "마지막 동기화<br><b>" + stamp(new Date()) + "</b>"; $("sync").dataset.set = "1"; }
   }
 
+  /* ---------------- ⚙️ 분류 규칙 설정 모달 -------------
+     주소록(items() 발신자) · 제목 키워드에 등급을 지정하고, 저장하면
+     renderAll()로 KPI·탭 건수·목록이 새로고침 없이 즉시 다시 분류된다. */
+  const RM = { tab: "send", q: "", draft: null };
+  const RM_RANK_LABEL = { 1: "🔴 즉시", 2: "🟡 숙지", 3: "⚪ 열람" };
+
+  function addressBook() {
+    if (!DATA) return [];
+    if (ADDR) return ADDR;
+    const map = new Map();
+    items().forEach((it) => {
+      const email = String(it.senderEmail || "").toLowerCase();
+      const name = String(it.senderName || it.sender || "").trim();
+      if (!email && !name) return;
+      const key = email || ("n:" + normName(name));
+      let r = map.get(key);
+      if (!r) { r = { key, email, name, count: 0, live: 0, base: 9, vipLabel: "", last: "" }; map.set(key, r); }
+      r.count++;
+      if (!it.archived) r.live++;
+      if (!r.name && name) r.name = name;
+      if (!r.vipLabel && it.vipLabel) r.vipLabel = it.vipLabel;
+      const bp = Number(it.priority) || 3;
+      if (bp < r.base) r.base = bp;
+      const t = it.lastAt || it.receivedAt || "";
+      if (t > r.last) r.last = t;
+    });
+    ADDR = Array.from(map.values()).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+    return ADDR;
+  }
+  function rmFind(key) {
+    const d = RM.draft && RM.draft.senders.find((s) => s.key === key);
+    if (d) return d;
+    const b = addressBook().find((x) => x.key === key);
+    return b ? { key: b.key, name: b.name, email: b.email, priority: 0, toOnly: false } : null;
+  }
+  function rmUpsert(key, name, email, priority, toOnly) {
+    const i = RM.draft.senders.findIndex((s) => s.key === key);
+    if (!isRank(priority)) { if (i >= 0) RM.draft.senders.splice(i, 1); return; }
+    const rec = { key, name: name || "", email: email || "", priority, toOnly: !!toOnly };
+    if (i >= 0) RM.draft.senders[i] = rec; else RM.draft.senders.push(rec);
+  }
+  const psegHtml = (key, p) => '<span class="pseg">' +
+    [[0, "기본"], [1, "🔴 즉시"], [2, "🟡 숙지"], [3, "⚪ 열람"]].map(([v, l]) =>
+      '<button type="button" data-rm-p="' + v + '" data-key="' + esc(key) + '" class="' + (p === v ? "on" : "") + '">' + l + "</button>").join("") + "</span>";
+
+  function rmListHtml() {
+    const q = RM.q.trim().toLowerCase();
+    const book = addressBook();
+    const have = new Set(book.map((b) => b.key));
+    const rows = [];
+    RM.draft.senders.forEach((s) => {
+      if (!have.has(s.key)) rows.push({ key: s.key, name: s.name, email: s.email, count: 0, base: 9, vipLabel: "", added: true });
+    });
+    book.forEach((b) => rows.push(b));
+    const dm = new Map(); RM.draft.senders.forEach((s) => dm.set(s.key, s));
+    const list = rows.filter((r) => !q || (r.name + " " + r.email + " " + (r.vipLabel || "")).toLowerCase().indexOf(q) >= 0);
+    if (!list.length) return '<div class="rm-empty">' + (q
+      ? "‘" + esc(RM.q.trim()) + "’ 와 맞는 발신자가 없습니다. 위 입력창에서 직접 추가할 수 있습니다."
+      : "발신자 주소록이 비어 있습니다. 위 입력창에서 직접 추가해 주세요.") + "</div>";
+    return list.map((r) => {
+      const d = dm.get(r.key); const p = d ? d.priority : 0; const toOnly = !!(d && d.toOnly);
+      const tag = r.vipLabel ? '<span class="snd-tag" title="기본 등급 (그대로 유지)">' + esc(r.vipLabel) + "</span>" : "";
+      const baseTag = p ? '<span class="snd-tag b">내 규칙</span>'
+        : (r.base === 1 ? '<span class="snd-tag">기본 🔴</span>' : (r.base === 2 ? '<span class="snd-tag b">기본 🟡</span>' : ""));
+      return '<div class="snd-row' + (p ? " on" : "") + '">' +
+        '<div class="snd-main"><div class="nm">' + esc(r.name || r.email || r.key) + tag + baseTag + "</div>" +
+        '<div class="em">' + esc(r.email || "이메일 없음") +
+          (r.count ? '<span class="snd-n">' + (r.live ? "최근 " + r.live + " · " : "") + "전체 " + r.count + "건</span>"
+                  : '<span class="snd-n">직접 추가</span>') + "</div></div>" +
+        '<label class="toonly' + (p ? "" : " off") + '" title="직접 수신인(To)일 때만 이 등급을 적용합니다"><input type="checkbox" data-rm-to="' + esc(r.key) + '"' +
+          (toOnly ? " checked" : "") + (p ? "" : " disabled") + ">To만</label>" +
+        psegHtml(r.key, p) + "</div>";
+    }).join("");
+  }
+  function rmKwHtml() {
+    if (!RM.draft.keywords.length) return '<div class="rm-empty">아직 키워드 규칙이 없습니다. 예: ‘긴급’, ‘용기승인’, ‘정례회의’, ‘출하리스트’</div>';
+    return RM.draft.keywords.map((k, i) => '<div class="kw-row"><span class="kw-t">' + esc(k.text) + "</span>" +
+      '<span class="pseg">' + [[1, "🔴 즉시"], [2, "🟡 숙지"], [3, "⚪ 열람"]].map(([v, l]) =>
+        '<button type="button" data-rm-kwp="' + v + '" data-i="' + i + '" class="' + (k.priority === v ? "on" : "") + '">' + l + "</button>").join("") + "</span>" +
+      '<button type="button" class="kw-del" data-rm-kwdel="' + i + '" aria-label="삭제" title="이 키워드 규칙 삭제">✕</button></div>').join("");
+  }
+  function rmSum() {
+    const s = RM.draft ? RM.draft.senders.length : 0, k = RM.draft ? RM.draft.keywords.length : 0;
+    $("rmSum").innerHTML = "내 규칙 <b>발신자 " + s + " · 키워드 " + k + "</b> · 저장하면 새로고침 없이 바로 다시 분류됩니다";
+  }
+  function rmRender() {
+    if (!RM.draft) return;
+    const tabs = $("rulesModal").querySelectorAll(".rm-tab");
+    for (let i = 0; i < tabs.length; i++) tabs[i].classList.toggle("on", tabs[i].dataset.rmTab === RM.tab);
+    let html = "";
+    if (RM.tab === "send") {
+      html += '<div class="rm-note">기본 설정된 최우선·주요 발신자 규칙은 그대로 유지됩니다. 여기서 고른 등급만 그 위에 덧씌워집니다. ' +
+        '목록은 지금까지 오간 메일의 발신자를 모은 주소록입니다.</div>' +
+        '<label class="rm-search">🔍<input id="rmQ" type="search" placeholder="이름 · 이메일로 찾기" value="' + esc(RM.q) + '" autocomplete="off"></label>' +
+        '<form class="rm-add" id="rmAddForm" autocomplete="off"><span class="lbl">＋ 직접 추가</span>' +
+        '<input type="text" id="rmAddName" placeholder="이름" maxlength="40" aria-label="발신자 이름" style="flex:1 1 90px">' +
+        '<input type="email" id="rmAddEmail" placeholder="이메일" maxlength="80" aria-label="발신자 이메일" style="flex:1 1 140px">' +
+        '<select class="rm-sel" id="rmAddP" aria-label="등급"><option value="1">🔴 즉시</option><option value="2">🟡 숙지</option><option value="3" selected>⚪ 열람</option></select>' +
+        '<button type="submit" class="mini on">추가</button></form>' +
+        '<div class="rm-count">주소록 ' + addressBook().length + '명 · 그중 내 규칙 ' + RM.draft.senders.length + '명</div>' +
+        '<div id="rmList">' + rmListHtml() + "</div>";
+    } else {
+      html += '<div class="rm-note">제목에 이 단어가 들어간 메일을 고른 등급으로 분류합니다. 발신자 규칙이 먼저 적용되고, 그다음 키워드 규칙을 봅니다.</div>' +
+        '<form class="rm-add" id="rmKwForm" autocomplete="off"><span class="lbl">＋ 키워드 추가</span>' +
+        '<input type="text" id="rmKwText" placeholder="제목 키워드 (예: 긴급)" maxlength="40" aria-label="제목 키워드" style="flex:1 1 160px">' +
+        '<select class="rm-sel" id="rmKwP" aria-label="등급"><option value="1">🔴 즉시</option><option value="2">🟡 숙지</option><option value="3" selected>⚪ 열람</option></select>' +
+        '<button type="submit" class="mini on">추가</button></form>' +
+        '<div class="rm-count">키워드 규칙 ' + RM.draft.keywords.length + '개</div>' +
+        '<div id="rmList">' + rmKwHtml() + "</div>";
+    }
+    $("rmBody").innerHTML = html;
+    rmSum();
+  }
+  function rmIsOpen() { const m = $("rulesModal"); return !!m && m.classList.contains("on"); }
+  function rmOpen() {
+    const r = rulesLoad();
+    RM.tab = "send"; RM.q = "";
+    RM.draft = { senders: r.senders.map((s) => Object.assign({}, s)), keywords: r.keywords.map((k) => Object.assign({}, k)) };
+    $("rulesModal").classList.add("on");
+    $("rulesModal").setAttribute("aria-hidden", "false");
+    document.body.classList.add("locked");
+    rmRender();
+    setTimeout(() => { const q = $("rmQ"); if (q && !("ontouchstart" in window)) q.focus(); }, 60);
+  }
+  function rmClose() {
+    const m = $("rulesModal"); if (!m) return;
+    m.classList.remove("on"); m.setAttribute("aria-hidden", "true");
+    if (!$("drawer").classList.contains("on") && !$("lightbox").classList.contains("on")) document.body.classList.remove("locked");
+  }
+  function rmSave() {
+    if (!RM.draft) return;
+    const senders = RM.draft.senders.filter((s) => isRank(s.priority))
+      .map((s) => ({ key: s.key, name: s.name || "", email: s.email || "", priority: s.priority, toOnly: !!(s.toOnly && s.priority) }));
+    const keywords = RM.draft.keywords.filter((k) => k.text && k.text.trim() && isRank(k.priority))
+      .map((k) => ({ text: k.text.trim(), priority: k.priority }));
+    try {
+      localStorage.setItem(LS.rules, JSON.stringify({ senders, keywords, savedAt: new Date().toISOString() }));
+    } catch (err) { toast("이 브라우저에 저장하지 못했습니다 — 저장 공간을 확인해 주세요", 3000); return; }
+    RULES = null; rulesLoad();
+    renderAll();
+    /* 내 규칙 때문에 🔴이 된 예전 메일이 5분 뒤 ‘새 메일’ 팝업으로 뜨지 않게, 지금 🔴을 본 것으로 표시 */
+    try { const s = loadSeen() || new Set(); liveP1Ids().forEach((id) => s.add(id)); saveSeen(s); seenP1 = s; } catch (err) {}
+    rmClose();
+    toast("규칙을 저장했습니다 · 🔴 " + p1Items().length + " · 🟡 " + p2Items().length + " · ⚪ " + p3Items().length + "건으로 다시 분류했습니다", 3200);
+  }
+  function rmReset() {
+    try { localStorage.removeItem(LS.rules); } catch (err) {}
+    RULES = null; rulesLoad();
+    RM.draft = { senders: [], keywords: [] }; RM.q = "";
+    renderAll();
+    rmRender();
+    toast("커스텀 규칙을 지웠습니다 — 기본 분류로 되돌아갔습니다", 2800);
+  }
+
   /* ---------------- 상세 드로어 ---------------- */
   function badgeRow(it) {
-    const p = priorityOf(it), d = dueInfo(it), r = replyOf(it);
+    const p = priorityOf(it), d = dueInfo(it), r = replyOf(it), rl = ruleForItem(it);
     const parts = [];
     parts.push('<span class="badge b-p' + p + '">' + (p === 1 ? "🔴 즉시 확인" : p === 2 ? "🟡 흐름 참고" : "⚪ 단순 공유") + "</span>");
+    if (rl) parts.push('<span class="badge b-rule" title="⚙️ 내 분류 규칙으로 지정됨 · ' +
+      esc((rl.kind === "sender" ? "발신자" : "제목 키워드") + " ‘" + rl.label + "’") + '">⚙️ 내 규칙</span>');
     if (p === 1) {
       parts.push(it.isVip && it.vipLabel
         ? '<span class="badge b-vip">' + esc(it.vipLabel) + "</span>"
@@ -2128,6 +2628,72 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     unlock(pin, $("remember").checked);
   });
   $("refreshBtn").addEventListener("click", () => refresh(true));
+  $("rulesBtn").addEventListener("click", rmOpen);
+  /* ⚙️ 분류 규칙 설정 — 모달 안의 탭·등급·추가·삭제 처리 */
+  $("rulesModal").addEventListener("click", (e) => {
+    if (e.target.id === "rmX" || e.target.closest("[data-rm-close]")) { rmClose(); return; }
+    if (e.target.id === "rmSave") { rmSave(); return; }
+    if (e.target.id === "rmReset") { rmReset(); return; }
+    const tab = e.target.closest("[data-rm-tab]");
+    if (tab) { RM.tab = tab.dataset.rmTab; RM.q = ""; rmRender(); return; }
+    const p = e.target.closest("[data-rm-p]");
+    if (p) {
+      const key = p.dataset.key, v = Number(p.dataset.rmP);
+      const cur = rmFind(key) || { name: "", email: "", toOnly: false };
+      rmUpsert(key, cur.name, cur.email, v, v ? !!cur.toOnly : false);
+      rmRender(); return;
+    }
+    const kp = e.target.closest("[data-rm-kwp]");
+    if (kp) {
+      const i = Number(kp.dataset.i);
+      if (RM.draft.keywords[i]) { RM.draft.keywords[i].priority = Number(kp.dataset.rmKwp); rmRender(); }
+      return;
+    }
+    const kd = e.target.closest("[data-rm-kwdel]");
+    if (kd) {
+      const i = Number(kd.dataset.rmKwdel);
+      if (i >= 0) { RM.draft.keywords.splice(i, 1); rmRender(); toast("키워드를 목록에서 지웠습니다 · 저장을 눌러야 반영됩니다"); }
+      return;
+    }
+  });
+  $("rulesModal").addEventListener("change", (e) => {
+    const t = e.target.closest("[data-rm-to]"); if (!t) return;
+    const cur = rmFind(t.dataset.rmTo);
+    if (!cur || !cur.priority) return;
+    rmUpsert(t.dataset.rmTo, cur.name, cur.email, cur.priority, t.checked);
+    rmRender();
+  });
+  $("rulesModal").addEventListener("input", (e) => {
+    if (e.target.id !== "rmQ") return;
+    RM.q = e.target.value;
+    const box = $("rmList"); if (box) box.innerHTML = rmListHtml();
+  });
+  $("rulesModal").addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (e.target.id === "rmAddForm") {
+      const name = ($("rmAddName").value || "").trim();
+      const email = ($("rmAddEmail").value || "").trim().toLowerCase();
+      const p = Number($("rmAddP").value) || 3;
+      if (!name && !email) { toast("이름이나 이메일을 하나는 넣어 주세요"); return; }
+      let rec = null;
+      if (email) rec = addressBook().find((b) => b.email === email);
+      if (!rec && name) rec = addressBook().find((b) => normName(b.name) === normName(name));
+      const key = rec ? rec.key : (email || ("n:" + normName(name)));
+      rmUpsert(key, name || (rec && rec.name) || "", email || (rec && rec.email) || "", p, false);
+      RM.q = ""; rmRender();
+      toast((name || email) + " → " + RM_RANK_LABEL[p] + " 규칙으로 추가했습니다");
+      return;
+    }
+    if (e.target.id === "rmKwForm") {
+      const txt = ($("rmKwText").value || "").trim();
+      const p = Number($("rmKwP").value) || 3;
+      if (!txt) { toast("키워드를 입력해 주세요"); return; }
+      const i = RM.draft.keywords.findIndex((k) => k.text.toLowerCase() === txt.toLowerCase());
+      if (i >= 0) RM.draft.keywords[i].priority = p; else RM.draft.keywords.push({ text: txt, priority: p });
+      rmRender();
+      toast("‘" + txt + "’ → " + RM_RANK_LABEL[p] + " 규칙으로 추가했습니다");
+    }
+  });
   $("bellBtn").addEventListener("click", toggleBell);
   $("notifTestBtn").addEventListener("click", testNotification);
   /* 상단 알림 카드 버튼 */
@@ -2386,9 +2952,199 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   });
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
+    if (rmIsOpen()) { rmClose(); return; }
     if ($("lightbox").classList.contains("on")) { closeLightbox(); return; }
     closeDrawer();
   });
+
+  /* === PRESENTATION_START (JS) ==========================================
+     📊 발표 모드 — 임원·사내 보고용 슬라이드 덱.
+     주의: 슬라이드에는 내부 구현·개인정보(도구 이름·비밀번호·개인 연락처 등)를 넣지 않는다.
+     보고가 끝나면 이 블록을 CSS·HTML의 같은 마커 구간과 함께 통째로 지우면 됩니다.
+     ====================================================================== */
+  const SLIDES = [
+    {
+      eyebrow: "01 · 도입 배경",
+      title: "매일 쏟아지는 업무 메일,<br><em>확인할 것</em>만 남깁니다",
+      lead: "출하·납입·고객사·사내 공유 메일이 하루에도 수십 건. 중요한 요청과 마감 기한이 반복되는 리스트 메일 사이에 묻히기 쉽습니다.",
+      body: `<div class="sl-grid c3">
+        <div class="sl-card"><div class="ic">📥</div><h3>핵심 요청이 묻힘</h3>
+          <p>출하리스트·납입요청 같은 정기 메일 사이로 실제 지시와 질문이 섞여 들어옵니다.</p></div>
+        <div class="sl-card"><div class="ic">⏰</div><h3>마감이 흩어져 있음</h3>
+          <p>기한이 제목·본문·첨부에 제각각이라 처리 순서를 매번 다시 판단해야 합니다.</p></div>
+        <div class="sl-card"><div class="ic">🔁</div><h3>왕복이 길어짐</h3>
+          <p>며칠에 걸친 회신에서 지금 어디까지 진행됐는지 한눈에 보기 어렵습니다.</p></div>
+      </div>`,
+      foot: "→ <b>메일에 직접 들어가지 않고</b>, 웹페이지 하나로 오늘 처리할 일과 기한을 확인하는 대시보드입니다."
+    },
+    {
+      eyebrow: "02 · 핵심 1",
+      title: "3단계 자동 분류",
+      lead: "제목·발신자·수신 형태·본문 지목을 함께 보고, 모든 메일을 세 단계로 나눕니다. 사람이 매번 판단하던 기준을 화면이 대신 지킵니다.",
+      body: `<div class="sl-grid c3">
+        <div class="sl-card p1"><span class="pr-badge b1">🔴 즉시</span>
+          <h3>지금 확인해야 하는 메일</h3>
+          <ul><li>최우선·주요 발신자</li><li>본문에서 본인을 직접 지목</li><li>본인 앞으로 직접 수신(To)</li></ul>
+          <p class="sl-sub">목록 최상단 고정 · 상단 KPI에 건수 표시</p></div>
+        <div class="sl-card p2"><span class="pr-badge b2">🟡 숙지</span>
+          <h3>흐름을 알아야 하는 메일</h3>
+          <ul><li>고객사(GM) 왕복·협의</li><li>사내 주요 이슈·결품·공지</li></ul>
+          <p class="sl-sub">진행 상황만 빠르게 파악</p></div>
+        <div class="sl-card p3"><span class="pr-badge b3">⚪ 열람</span>
+          <h3>반복되는 공유 메일</h3>
+          <ul><li>출하리스트 · 납입요청</li><li>재고·현황 단순 공유</li></ul>
+          <p class="sl-sub">자동 분리 · 기본 숨김(필요할 때만 열람)</p></div>
+      </div>`,
+      foot: "→ 상단 <b>KPI</b>에 등급별 건수가 보이고, 카드를 누르면 그 등급만 모아 봅니다."
+    },
+    {
+      eyebrow: "03 · 핵심 2",
+      title: "스레드 타임라인 &amp; 미회신 추적",
+      lead: "같은 건으로 오간 메일은 한 건으로 묶고, 내가 회신을 기다리는 요청만 따로 추적합니다.",
+      body: `<div class="sl-grid c2">
+        <div class="sl-card"><div class="ic">🧵</div><h3>스레드 타임라인</h3>
+          <p>며칠에 걸친 왕복을 <b>최초 요청 → 최신 회신</b>까지 1건으로 묶어 시간순으로 보여줍니다.</p>
+          <div class="tl"><span class="tl-step">최초 요청</span><span class="tl-ar">→</span>
+            <span class="tl-step">담당자 회신</span><span class="tl-ar">→</span>
+            <span class="tl-step now">현재 상태</span></div>
+          <p class="sl-sub">대화 전체가 한 건에 모여, 진행 경과를 다시 찾아볼 필요가 없습니다.</p></div>
+        <div class="sl-card"><div class="ic">⏳</div><h3>미회신 추적</h3>
+          <p>내가 <b>회신을 받아야 하는 요청</b>만 모아, 아직 답이 없는 건을 자동으로 추적합니다.</p>
+          <ul><li>완료 보고·자료 제출 메일은 자동 제외</li><li>요청 후 경과일 표시</li><li>답장·독촉 문구 복사 버튼</li></ul>
+          <p class="sl-sub">회신이 확인되면 ‘추적 완료’로 바꾸고 대기 목록에서 즉시 빠집니다.</p></div>
+      </div>`,
+      foot: "→ <b>“그 건 어떻게 됐지?”</b>를 확인하려고 보낸편지함을 뒤지지 않습니다."
+    },
+    {
+      eyebrow: "04 · 핵심 3",
+      title: "일정 매칭 · 중요 메일 고정 · 현장 날씨",
+      lead: "메일 분류에서 끝내지 않고, 하루의 판단에 필요한 정보를 같은 화면에 모았습니다.",
+      body: `<div class="sl-grid c3">
+        <div class="sl-card"><div class="ic">📅</div><h3>캘린더 자동 매칭</h3>
+          <p>일정 제목만 등록하면, 같은 키워드의 받은·보낸 메일이 그 일정 아래에 자동으로 모입니다.</p>
+          <p class="sl-sub">예: ‘사장단 정례회의’ 일정 → 관련 왕복 메일이 한 번에</p></div>
+        <div class="sl-card"><div class="ic">📌</div><h3>중요 메일 고정</h3>
+          <p>분류·완료 여부와 상관없이 계속 봐야 할 메일은 고정해 두고, 어떤 화면에서든 맨 위에서 확인합니다.</p>
+          <p class="sl-sub">분류가 바뀌거나 확인 처리해도 고정은 유지</p></div>
+        <div class="sl-card"><div class="ic">🌤️</div><h3>현장 날씨</h3>
+          <p>부평 기준 시간별·주간 예보를 같은 화면에 두어 출하·납입 일정 판단에 바로 참고합니다.</p>
+          <p class="sl-sub">강수·강풍만 눈에 띄게 표시</p></div>
+      </div>`,
+      foot: "→ 일정·중요 메일·현장 날씨까지 <b>한 화면</b>에서 확인합니다."
+    },
+    {
+      eyebrow: "05 · 핵심 4",
+      title: "개인 맞춤 규칙 설정 &amp; 보안",
+      lead: "사람마다 중요한 발신자와 키워드가 다릅니다. 규칙은 화면에서 직접 바꾸고, 데이터는 잠긴 상태로 다룹니다.",
+      body: `<div class="sl-grid c2">
+        <div class="sl-card"><div class="ic">⚙️</div><h3>화면에서 직접 규칙 설정</h3>
+          <ul><li>발신자 주소록에서 사람별 등급 지정</li><li>제목 키워드(긴급·용기승인 등)로 등급 지정</li><li>‘To일 때만’ 같은 세부 조건</li><li>저장하면 새로고침 없이 즉시 재분류</li><li>언제든 기본값으로 초기화</li></ul></div>
+        <div class="sl-card"><div class="ic">🔒</div><h3>보안</h3>
+          <ul><li>화면 자체를 PIN으로 잠금</li><li>데이터는 브라우저에서 AES-256으로 복호화</li><li>서버에 메일 내용을 남기지 않는 정적 페이지</li><li>확인 상태·메모는 사용 기기에만 저장</li></ul></div>
+      </div>
+      <div class="flow"><span class="fs">웹메일 수집</span><span class="fa">→</span>
+        <span class="fs">암호화된 데이터</span><span class="fa">→</span>
+        <span class="fs on">내 브라우저에서 복호화</span><span class="fa">→</span>
+        <span class="fs dim">분류 · 표시 · 내 규칙 적용</span></div>`,
+      foot: "→ 담당 업무가 바뀌어도 <b>코드 수정 없이 규칙만</b> 다시 잡으면 됩니다."
+    },
+    {
+      eyebrow: "06 · 전사 확장",
+      title: "전사 확장 방안",
+      lead: "개인 업무로 검증한 분류·추적 구조를, 권한만 연결하면 전 부서가 같은 방식으로 쓸 수 있습니다.",
+      body: `<div class="rmap">
+        <div class="st now"><div class="n">STEP 1 · 완료</div><h4>개인 프로토타입 검증</h4>
+          <p>실제 업무 메일로 분류·미회신 추적·일정 매칭을 운영하며 기준을 다듬었습니다.</p></div>
+        <div class="st"><div class="n">STEP 2</div><h4>사내 서버·웹메일 연동</h4>
+          <p>메일 조회 권한을 연결하면 수집과 분류가 자동으로 갱신됩니다.</p></div>
+        <div class="st"><div class="n">STEP 3</div><h4>전 부서·임직원 적용</h4>
+          <p>각자 계정과 규칙으로 즉시 사용. 부서별 분류 기준을 공유할 수 있습니다.</p></div>
+      </div>
+      <div><button type="button" class="sl-cta" data-deck-demo>🚀 지금 라이브 대시보드 시연하기</button></div>`,
+      foot: "→ 별도 설치 없이 브라우저에서 바로 열리는 구조라, <b>권한만 연결하면</b> 부서 단위 확장이 가능합니다."
+    }
+  ];
+  let DECK_I = 0, DECK_TX = null;
+  function deckIsOpen() { const d = $("deck"); return !!d && d.classList.contains("on"); }
+  function deckBuild() {
+    $("deckStage").innerHTML = SLIDES.map((s, i) =>
+      '<section class="slide" data-sl="' + i + '" aria-hidden="true" aria-label="' + (i + 1) + '번째 슬라이드">' +
+        '<div class="sl-eyebrow">' + s.eyebrow + "</div>" +
+        '<h2 class="sl-title">' + s.title + "</h2>" +
+        '<p class="sl-lead">' + s.lead + "</p>" +
+        '<div class="sl-body">' + s.body + "</div>" +
+        '<div class="sl-foot">' + s.foot + "</div>" +
+      "</section>").join("");
+    $("deckDots").innerHTML = SLIDES.map((s, i) =>
+      '<button type="button" class="dk-dot" data-dot="' + i + '" aria-label="' + (i + 1) + '번 슬라이드로 이동"></button>').join("");
+  }
+  function deckPaint() {
+    const slides = $("deckStage").querySelectorAll(".slide");
+    for (let i = 0; i < slides.length; i++) {
+      const on = i === DECK_I;
+      slides[i].classList.toggle("on", on);
+      slides[i].setAttribute("aria-hidden", on ? "false" : "true");
+      if (on) slides[i].scrollTop = 0;
+    }
+    const dots = $("deckDots").querySelectorAll(".dk-dot");
+    for (let i = 0; i < dots.length; i++) dots[i].classList.toggle("on", i === DECK_I);
+    $("deckInd").textContent = (DECK_I + 1) + " / " + SLIDES.length;
+    $("deckBar").style.width = (((DECK_I + 1) / SLIDES.length) * 100) + "%";
+    $("deckPrev").disabled = DECK_I === 0;
+    $("deckNext").disabled = DECK_I === SLIDES.length - 1;
+  }
+  function deckGo(i) {
+    const n = Math.max(0, Math.min(SLIDES.length - 1, i));
+    if (n === DECK_I) return;
+    DECK_I = n; deckPaint();
+  }
+  function deckOpen() {
+    if (!$("deckStage").querySelector(".slide")) deckBuild();
+    DECK_I = 0; deckPaint();
+    $("deck").classList.add("on");
+    $("deck").setAttribute("aria-hidden", "false");
+    document.body.classList.add("locked");
+    try { const b = $("deckNext"); if (b) b.focus({ preventScroll: true }); } catch (e) {}
+  }
+  function deckClose() {
+    const d = $("deck"); if (!d) return;
+    d.classList.remove("on");
+    d.setAttribute("aria-hidden", "true");
+    if (!$("drawer").classList.contains("on") && !$("lightbox").classList.contains("on") && !rmIsOpen()) {
+      document.body.classList.remove("locked");
+    }
+  }
+  $("deckBtn").addEventListener("click", deckOpen);
+  $("deckClose").addEventListener("click", deckClose);
+  $("deckPrev").addEventListener("click", () => deckGo(DECK_I - 1));
+  $("deckNext").addEventListener("click", () => deckGo(DECK_I + 1));
+  $("deckDots").addEventListener("click", (e) => {
+    const d = e.target.closest("[data-dot]"); if (d) deckGo(Number(d.dataset.dot));
+  });
+  $("deck").addEventListener("click", (e) => {
+    if (!e.target.closest("[data-deck-demo]")) return;
+    deckClose();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast("대시보드로 돌아왔습니다 — 바로 시연하실 수 있습니다", 2600);
+  });
+  /* 키보드 ← → · PageUp/Down · Home/End · Esc (발표 중에만 가로챈다) */
+  document.addEventListener("keydown", (e) => {
+    if (!deckIsOpen()) return;
+    if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); deckClose(); return; }
+    if (e.key === "ArrowRight" || e.key === "PageDown") { e.preventDefault(); e.stopPropagation(); deckGo(DECK_I + 1); return; }
+    if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); e.stopPropagation(); deckGo(DECK_I - 1); return; }
+    if (e.key === "Home") { e.preventDefault(); deckGo(0); return; }
+    if (e.key === "End") { e.preventDefault(); deckGo(SLIDES.length - 1); }
+  }, true);
+  /* 모바일 좌우 스와이프 */
+  $("deck").addEventListener("touchstart", (e) => { DECK_TX = e.touches[0].clientX; }, { passive: true });
+  $("deck").addEventListener("touchend", (e) => {
+    if (DECK_TX == null) return;
+    const dx = e.changedTouches[0].clientX - DECK_TX;
+    DECK_TX = null;
+    if (Math.abs(dx) > 45) deckGo(DECK_I + (dx < 0 ? 1 : -1));
+  }, { passive: true });
+  /* === PRESENTATION_END (JS) === */
 
   /* 마감 카운트다운 — 1분마다 배지만 갱신 */
   setInterval(() => { if (DATA && PIN) { renderList(); renderKpi(); } }, 60 * 1000);
