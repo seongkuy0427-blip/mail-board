@@ -893,7 +893,6 @@
           <input type="text" id="cusMemo" placeholder="메모 (선택)" maxlength="120" aria-label="메모">
           <button type="submit" class="mini on" id="cusAddBtn">추가</button>
         </form>
-        <div class="ca-hint">메일과 상관없는 개인·구두 일정을 직접 넣습니다. 이 기기에만 저장(`mb_cal_custom_v1`).</div>
       </div>
           <div class="cal-top">
             <div class="cal-title" id="calTitle">2026년 11월<span class="cap">내가 등록한 메일</span></div>
@@ -909,7 +908,6 @@
             <span><i style="background:#5b4be0"></i>내가 등록한 메일</span>
             <span><i style="background:#e5484d"></i>긴급</span>
             <span><i style="background:#2962ff"></i>오늘</span>
-            <span>행의 📅 캘린더로 직접 등록 · 날짜를 누르면 그날 등록 메일만</span>
           </div>
         </div>
         <div class="cal-side">
@@ -1747,7 +1745,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     let html = "";
     if (cus.length) html += '<div class="sub-h" style="margin-top:0; border-top:none; padding-top:0">📌 개인/구두 일정 <span class="cnt">· ' + cus.length + "건</span></div>" + cus.map(sideCardCus).join("");
     if (mails.length) html += '<div class="sub-h" style="margin-top:' + (cus.length ? "10px" : "0") + '; ' + (cus.length ? "" : "border-top:none; padding-top:0") + '">📅 등록한 메일 <span class="cnt">· ' + mails.length + "건</span></div>" + mails.map(sideCardMail).join("");
-    if (!html) html = '<div class="side-empty">' + (view.day ? "이 날짜에" : "오늘은") + " 등록한 일정이 없습니다.<br>달력에서 날짜를 누르면 그날 상세가 여기 나오고,<br>＋ 직접 일정 추가로 개인 일정을 넣을 수 있습니다.</div>";
+    if (!html) html = '<div class="side-empty">' + (view.day ? "이 날짜에" : "오늘은") + " 등록한 일정이 없습니다.</div>";
     $("calSideList").innerHTML = html;
   }
 
