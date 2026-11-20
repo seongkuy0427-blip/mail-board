@@ -614,34 +614,37 @@
     opacity:0; transform:translateY(16px) scale(.985); pointer-events:none;
     transition:opacity .36s ease, transform .36s cubic-bezier(.22,.7,.28,1)}
   .slide.on{opacity:1; transform:none; pointer-events:auto; z-index:1}
+  .sl-num{position:absolute; right:36px; top:20px; font-size:58px; font-weight:800; line-height:1;
+    letter-spacing:-3px; color:#eff3f9; user-select:none; pointer-events:none}
 
   /* 슬라이드 타이포 */
   .sl-eyebrow{display:flex; align-items:center; gap:8px; font-size:11px; font-weight:800;
     letter-spacing:.16em; color:#1f5fd0; text-transform:uppercase; flex:none}
   .sl-eyebrow::before{content:""; width:20px; height:2px; border-radius:2px; background:#1f5fd0; display:block}
-  .sl-title{font-size:34px; line-height:1.24; letter-spacing:-1.1px; margin:2px 0 0; font-weight:800; color:#0f1a2b}
+  .sl-title{font-size:34px; line-height:1.24; letter-spacing:-1.1px; margin:2px 0 0; font-weight:800; color:#0f1a2b; padding-right:66px}
   .sl-title em{font-style:normal; color:#1f5fd0}
   .sl-title small{display:block; font-size:15px; font-weight:600; color:#8794a5; letter-spacing:0; margin-top:9px}
   .sl-lead{font-size:14.5px; color:#4a5768; line-height:1.7; margin:0; max-width:880px; flex:none}
   .sl-body{flex:1; min-height:0; display:flex; flex-direction:column; gap:12px; justify-content:center; padding:4px 0}
 
   /* 카드 */
-  .sl-grid{display:grid; gap:13px}
+  .sl-grid{display:grid; gap:14px}
   .sl-grid.c3{grid-template-columns:repeat(3,1fr)}
   .sl-grid.c2{grid-template-columns:repeat(2,1fr)}
-  .sl-card{position:relative; border:1px solid #e6ebf3; border-radius:14px; padding:16px 17px 15px;
-    background:linear-gradient(180deg,#fbfcfe,#f7f9fc); overflow:hidden}
+  .sl-card{position:relative; display:flex; flex-direction:column; border:1px solid #e6ebf3; border-radius:14px;
+    padding:19px 19px 16px; min-height:176px; background:linear-gradient(180deg,#fbfcfe,#f7f9fc); overflow:hidden}
+  .sl-grid.c2 .sl-card{min-height:212px}
   .sl-card::after{content:""; position:absolute; left:0; top:0; width:100%; height:3px; background:#dbe3ee}
   .sl-card.p1::after{background:linear-gradient(90deg,#d93b3b,#f0836d)}
   .sl-card.p2::after{background:linear-gradient(90deg,#1f5fd0,#6fa2f8)}
   .sl-card.p3::after{background:linear-gradient(90deg,#7b8798,#b9c3d1)}
-  .sl-card .ic{width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center;
-    font-size:17px; background:#eef3fb}
+  .sl-card .ic{width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center;
+    font-size:19px; background:#eef3fb}
   .sl-card.p1 .ic{background:#fdeaea}
   .sl-card.p2 .ic{background:#eaf1fd}
   .sl-card.p3 .ic{background:#eef1f6}
-  .sl-card h3{font-size:16px; margin:9px 0 6px; letter-spacing:-.3px; color:#0f1a2b}
-  .sl-card p, .sl-card li{font-size:12.9px; color:#4a5768; line-height:1.62; margin:0}
+  .sl-card h3{font-size:16.8px; margin:10px 0 7px; letter-spacing:-.35px; color:#0f1a2b}
+  .sl-card p, .sl-card li{font-size:13.2px; color:#4a5768; line-height:1.66; margin:0}
   .sl-card ul{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:4px}
   .sl-card ul li{position:relative; padding-left:11px}
   .sl-card ul li::before{content:""; position:absolute; left:0; top:8px; width:4px; height:4px;
@@ -649,7 +652,7 @@
   .sl-card.p1 ul li::before{background:#d93b3b}
   .sl-card.p2 ul li::before{background:#1f5fd0}
   .sl-card b{color:#0f1a2b; font-weight:700}
-  .sl-sub{font-size:11.5px; color:#8794a5; margin-top:9px; line-height:1.55; padding-top:8px; border-top:1px dashed #e6ebf3}
+  .sl-sub{font-size:11.8px; color:#8794a5; margin-top:auto; padding-top:10px; line-height:1.55; border-top:1px dashed #e6ebf3}
   .pr-badge{display:inline-flex; align-items:center; gap:4px; font-size:12.5px; font-weight:800;
     padding:4px 10px; border-radius:999px; white-space:nowrap}
   .pr-badge.b1{background:#fdeaea; color:#b3342f}
@@ -3069,6 +3072,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   function deckBuild() {
     $("deckStage").innerHTML = SLIDES.map((s, i) =>
       '<section class="slide" data-sl="' + i + '" aria-hidden="true" aria-label="' + (i + 1) + '번째 슬라이드">' +
+        '<div class="sl-num">' + (i + 1 < 10 ? "0" : "") + (i + 1) + "</div>" +
         '<div class="sl-eyebrow">' + s.eyebrow + "</div>" +
         '<h2 class="sl-title">' + s.title + "</h2>" +
         '<p class="sl-lead">' + s.lead + "</p>" +
