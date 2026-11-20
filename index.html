@@ -2194,7 +2194,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         '<button type="button" class="badge tog b-pin' + (pin ? " on" : "") + '" data-pin-tog="' + esc(it.id) + '" aria-pressed="' + (pin ? "true" : "false") + '" title="' +
           esc(pin ? "📌 고정됨 — 누르면 고정을 풉니다" : "📌 고정 — 누르면 ‘📌 고정’ 탭에 계속 남습니다") +
           '" aria-label="메일 고정 토글">📌' + (pin ? '<span class="pin-txt"> 고정됨</span>' : "") + "</button>" +
-        (d.text ? '<span class="badge b-due ' + d.cls + '">' + esc(d.text) + "</span>" : "") +
+        (d.text && p !== 3 ? '<span class="badge b-due ' + d.cls + '">' + esc(d.text) + "</span>" : "") +
         '<button type="button" class="badge tog b-cal' + (calDate(it) ? " on" : "") + '" data-cal-tog="' + esc(it.id) + '" title="' +
           esc(calDate(it) ? "내 캘린더 등록됨 (" + calDate(it) + ") · 다시 누르면 해제" : "내 캘린더에 등록 (기본 " + calDefaultDate(it) + ") · 다시 누르면 해제") +
           '" aria-label="캘린더 등록 토글">📅 ' + (calDate(it) ? esc(String(calDate(it)).slice(5).replace("-", "/")) : "캘린더") + "</button>" +
