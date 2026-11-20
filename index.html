@@ -676,6 +676,12 @@
     background:var(--gray-weak); border-radius:999px; padding:1px 8px; white-space:nowrap}
   .bf-row .bf-due.hot{color:var(--red); background:var(--red-weak)}
   .bf-row .bf-due.cus{color:#b26a00; background:#fdf1e0}
+  .bf-day{flex:none; font-size:10.2px; font-weight:800; border-radius:999px; padding:1px 8px; white-space:nowrap}
+  .bf-day.d0{background:var(--brand-weak); color:var(--brand); border:1px solid #d3e1fb}
+  .bf-day.d1{background:#eef1f6; color:#4d5a6e; border:1px solid #dfe5ee}
+  .bf-rel{font-style:normal; font-weight:700; color:#93540f; background:var(--orange-weak); border:1px solid #eccfa8;
+    border-radius:5px; padding:0 5px; font-size:10.4px; white-space:nowrap}
+  .bf-rel.none{color:var(--ink-3); background:transparent; border-color:transparent; font-weight:500}
   .bf-note-row{padding:8px 12px; font-size:11.2px; color:var(--ink-3); background:#fbfcfe}
   .bf-two{display:grid; grid-template-columns:1fr 1fr; gap:9px; padding:10px 12px}
   .bf-mini{border:1px solid var(--line); border-radius:8px; background:#fbfcfe; padding:9px 11px;
@@ -1794,6 +1800,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   }
 
   function bfPrio(i) { const p = priorityOf(i); return p === 1 ? "🔴" : (p === 2 ? "🟡" : "⚪"); }
+
   function bfMailRow(it, withPrio) {
     const d = dueInfo(it);
     const due = d && d.text ? '<span class="bf-due' + (d.hot ? " hot" : "") + '">' + esc(d.text.replace(/^⏰\s*/, "")) + "</span>" : "";
@@ -1802,11 +1809,39 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       '<span class="bf-main"><span class="bf-rt">' + esc(it.title) + "</span>" +
       '<span class="bf-rs">' + esc(senderLabel(it)) + (isNewMail(it) ? " · 🆕 NEW" : "") + "</span></span>" + due + "</button>";
   }
-  function bfCusRow(c) {
-    return '<button type="button" class="bf-row" data-bf-go="today" title="⏰ 오늘 마감으로 이동">' +
-      '<span class="bf-p">📅</span><span class="bf-main"><span class="bf-rt">' + esc(c.title) + "</span>" +
-      '<span class="bf-rs">📅 오늘 일정' + (c.memo ? " · " + esc(c.memo) : "") + '</span></span>' +
-      '<span class="bf-due cus">일정</span></button>';
+  /* 📅 브리핑용 일정 모음 — 오늘(D-DAY) + 내일(D-1)
+     수기 일정(cusLoad)과 캘린더에 등록한 메일(calLoad)을 함께 담고, 수기 일정은
+     relatedMails()로 매칭되는 관련 메일 건수까지 계산해 ‘자료 검토 필요’ 배지를 단다. */
+  function briefCalList() {
+    const out = [];
+    const days = [[todayY(), "오늘", 0], [ymd(addDays(new Date(), 1)), "내일 D-1", 1]];
+    days.forEach(([date, lab, idx]) => {
+      cusFor(date).forEach((c) => {
+        let n = 0;
+        try { n = relatedMails(c).list.length; } catch (e) { n = 0; }
+        out.push({ kind: "cus", day: lab, idx: idx, c: c, n: n });
+      });
+      calItems().filter((it) => calDate(it) === date).forEach((it) => {
+        out.push({ kind: "mail", day: lab, idx: idx, it: it });
+      });
+    });
+    return out;
+  }
+  function bfCalRow(x) {
+    const day = '<span class="bf-day ' + (x.idx === 0 ? "d0" : "d1") + '">' + esc(x.day) + "</span>";
+    if (x.kind === "cus") {
+      const c = x.c;
+      const rel = x.n
+        ? '<em class="bf-rel">🔗 관련 메일 ' + x.n + '건 · 자료 검토 필요</em>'
+        : '<em class="bf-rel none">관련 메일 없음</em>';
+      return '<button type="button" class="bf-row" data-bf-go="cus" data-bf-id="' + esc(c.id) + '" title="' + esc(c.title + " — 관련 메일 보기") + '">' +
+        '<span class="bf-p">📌</span><span class="bf-main"><span class="bf-rt">' + esc(c.title) + "</span>" +
+        '<span class="bf-rs">' + (c.memo ? esc(c.memo) + " · " : "") + rel + "</span></span>" + day + "</button>";
+    }
+    const it = x.it;
+    return '<button type="button" class="bf-row" data-bf-go="mail" data-bf-id="' + esc(it.id) + '" title="' + esc(it.title + " — 메일 상세") + '">' +
+      '<span class="bf-p">📅</span><span class="bf-main"><span class="bf-rt">' + esc(it.title) + "</span>" +
+      '<span class="bf-rs">' + esc(senderLabel(it)) + " · 캘린더에 등록한 메일</span></span>" + day + "</button>";
   }
   /* 🌤️ 날씨 한 줄 — 현재 기온·상태 + 7일 안에 비·눈이 있으면 그 예보까지 */
   function briefWxParts() {
@@ -1834,11 +1869,10 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   function briefBodyHtml() {
     const p1 = p1Items().filter((i) => !isDone(i));
     const todayMail = kpiTodayMailList();
-    const todayCus = kpiTodayCusList();
     const reply = kpiReplyList();
     const fu = fuPending();
     const fuMax = fu.length ? Math.max.apply(null, fu.map((f) => Number(f.daysElapsed) || 0)) : 0;
-    const todayN = todayMail.length + todayCus.length;
+    const cal = briefCalList();
     const overnight = briefOvernightList();
     const ovToday = overnight.filter((it) => String(it.receivedAt).slice(0, 10) === todayY()).length;
     const ovP = [1, 2, 3].map((p) => overnight.filter((it) => priorityOf(it) === p).length);
@@ -1855,26 +1889,32 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         : '<div class="bf-none">어제 18시 이후 새로 들어온 메일이 없습니다.</div>') +
       "</div>";
 
-    if (!p1.length && !todayN && !reply.length && !fu.length) {
+    if (!p1.length && !todayMail.length && !reply.length && !fu.length) {
       /* 모든 할 일이 0건 — 깔끔한 빈 상태 */
       html += '<div class="bf-empty"><div class="bf-e-ico">☀️</div>' +
         '<div class="bf-e-t">오늘 남은 마감·미확인 업무가 없습니다</div>' +
         '<div class="bf-e-s">즉시 확인 · 오늘 마감 · 회신 대기 · 미회신 추적이 모두 0건입니다. 좋은 하루 되세요.</div></div>';
     } else {
-      /* 1) 🔴 즉시 확인 미완료 */
+      /* 1) 📅 오늘(D-DAY) · 내일(D-1) 일정 — 수기 일정 + 캘린더에 등록한 메일 */
+      html += '<div class="bf-sec"><div class="bf-sec-h"><span class="bf-st">📅 오늘·내일 일정</span><span class="bf-sn">' + cal.length + '건</span>' +
+        '<button type="button" class="bf-more" data-bf-go="cal">캘린더 ▸</button></div>' +
+        (cal.length ? cal.map(bfCalRow).join("")
+          : '<div class="bf-none">오늘·내일 등록된 일정이 없습니다 — 📅 캘린더에서 직접 추가할 수 있습니다.</div>') + "</div>";
+
+      /* 2) 🔴 즉시 확인 미완료 */
       html += '<div class="bf-sec"><div class="bf-sec-h"><span class="bf-st">🔴 즉시 확인 미완료</span><span class="bf-sn">' + p1.length + '건</span>' +
         (p1.length > BRIEF_ROW_MAX ? '<button type="button" class="bf-more" data-bf-go="p1">전체 ▸</button>' : "") + "</div>" +
         (p1.length ? p1.slice(0, BRIEF_ROW_MAX).map((it) => bfMailRow(it, false)).join("") : '<div class="bf-none">즉시 확인할 🔴 메일이 없습니다.</div>') + "</div>";
 
-      /* 2) ⏰ 오늘 마감 · 기한 지남 + 📅 오늘 일정 */
-      html += '<div class="bf-sec"><div class="bf-sec-h"><span class="bf-st">⏰ 오늘 마감 · 기한 지남</span><span class="bf-sn">' + todayN + '건</span>' +
+      /* 3) ⏰ 오늘 마감 · 기한 지남 (메일) */
+      html += '<div class="bf-sec"><div class="bf-sec-h"><span class="bf-st">⏰ 오늘 마감 · 기한 지남</span><span class="bf-sn">' + todayMail.length + '건</span>' +
         '<button type="button" class="bf-more" data-bf-go="today">전체 ▸</button></div>' +
-        (todayN
-          ? todayCus.map(bfCusRow).join("") + todayMail.slice(0, BRIEF_ROW_MAX).map((it) => bfMailRow(it, false)).join("") +
+        (todayMail.length
+          ? todayMail.slice(0, BRIEF_ROW_MAX).map((it) => bfMailRow(it, false)).join("") +
             (todayMail.length > BRIEF_ROW_MAX ? '<div class="bf-note-row">…외 ' + (todayMail.length - BRIEF_ROW_MAX) + "건은 ‘⏰ 오늘 마감’에서 전부 볼 수 있습니다.</div>" : "")
-          : '<div class="bf-none">오늘 기한·임박한 메일과 📅 오늘 일정이 없습니다.</div>') + "</div>";
+          : '<div class="bf-none">오늘 기한·임박한 메일이 없습니다.</div>') + "</div>";
 
-      /* 3) ✉️ 회신 대기 · ⏳ 보낸 요청 미회신 */
+      /* 4) ✉️ 회신 대기 · ⏳ 보낸 요청 미회신 */
       html += '<div class="bf-sec"><div class="bf-sec-h"><span class="bf-st">✉️ 회신 대기 · ⏳ 보낸 요청 미회신</span></div><div class="bf-two">' +
         '<button type="button" class="bf-mini" data-bf-go="reply"><b>' + reply.length + '</b><span>✉️ 회신 대기</span><i>🔴·🟡 중 아직 답장 안 한 건</i></button>' +
         '<button type="button" class="bf-mini" data-bf-go="fu"><b>' + fu.length + '</b><span>⏳ 보낸 요청 미회신</span><i>' +
@@ -1898,7 +1938,9 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const todayN = kpiTodayCount();
     const reply = kpiReplyList().length;
     const fu = fuPending().length;
+    const calN = briefCalList().length;
     const bits = [];
+    if (calN) bits.push("📅 " + calN + "건");
     if (p1) bits.push("🔴 " + p1 + "건");
     if (todayN) bits.push("⏰ " + todayN + "건");
     if (reply) bits.push("✉️ " + reply + "건");
@@ -1953,6 +1995,26 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   function briefJump(go, id) {
     briefClose("jump");
     if (go === "mail") { if (id) openDrawer(id); return; }
+    if (go === "cus") {
+      const c = cusById(id);
+      if (!c) { toast("이 일정을 찾지 못했습니다"); return; }
+      view.kpi = ""; view.q = "";
+      const qEl = $("q"); if (qEl) qEl.value = "";
+      view.cusId = c.id; view.day = c.date; view.calOpen = true;
+      try { localStorage.setItem(LS.cal, "1"); } catch (e) {}
+      syncTogs(); renderCalendar(); renderSeg(); renderList();
+      const lw = $("listWrap"); if (lw) { try { lw.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {} }
+      toast("📅 “" + c.title + "” 관련 메일을 모아 봅니다", 2800);
+      return;
+    }
+    if (go === "cal") {
+      view.calOpen = true; view.day = todayY(); view.cusId = null;
+      try { localStorage.setItem(LS.cal, "1"); } catch (e) {}
+      renderCalendar(); renderList();
+      const bar = $("calBar"); if (bar) { try { bar.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {} }
+      toast("내 캘린더를 열었습니다 — 오늘·내일 일정과 관련 메일을 볼 수 있습니다", 2600);
+      return;
+    }
     if (go === "today") { onKpi("today"); return; }
     if (go === "p1") { onKpi("p1"); return; }
     if (go === "reply") { onKpi("reply"); return; }
