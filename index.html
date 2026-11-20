@@ -3351,22 +3351,26 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const core = draftCore(d.body);
     const acts = (it.actionItems || []).slice(0, 4);
     const sum = String(it.summary || "").replace(/\s+/g, " ").trim();
-    const urgent = /긴급|결품|지연|불량|문제|독촉|회신 요청/.test((it.title || "") + " " + sum);
-    const subj = d.subject || ("RE: " + (it.title || ""));
+    const title = String(it.title || "");
+    const brief = title.length > 36 ? title.slice(0, 36) + "…" : title;
+    const urgent = /긴급|결품|지연|불량|문제|독촉|회신 요청/.test(title + " " + sum);
+    const subj = d.subject || ("RE: " + title);
+    const bullet = acts.map((a, i) => (i + 1) + ". " + a).join("\n");
     if (k === "polite") {
-      const main = core || [sum, acts[0] ? "- " + acts[0] : ""].filter(Boolean).join("\n\n");
-      return name + " 님, 안녕하세요.\n천일정기화물자동차(주) 납입1팀 김성규입니다.\n\n" +
-        (main || "보내주신 메일 확인하였습니다.") +
+      const main = core || ("보내주신 「" + brief + "」 메일 잘 받았습니다." +
+        (bullet ? "\n\n확인할 사항은 아래와 같습니다.\n" + bullet : ""));
+      return name + " 님, 안녕하세요.\n천일정기화물자동차(주) 납입1팀 김성규입니다.\n\n" + main +
         "\n\n확인 후 진행 상황을 다시 공유드리겠습니다." +
         (urgent ? " 대응이 늦어지는 부분이 있으면 미리 말씀드리겠습니다." : "") +
         "\n\n감사합니다.\n\n김성규 드림";
     }
     if (k === "factual") {
-      const body = acts.length ? acts.map((a, i) => (i + 1) + ". " + a).join("\n") : (core || sum);
+      const body = core || bullet || ("1. " + brief + " 접수 확인");
       return "수신: " + name + "\n제목: " + subj + "\n\n" + body + "\n\n확인 후 회신드리겠습니다.\n\n김성규";
     }
-    const short = acts[0] || firstSentence(sum) || firstSentence(core) || "메일 확인했습니다.";
-    return name + " 님,\n\n" + short + "\n확인하고 진행하겠습니다.\n\n김성규";
+    const line = core ? firstSentence(core) : (brief + " 확인했습니다.");
+    return name + " 님,\n\n" + line + (acts[0] ? "\n" + acts[0] + " 챙기겠습니다." : "") +
+      "\n이상 있으면 연락드리겠습니다.\n\n김성규";
   }
   function toneFor(it) {
     const s = TONE_ST[it.id];
