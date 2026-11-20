@@ -2313,6 +2313,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   const RM_RANK_LABEL = { 1: "🔴 즉시", 2: "🟡 숙지", 3: "⚪ 열람" };
 
   const TITLE_RE = /(부장|상무|전무|이사|차장|과장|대리|사원|주임|팀장|실장|소장|본부장|대표|사장)$/;
+  const MAIL_RE = /^[^\s@,]+@[^\s@,]+$/;
   /* 직급 꼬리(부장·과장 등)를 떼어낸 이름 — 같은 사람이 ‘최수철’/‘최수철 부장’으로 나뉘어도 한 줄로 묶는다 */
   function baseName(s) { return normName(s).replace(TITLE_RE, ""); }
   /* 주소록: 지금까지 오간(보관 포함) 메일의 발신자를 이름 기준으로 묶어 한 줄씩.
@@ -2322,11 +2323,13 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     if (ADDR) return ADDR;
     const map = new Map();
     items().forEach((it) => {
-      let name = String(it.senderName || it.sender || "").trim();
-      let email = String(it.senderEmail || "").toLowerCase();
-      if (!email && name.indexOf("@") >= 0) { email = name.toLowerCase(); name = ""; }
-      /* 이름이 여러 명 뭉쳐 있거나 비어 있는 옛 기록은 주소록에서 뺀다 */
-      if (!email && (!name || name.indexOf(",") >= 0)) return;
+      let name = String(it.senderName || it.sender || "").trim().replace(/^[\s→\-–—·>]+/, "").trim();
+      let email = String(it.senderEmail || "").toLowerCase().trim();
+      /* 이름 칸이 이메일인 기록은 이메일로 옮긴다 */
+      if (!email && MAIL_RE.test(name)) { email = name.toLowerCase(); name = ""; }
+      /* 이름이 여러 명 뭉쳐 있는 옛 기록은 주소록에서 뺀다 */
+      if (name.indexOf(",") >= 0) { if (!email) return; name = ""; }
+      if (!email && !name) return;
       const bn = baseName(name) || ("e:" + email);
       let r = map.get(bn);
       if (!r) { r = { key: bn, email: "", name: "", count: 0, live: 0, base: 9, vipLabel: "", last: "" }; map.set(bn, r); }
