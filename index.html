@@ -73,9 +73,10 @@
   /* 상세 드로어가 열려 있어도 좌상단 홈 버튼은 누를 수 있게 한다 (드로어 41 > 헤더 41(동일·DOM 뒤) > 어둠막 40) */
   body.locked header{z-index:41}
   .hd{display:flex; align-items:center; gap:12px; padding:8px 16px; background:var(--navy); color:#fff;
-    position:relative; z-index:90; overflow:visible;
-    /* 좌·우로만 네이비를 늘려 전체 폭을 채운다 — clip-path 를 쓰지 않아 드롭다운이 잘리지 않는다 */
-    box-shadow:-100vmax 0 0 var(--navy), 100vmax 0 0 var(--navy)}
+    position:relative; z-index:90; overflow:visible}
+  /* 네이비 바를 화면 전체 폭으로 — 가짜 요소에만 clip-path 를 걸어 .hd 자체는 자르지 않는다(드롭다운이 안 잘리게) */
+  .hd::before{content:""; position:absolute; left:0; right:0; top:0; bottom:0; z-index:-1; pointer-events:none;
+    background:var(--navy); box-shadow:0 0 0 100vmax var(--navy); clip-path:inset(0 -100vmax)}
   .hd .mark{width:30px;height:30px;border-radius:6px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;flex:none}
   .hd-home{display:flex; align-items:center; gap:10px; cursor:pointer; border-radius:6px; padding:3px 9px 3px 3px; margin-left:-3px; transition:background .15s ease}
   .hd-home:hover{background:rgba(255,255,255,.08)}
@@ -650,6 +651,14 @@
   .snd-tag.gray{background:var(--gray-weak); color:var(--ink-3); border-color:#e1e6ee}
   .snd-tag.b{background:var(--brand-weak); color:var(--brand); border-color:#d3e1fb}
   .snd-n{font-size:10px; color:var(--ink-3); margin-left:4px; font-weight:500}
+  .snd-main .dp{font-size:10.2px; color:var(--brand); font-weight:700; letter-spacing:-.1px}
+  .rm-pager{display:flex; align-items:center; justify-content:center; gap:4px; margin:10px 0 2px; flex-wrap:wrap}
+  .rm-pager button{min-width:26px; height:26px; padding:0 7px; border:1px solid var(--line); background:#fff; color:var(--ink-2);
+    border-radius:6px; font-family:inherit; font-size:11.5px; cursor:pointer}
+  .rm-pager button:hover{background:#f4f7fc}
+  .rm-pager button.on{background:var(--navy); border-color:var(--navy); color:#fff; font-weight:700}
+  .rm-pager button:disabled{opacity:.4; cursor:default}
+  .rm-pager .pg-info{font-size:10.9px; color:var(--ink-3); margin-left:5px; white-space:nowrap}
   .toonly{display:inline-flex; align-items:center; gap:3px; font-size:10.5px; color:var(--ink-3); white-space:nowrap; cursor:pointer}
   .toonly input{accent-color:var(--brand); margin:0; width:13px; height:13px; cursor:pointer}
   .toonly.off{opacity:.35; cursor:default}
@@ -683,6 +692,8 @@
     .rm-foot .rm-sum{flex:1 1 100%; margin-bottom:3px}
     .pseg button{padding:5px 6px; font-size:10.5px}
     .snd-row{gap:6px}
+    .rm-pager button{min-width:28px; height:28px}
+    .rm-pager .pg-info{flex:1 1 100%; text-align:center; margin:2px 0 0}
   }
 
   /* ---------- ☁️ PC·모바일 상태 자동 동기화 ---------- */
@@ -3255,7 +3266,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       if (!email && !name) return;
       const bn = baseName(name) || ("e:" + email);
       let r = map.get(bn);
-      if (!r) { r = { key: bn, email: "", name: "", count: 0, live: 0, base: 9, vipLabel: "", last: "" }; map.set(bn, r); }
+      if (!r) { r = { key: bn, email: "", name: "", count: 0, live: 0, base: 9, vipLabel: "", last: "", dept: "", src: "mail" }; map.set(bn, r); }
       r.count++;
       if (!it.archived) r.live++;
       if (email && !r.email) r.email = email;
@@ -3265,6 +3276,34 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       if (bp < r.base) r.base = bp;
       const t = it.lastAt || it.receivedAt || "";
       if (t > r.last) r.last = t;
+    });
+    /* 2) 웹메일 주소록(DATA.contacts = 조직도 + 개인주소록) — 메일에 한 번도 안 나온 사람도 여기서 채운다 */
+    const contacts = (DATA && Array.isArray(DATA.contacts)) ? DATA.contacts : [];
+    const byMail = new Map();
+    map.forEach((r) => { if (r.email) byMail.set(r.email, r); });
+    contacts.forEach((c) => {
+      const email = String(c.email || "").toLowerCase().trim();
+      const nm = String(c.name || "").trim();
+      if (!email && !nm) return;
+      const dept = String(c.dept || "").trim();
+      const kind = String(c.kind || "");
+      const bn = email ? ("e:" + email) : (baseName(nm) || ("n:" + nm));
+      let r = (email && byMail.get(email)) || null;
+      if (!r) {
+        /* 이름이 같아도 메일 주소가 서로 다르면 다른 사람으로 둔다 (동명이인) */
+        const cand = map.get(baseName(nm) || bn);
+        if (cand && (!cand.email || !email)) r = cand;
+      }
+      if (!r) {
+        r = { key: bn, email: "", name: "", count: 0, live: 0, base: 9, vipLabel: "", last: "", dept: "", src: "contact", kind: kind };
+        map.set(bn, r);
+      }
+      if (!r.email) r.email = email;
+      if (nm && nm.length > r.name.length) r.name = nm;
+      if (dept && !r.dept) r.dept = dept;
+      if (kind && !r.kind) r.kind = kind;
+      if (!r.src) r.src = "contact";
+      if (r.email) byMail.set(r.email, r);
     });
     /* 같은 이메일이 이름만 다르게 잡힌 줄은 하나로 합친다 */
     const merged = [], byEmail = new Map();
@@ -3277,6 +3316,9 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         if (!t.vipLabel && r.vipLabel) t.vipLabel = r.vipLabel;
         if (r.name.length > t.name.length) t.name = r.name;
         if (r.last > t.last) t.last = r.last;
+        if (!t.dept && r.dept) t.dept = r.dept;
+        if (!t.kind && r.kind) t.kind = r.kind;
+        if (r.src === "mail") t.src = "mail";
         return;
       }
       if (r.email) byEmail.set(r.email, r);

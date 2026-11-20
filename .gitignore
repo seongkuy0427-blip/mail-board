@@ -1,5 +1,7 @@
 # 로컬 작업용 — 절대 GitHub에 올리지 않는다
 data.json
+addressbook.json
+_tmp/
 make_data.py
 *.xlsx
 __pycache__/
