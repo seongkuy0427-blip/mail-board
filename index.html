@@ -380,7 +380,8 @@
   .row .rt{display:flex; align-items:center; gap:5px; min-width:0}
   .row .rtitle{font-size:13px; font-weight:600; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; letter-spacing:-.1px}
   .row .thr{flex:none; font-size:9.5px; font-weight:700; color:var(--violet); background:var(--violet-weak); border-radius:999px; padding:1px 5px}
-  .row .rmeta{font-size:10.5px; color:var(--ink-3); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums}
+  /* display:block — 인라인 span이면 overflow:hidden·말줄임이 먹지 않아 발신자·시각이 오른쪽 배지 밑으로 흘러나온다 */
+  .row .rmeta{display:block; max-width:100%; font-size:10.5px; color:var(--ink-3); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-variant-numeric:tabular-nums}
   .row .rmeta b{color:var(--ink-2); font-weight:500}
   .row .rside{flex:none; display:flex; align-items:center; gap:4px}
   /* 🆕 새로 들어온 메일 — 제목 앞 민트색 NEW 필 (열어보거나 ✅ 확인하면 사라진다) */
@@ -941,37 +942,146 @@
     #drawer.on{transform:translateY(0)}
     #drawer::before{content:""; display:block; width:38px; height:4px; border-radius:999px; background:#dfe4ec; margin:7px auto 0}
   }
+  /* ================= 📱 모바일 (≤760px · 390×844 기준) 전면 보정 =================
+     핵심: 메일 행을 위(제목·메타) / 아래(버튼 줄) 2단 카드로 바꿔 제목 잘림·배지 겹침을 없앤다. */
   @media (max-width:760px){
-    .hd{padding:7px 12px; gap:8px}
-    .hd-right{gap:5px}
-    .hd .mark{width:26px; height:26px; font-size:13px; border-radius:5px}
-    .hd-sub{padding:5px 12px 6px}
-    .icon-btn{width:28px; height:28px; font-size:12.5px}
-    .kpi{grid-template-columns:repeat(2,1fr); gap:7px; margin-top:12px}
-    .kpi-card{padding:8px 10px}
-    .kpi-card .val{font-size:20px; letter-spacing:-.6px}
-    .kpi-card .cap{font-size:9.6px}
-    .hd h1{font-size:13px}
+    .wrap{padding:0 12px}
+
+    /* ---- 상단 헤더: 제목 + 아이콘 7개가 한 줄에서 겹치지 않게 ---- */
+    .hd{padding:7px 12px; gap:6px; flex-wrap:nowrap}
+    .hd-home{flex:0 1 auto; min-width:0; gap:7px; padding:2px 5px 2px 2px; margin-left:-2px}
+    .hd-home > div{min-width:0}
+    .hd .mark{width:24px; height:24px; font-size:12px; border-radius:5px}
+    .hd h1{font-size:12.5px; letter-spacing:-.3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
     .hd .sub{display:none}
     .sync{display:none}
-    .row{padding:7px 9px; gap:7px}
-    .row .rtitle{font-size:12.6px}
-    .row .rmeta{font-size:10px}
-    .row .rside{gap:3px}
-    .row .newpill{height:13px; padding:0 4px; font-size:8px}
-    .seg button .newb{font-size:8.5px; padding:1px 4px}
-    .bulkbar{padding:6px 8px; gap:6px}
-    .bulk-all{flex:1 1 100%}
+    .hd-right{flex:none; gap:4px; margin-left:auto}
+    .icon-btn{width:28px; height:28px; font-size:12.5px; border-radius:5px}
+    .brief-btn{height:28px; padding:0 6px; font-size:10.5px; border-radius:7px}
+    .brief-btn .bf-t{display:none}
+    .deck-btn{height:28px; padding:0 6px; font-size:10.5px; border-radius:7px}
+    .deck-btn .dk-t{display:none}
+    .hd-sub{padding:5px 12px 6px}
+
+    /* ---- 날씨 칩 ---- */
+    .wx-chip{font-size:10.9px; padding:3px 9px 3px 7px; max-width:100%}
+    .wx-chip .wx-t{font-size:12px}
+    .wx-pop{right:8px; left:auto; width:calc(100vw - 24px); padding:9px 10px 10px}
+
+    /* ---- KPI 카드 5개 (2열 · 마지막은 한 줄 전체) ---- */
+    .kpi{grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; margin-top:11px}
+    .kpi-card{padding:8px 9px; min-width:0}
+    .kpi-card .lab{font-size:9.6px; gap:3px}
+    .kpi-card .lab .go{font-size:8.6px}
+    .kpi-card .val{font-size:19px; letter-spacing:-.5px}
+    .kpi-card .cap{font-size:9.2px}
+    .kpi-card:last-child:nth-child(odd){grid-column:1 / -1}
+    .kpi-hint{font-size:9.6px; margin:4px 2px 0; line-height:1.45}
+
+    /* ---- 탭: 가로 스크롤 대신 두 줄로 자연스럽게 접기 ---- */
+    .seg{flex-wrap:wrap; overflow-x:visible; gap:2px; margin:7px 0 8px; padding-top:6px}
+    .seg button{padding:7px 9px; font-size:11.5px; gap:4px}
+    .seg button .n{font-size:9.6px; padding:1px 5px}
+    .seg button .newb{font-size:8.5px; padding:1px 4px; top:-4px; right:0}
+
+    /* ---- 칩 · 툴바 ---- */
+    .chip{padding:5px 8px; font-size:10.8px}
+    .group-toggle{padding:5px 8px; font-size:10.5px}
+    .rank-note{font-size:10px; line-height:1.5}
+    .toolbar{gap:5px; margin-bottom:7px}
+    .tog{font-size:11px; padding:6px 8px; gap:4px}
+    .search{flex:1 1 100%; min-width:0}
+    .search input{width:100%; font-size:12px; padding:7px 10px 7px 28px}
+    .search span{font-size:10.5px; left:8px}
+    #webmailSearch{flex:0 0 auto; font-size:10.5px; padding:6px 8px}
+    select.sort{flex:1 1 auto; min-width:0; font-size:11.5px; padding:6px 8px}
+    .newclear{padding:6px 8px; font-size:10.5px}
+    .bulkbar{padding:7px 9px; gap:6px 8px; margin-bottom:6px}
+    .bulk-all{flex:1 1 100%; font-size:11px}
     .bulk-sp{display:none}
-    .bulk-n{margin-right:auto}
-    .bulk-btn{padding:4px 9px; font-size:11px}
+    .bulk-n{margin-right:auto; font-size:10px}
+    .bulk-btn{padding:5px 9px; font-size:11px}
+
+    /* ---- 메일 행: 위(체크·등급·제목 2줄·스레드·메타) / 아래(버튼 줄) ---- */
+    .rows{gap:5px}
+    .row{flex-wrap:wrap; align-items:flex-start; padding:8px 10px; column-gap:7px; row-gap:0; min-width:0}
+    .row .selbox{margin-top:2px}
+    .row .rank{margin-top:1px; font-size:9.3px; padding:1.5px 4px; min-width:22px}
+    .row .rmain{flex:1 1 0; min-width:0; width:auto; display:block}
+    .row .rt{align-items:flex-start; gap:4px; min-width:0}
+    .row .rtitle{flex:1 1 auto; min-width:0; font-size:12.8px; line-height:1.34; letter-spacing:-.2px;
+      white-space:normal; word-break:break-word; overflow-wrap:anywhere;
+      display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden}
+    .row .pinmark{margin-top:1px}
+    .row .newpill{height:13px; padding:0 4px; font-size:8px; margin-top:2px}
+    .row .thr{margin-top:1px; font-size:9px; padding:1px 5px}
+    .row .rmeta{font-size:10px; margin-top:3px; white-space:normal; word-break:break-word; overflow-wrap:anywhere; line-height:1.42}
+    .row .rside{flex:1 1 100%; width:100%; justify-content:flex-start; flex-wrap:wrap; gap:4px;
+      margin-top:6px; padding-top:6px; border-top:1px dashed var(--line-2)}
+    .row .rside .badge{display:inline-flex; align-items:center; min-height:20px; font-size:9.8px; padding:3px 7px}
+    .row .rside .badge.reply-tog{padding:3px 7px; gap:2px}
     .selbox input{width:17px; height:17px}
-    .badge{font-size:9.3px; padding:1.5px 5px}
-    .badge.reply-tog{padding:3px 6px 3px 7px; gap:2px}
-    .seg button{padding:7px 10px; font-size:11.8px}
-    .seg{margin:8px 0 9px}
-    .notif-test{padding:0 8px; font-size:10.5px; gap:3px}
-    .dr-sec{padding:9px 12px}
+    .badge{font-size:9.6px; padding:2px 6px}
+    .badge.reply-tog{padding:3px 7px; gap:2px}
+
+    /* ---- 기타 목록 요소 ---- */
+    .sec-title{font-size:11px}
+    .group-h{font-size:11px}
+    .daychip{font-size:11px; gap:6px}
+    footer{font-size:10px; padding:12px 0 26px}
+
+    /* ---- 📅 내 캘린더 패널 ---- */
+    .cal-panel{margin:9px 0 10px}
+    .cal-bar{font-size:11.8px; padding:9px 12px; gap:6px}
+    .cal-bar .cb-sum{font-size:10.6px}
+    .cal-main, .cal-side{padding:10px 10px}
+    .cal-title{font-size:12.5px}
+    .cal-add{padding:8px 10px}
+    .cal-add form{gap:5px}
+    .cal-add .ca-lab{flex:1 1 100%}
+    .cal-add input[type="date"]{flex:1 1 100%; min-width:0}
+    .cal-add input[type="text"]#cusTitle, .cal-add input[type="text"]#cusMemo{flex:1 1 100%; min-width:0}
+    .cal-add .mini.on{flex:1 1 100%; padding:7px 8px}
+    .dow div{font-size:9.4px}
+    .days, .dow{gap:2px}
+    .day{min-height:44px; padding:2px 2px}
+    .day .dn{font-size:9.6px; gap:2px}
+    .day .dn .cnt{font-size:8px; padding:0 4px}
+    .day .dotrow{gap:1.5px}
+    .cal-legend{font-size:9.4px; gap:8px}
+    .side-card .sc-t{font-size:11.4px}
+
+    /* ---- 메일 상세 드로어 (아래에서 올라오는 시트) ---- */
+    #drawer{height:min(88vh,760px)}
+    .dr-head{padding:11px 12px}
+    .dr-head h2{font-size:14px}
+    .dr-sec{padding:10px 12px; overflow-x:auto}
+    .dr-summary{font-size:12.2px}
+    .dr-meta{font-size:10.4px}
+    .body-text, .draft-body{font-size:11.9px; overflow-wrap:anywhere; word-break:break-word}
+    .dr-table{font-size:11.2px; min-width:0}
+    .dr-table th, .dr-table td{padding:4px 6px}
+    .thread-list .th-date{min-width:62px; font-size:9.8px}
+    .thread-list .th-from{max-width:76px}
+    .img-grid{gap:5px}
+    .img-cell img{max-height:180px}
+    .img-grid.single .img-cell img{max-height:240px}
+    .dr-foot{padding:8px 12px; gap:6px}
+    .dr-foot .sp{font-size:9.8px}
+
+    /* ---- 모달 (브리핑 · 규칙 · 동기화) 내부 ---- */
+    .bf-head .bf-ht{font-size:15px}
+    .bf-sec-h .bf-st{font-size:12.3px}
+    .bf-sec-h .bf-when{font-size:10px}
+    .bf-row{padding:7px 10px; gap:6px}
+    .bf-row .bf-rt{font-size:12.4px}
+    .bf-row .bf-rs{font-size:10.6px}
+    .bf-mini b{font-size:20px}
+    .cy-body{padding:10px 12px}
+    .cy-state{font-size:11.4px}
+    .rm-tabs{gap:4px}
+    .rm-tab{padding:5px 10px; font-size:11.4px}
+    .snd-row{gap:5px}
   }
 </style>
 </head>
