@@ -500,7 +500,18 @@
     margin:10px 0 6px; padding-top:8px; border-top:1px dashed #e9eef5}
   .sub-h .cnt{font-weight:500; font-size:10.5px}
   .dr-meta-top{margin:0 0 7px}
-  .dr-summary{font-size:12.8px; color:var(--ink-2); line-height:1.6; margin:0}
+  /* 원문 상단 메타 — 발신 · 수신(To) · 참조(CC) */
+  .dr-addr{border:1px solid var(--line); background:#fbfcfe; border-radius:6px; padding:7px 10px; margin:0 0 9px; font-size:11.3px; line-height:1.6}
+  .dr-addr .ar{display:flex; gap:8px; align-items:baseline; padding:1px 0}
+  .dr-addr .ak{flex:none; width:56px; color:var(--ink-3); font-weight:700; font-size:10.4px; letter-spacing:-.1px}
+  .dr-addr .av{flex:1; min-width:0; color:var(--ink-2); word-break:break-word; overflow-wrap:anywhere}
+  .dr-addr .av b{color:var(--ink); font-weight:700}
+  .dr-addr .em{color:var(--ink-3)}
+  .dr-addr .none{color:#b6becb}
+  .dr-summary{font-size:12.8px; color:var(--ink-2); line-height:1.7; margin:0}
+  .dr-summary p{margin:0 0 9px; white-space:pre-line}
+  .dr-summary p:last-child{margin-bottom:0}
+  .dr-summary .sum-k{display:inline-block; min-width:42px; margin-right:7px; color:var(--ink); font-weight:800}
   .dr-meta{font-size:10.8px; color:var(--ink-3); margin-top:5px; display:flex; flex-wrap:wrap; gap:2px 9px}
   .dr-meta b{color:var(--ink-2); font-weight:500}
   .todo{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:5px}
@@ -1083,7 +1094,9 @@
     .dr-head{padding:11px 12px}
     .dr-head h2{font-size:14px}
     .dr-sec{padding:10px 12px; overflow-x:auto}
-    .dr-summary{font-size:12.2px}
+    .dr-summary{font-size:12.2px; line-height:1.68}
+    .dr-addr{font-size:10.9px; padding:6px 9px}
+    .dr-addr .ak{width:50px; font-size:10px}
     .dr-meta{font-size:10.4px}
     .body-text, .draft-body{font-size:11.9px; overflow-wrap:anywhere; word-break:break-word}
     .tone-tabs{gap:3px}
@@ -1997,16 +2010,21 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   }
 
   function rank(it) { return priorityOf(it) === 1 ? (Number(it.vipRank) || 3) : 9; }
-  /* 정렬에 쓰는 기준 시각 — 스레드가 있으면 마지막 메일, 없으면 받은 시각. 둘 다 "YYYY-MM-DD HH:MM" 형식 */
-  function sortAt(it) { return it.lastAt || it.receivedAt || ""; }
+  /* 정렬 기준 시각. 기본 ‘최신 수신순’은 행에 찍히는 받은 시각(receivedAt)을 그대로 쓴다.
+     - lastAt은 스레드의 ‘마지막 활동’(내 회신 포함)이라 받은 시각과 다르다. 이걸 우선하면
+       화면에 보이는 날짜 순서가 뒤죽박죽으로 보이므로 같은 시각일 때만 보조 기준으로 쓴다.
+     - 둘 다 "YYYY-MM-DD HH:MM" 형식이라 문자열 비교 = 시간 비교 */
+  function sortAt(it) { return it.receivedAt || it.lastAt || ""; }
   function sortList(list) {
     list.sort((a, b) => {
       const ra = rank(a), rb = rank(b);
       if (ra !== rb) return ra - rb;   /* 🔴 1-1 → 1-2 → 1-3 등급이 먼저 */
       if (view.sort === "recent") {
-        /* 기본값 — 같은 등급 안에서는 최신 메일이 맨 위, 아래로 시간순 */
+        /* 기본값 — 같은 등급 안에서는 최신 받은 메일이 맨 위, 아래로 시간순 */
         const ta = sortAt(a), tb = sortAt(b);
-        return ta === tb ? 0 : tb.localeCompare(ta);
+        if (ta !== tb) return tb.localeCompare(ta);
+        const la = a.lastAt || "", lb = b.lastAt || "";
+        return la === lb ? 0 : lb.localeCompare(la);
       }
       if (view.sort === "deadline") {
         const da = dueOf(a) || "9999-99-99", db = dueOf(b) || "9999-99-99";
@@ -3462,6 +3480,67 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     return parts.join("");
   }
 
+  /* ---------------- 원문 메타(수신인·참조인) + 분석 문단 ---------------- */
+  /* it.to / it.cc 는 웹메일 ‘받는사람’·‘참조’ 줄을 그대로 옮긴 목록(문자열 배열 또는 쉼표 문자열).
+     예전에 모은 메일에는 목록이 없으므로 내가 To/CC로 받았다는 사실만 표시한다. */
+  function addrList(v) {
+    if (Array.isArray(v)) return v.map((x) => String(x || "").trim()).filter(Boolean);
+    return String(v || "").split(/[,;]/).map((s) => s.trim()).filter(Boolean);
+  }
+  function addrText(list, max) {
+    const n = max || 4;
+    return list.slice(0, n).join(", ") + (list.length > n ? " 외 " + (list.length - n) + "명" : "");
+  }
+  function addrRowHtml(label, text) {
+    const v = text ? esc(text).replace(/kimpro@chunil\.co\.kr/g, "<b>kimpro@chunil.co.kr</b>") : '<span class="none">—</span>';
+    return '<div class="ar"><span class="ak">' + label + '</span><span class="av">' + v + "</span></div>";
+  }
+  function addrBlockHtml(it) {
+    const role = String(it.recipientRole || "").toLowerCase();
+    const me = "김성규 (kimpro@chunil.co.kr)";
+    const to = addrList(it.to), cc = addrList(it.cc);
+    const toTxt = to.length ? addrText(to, 4) : (role === "to" ? me + " · 직접 수신" : "");
+    const ccTxt = cc.length ? addrText(cc, 4) : (role === "cc" ? me + " · 참조 수신" : "");
+    return '<div class="dr-addr">' +
+      '<div class="ar"><span class="ak">보낸사람</span><span class="av"><b>' + esc(it.senderName || it.sender || "") + "</b>" +
+        (it.senderEmail ? ' <span class="em">&lt;' + esc(it.senderEmail) + "&gt;</span>" : "") + "</span></div>" +
+      addrRowHtml("수신(To)", toTxt) +
+      addrRowHtml("참조(CC)", ccTxt) +
+      addrRowHtml("받은시각", (it.receivedAt || "") + (it.deadline ? " · 마감 " + it.deadline : "")) +
+      "</div>";
+  }
+  /* 분석 본문에서 ‘수신/참조 형태’ 설명만 덜어낸다 — 분석에는 메일 내용만 남긴다 */
+  const RECIP_META_PATS = [
+    [/수신은?\s[^.]*?김성규\s*과장(?:은|도)?[^.]*?참조[^.]*?\.\s*/g, ""],
+    [/[^.]*?수신\s*,\s*김성규\s*과장은\s*참조\.\s*/g, ""],
+    [/김성규\s*과장은\s*(?:수신인\s*\(To\)에?\s*포함|참조)\s*\([^)]*\)\.\s*/g, ""],
+    [/[^.]*?참조이며\s*김성규\s*과장도\s*참조\.\s*/g, ""],
+    [/\(\s*[^()]*?수신\s*,\s*김성규\s*과장은\s*참조\s*\)/g, ""],
+    [/김성규\s*과장은\s*참조\s*[,)]\s*/g, ""],
+    [/\s*\((?:To|CC)\)/g, ""],
+  ];
+  function stripRecipientMeta(s) {
+    let t = String(s || "");
+    RECIP_META_PATS.forEach(([re, rep]) => { t = t.replace(re, rep); });
+    return t.replace(/\.(?=[가-힣])/g, ". ").replace(/\s{2,}/g, " ").trim();
+  }
+  const SUM_LABELS = "이슈|배경|요청|진행|현황|상태|결론|결과|남은\\s*일|조치|일정|비고|첨부|원인|요지|정리";
+  function summaryHtml(text) {
+    let s = stripRecipientMeta(text);
+    if (!s) return '<span class="none">분석 내용이 없습니다.</span>';
+    s = s.replace(new RegExp("\\s*(" + SUM_LABELS + ")\\s*[:：]\\s*", "g"), "\n@@$1@@");
+    return s.split(/\n+/).map((x) => x.trim()).filter(Boolean).map((block) => {
+      let label = "", body = block;
+      const m = block.match(/^@@([\s\S]+?)@@([\s\S]*)$/);
+      if (m) { label = m[1].replace(/\s+/g, ""); body = m[2].trim(); }
+      /* ‘→’ 로 이어지는 진행 단계는 단계별로 줄을 끊어 읽기 쉽게 */
+      const steps = body.split(/\s*→\s*/);
+      const shown = steps.length > 1 ? steps.map((p, i) => (i ? "→ " + p : p)).join("\n")
+        : body.replace(/([.다])\s+(?=[가-힣A-Z0-9(])/g, "$1\n");
+      return '<p class="sum-p">' + (label ? '<b class="sum-k">' + esc(label) + "</b>" : "") + esc(shown) + "</p>";
+    }).join("");
+  }
+
   function drawerHtml(it) {
     const st = stateOf(it), rows = it.actionItems || [], thr = threadOf(it), r = replyOf(it);
     const checks = rows.map((txt, i) => '<li class="' + (st.checks[i] ? "on" : "") + '"><input type="checkbox" data-check="' + it.id + '" data-i="' + i + '"' +
@@ -3522,14 +3601,11 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
           esc(isPinned(it) ? "📌 고정됨 — 누르면 고정을 풉니다 (분류·완료와 무관하게 ‘📌 고정’ 탭에 계속 남습니다)" : "📌 고정 — ‘📌 고정’ 탭에 계속 남겨 둡니다") + '">📌 ' + (isPinned(it) ? "고정됨" : "고정") + "</button>" +
         '<button class="dr-close" id="drClose" aria-label="닫기">✕</button></div>' +
       '<div class="dr-body">' +
-        /* 1. 메일 원문 — 본문 표 · 본문 텍스트 · 본문 사진 · 첨부파일 */
-        '<div class="dr-sec"><div class="sec-h">📄 메일 원문</div>' +
-          '<div class="dr-meta dr-meta-top"><span><b>' + esc(it.sender) + "</b> &lt;" + esc(it.senderEmail) + "&gt;</span>" +
-          "<span>수신 " + esc(it.receivedAt) + "</span><span>마감 " + esc(it.deadline || "-") + "</span>" +
-          (it.priorityReason ? "<span>판정 " + esc(it.priorityReason) + "</span>" : "") + "</div>" +
+        /* 1. 메일 원문 — 발신·수신·참조 → 본문 표 · 본문 텍스트 · 본문 사진 · 첨부파일 */
+        '<div class="dr-sec"><div class="sec-h">📄 메일 원문</div>' + addrBlockHtml(it) +
           body + imgHtml + attBlock + "</div>" +
-        /* 2. 핵심 분석 */
-        '<div class="dr-sec"><div class="sec-h">📝 핵심 분석</div><p class="dr-summary">' + esc(it.summary || "") + "</p>" +
+        /* 2. 메일 분석 — 내용 분석만, 단락 나눠서 */
+        '<div class="dr-sec"><div class="sec-h">📝 메일 분석</div><div class="dr-summary">' + summaryHtml(it.summary) + "</div>" +
           (it.repliedNote && !stateOf(it).reply ? '<div class="att-sum" style="margin-top:6px">↩️ ' + esc(it.repliedNote) + "</div>" : "") + "</div>" +
         /* 3. 할 일 */
         (rows.length ? '<div class="dr-sec"><div class="sec-h">✅ 할 일 <span class="cnt" data-cnt="' + it.id + '">· ' + doneCount(it) + "/" + rows.length + "</span></div><ul class=\"todo\">" + checks + "</ul></div>" : "") +
