@@ -104,6 +104,24 @@ MAILBOARD_PIN=**** python3 build_data.py   # -> data.enc.json
 - `git push origin main` 만 하면 **사이트는 바뀌지 않습니다.** 반드시 `./publish.sh` 를 쓰세요.
 - (저장소 Settings → Pages 에서 소스를 `main` 으로 바꾸면 이후에는 `git push` 만으로 반영됩니다.)
 
+## ☁️ PC·모바일 상태 동기화 (2026-11-20 추가)
+
+이 기기의 상태(✅ 확인·진행·메모, 📌 고정, 📅 캘린더 등록·직접 일정, ⚙️ 분류 규칙, ☀️ 브리핑 숨김)를
+PIN으로 AES-256-GCM 암호화해 **비공개(Secret) Gist** 파일 `mailboard-state.enc.json` 에 올리고,
+페이지를 열 때·1분 자동 갱신 때·상태를 바꾼 뒤 2.5초 뒤에 내려받아 항목별 최신 것으로 합칩니다.
+
+- **Gist는 페이지가 직접 만듭니다.** 사용자가 ☁️ 창에서 붙여넣은`gist` 권한 토큰으로
+  `GET /gists?per_page=100` → 기존 `mail-board-sync` Gist를 찾고, 없으면 `POST /gists`(public:false)로 만듭니다.
+  그래서 휴대폰에는 토큰만 붙여넣으면 같은 Gist를 스스로 찾아갑니다(gist_id를 손으로 옮길 필요 없음).
+- **토큰은 저장소에 없습니다.** 페이지 소스·`data.enc.json`·커밋 어디에도 넣지 않고,
+  사용자가 입력한 그 브라우저의 `localStorage`(`mb_gist_token_v1`)에만 둡니다. `gist` 권한만 있어 저장소 파일은 쓰지 못합니다.
+- **Gist에 올라가는 건 암호문뿐입니다.** `{v, alg:"AES-256-GCM", kdf:"PBKDF2-SHA256", iterations:100000, salt, iv, ciphertext}`
+  형식이고, PIN 없이는 읽을 수 없습니다. PIN이 다른 기기와 섞이면(복호화 실패) **덮어쓰지 않고** 오류로 멈춥니다.
+- 기기 전용 상태(읽음 표시 `mb_seen_*`, 알림 `mb_bell_v1`, PIN 기억 `mb_pin_v1`, 날씨 펼침 `mb_wxopen_v1`)는 동기화하지 않습니다.
+- **처음 연결 순서**: 이미 쓰던 기기(PC)에서 먼저 연결하면 그 상태가 기준이 됩니다. 각 기기에서 처음 연결할 때
+  이미 있던 항목에는 그 시각이 찍히므로, 빈 휴대폰이 PC 상태를 덮어쓰지 않습니다.
+- `gist` 토큰 발급: <https://github.com/settings/tokens/new?scopes=gist&description=mail-board-sync> (Classic 토큰에서 `gist` 한 칸만 체크).
+
 ## 보안 메모
 
 - PIN은 짧은 숫자입니다. 이론상 대입이 가능하므로, 민감도가 높아지면 6자리 이상으로 바꾸는 것을 권장합니다.
