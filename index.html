@@ -1533,13 +1533,27 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   function matches(it) { const q = view.q.trim().toLowerCase(); return q ? searchBlob(it).includes(q) : true; }
 
   /* ---------------- 렌더: 요약 (KPI 카드 = 누를 수 있는 필터) ----------------
-     🔴 = 🔴 전체(캡션에 미완료 건수) / ⏰ = 🔴·🟡 중 오늘 기한·임박 미완료 /
+     🔴 = 🔴 전체(캡션에 미완료 건수) / ⏰ = 🔴·🟡·📌 기한 + 📅 오늘 일정 /
      ✉ = 🔴·🟡 중 답장 대기 미완료 / ⏳ = 보낸 요청 미회신 / ✅ = 완료 */
-  const kpiTodayList = () => liveItems().filter((i) => (priorityOf(i) === 1 || priorityOf(i) === 2) && !isDone(i) && (isTodayDue(i) || dueInfo(i).hot));
+  /* ⏰ 오늘 마감 = ①🔴·🟡 미완료 메일 중 오늘 기한·임박
+     ②📌 고정한 메일 중 미완료이면서 오늘 기한·임박 (⚪ 단순 공유·이전 기록에 있던 메일이라도 사용자가 핀으로 고정했으면 포함)
+     ③📅 내 캘린더에 등록한 메일 중 오늘 날짜이고 미완료
+     — 같은 메일은 한 번만 센다(①·②·③ 중복 금지). 수기 일정은 kpiTodayCusList(). */
+  function kpiTodayMailList() {
+    const today = todayY(), seen = new Set(), out = [];
+    const push = (it) => { if (!it || it.id == null) return; const k = String(it.id); if (seen.has(k)) return; seen.add(k); out.push(it); };
+    liveItems().forEach((i) => { if (!isDone(i) && (priorityOf(i) === 1 || priorityOf(i) === 2) && (isTodayDue(i) || dueInfo(i).hot)) push(i); });
+    items().forEach((i) => { if (!isDone(i) && isPinned(i) && (isTodayDue(i) || dueInfo(i).hot)) push(i); });
+    items().forEach((i) => { if (!isDone(i) && calDate(i) === today) push(i); });
+    return out;
+  }
+  const kpiTodayList = kpiTodayMailList;
+  const kpiTodayCusList = () => cusFor(todayY());
+  const kpiTodayCount = () => kpiTodayMailList().length + kpiTodayCusList().length;
   const kpiReplyList = () => liveItems().filter((i) => (priorityOf(i) === 1 || priorityOf(i) === 2) && !isDone(i) && replyOf(i) === "needs_reply");
   const kpiDoneList = () => liveItems().filter(isDone);
   const KPI_META = {
-    today: { ico: "⏰", title: "오늘 마감", sub: "🔴·🟡 오늘 기한 · 임박 (미완료)", list: kpiTodayList, empty: "오늘 기한·임박한 🔴·🟡 건이 없습니다." },
+    today: { ico: "⏰", title: "오늘 마감", sub: "🔴·🟡·📌 오늘 기한 · 임박 메일 + 📅 오늘 일정", list: kpiTodayList, empty: "오늘 기한·임박한 🔴·🟡·📌 메일과 📅 오늘 일정이 없습니다." },
     reply: { ico: "✉️", title: "회신 필요", sub: "🔴·🟡 답장 대기 (미완료)", list: kpiReplyList, empty: "회신이 필요한 🔴·🟡 건이 없습니다." },
     done: { ico: "✅", title: "완료", sub: "✅ 확인 처리한 메일", list: kpiDoneList, empty: "아직 확인 처리한 메일이 없습니다." },
   };
@@ -1558,7 +1572,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   function renderKpi() {
     const p1 = p1Items();
     const p1Open = p1.filter((i) => !isDone(i)).length;
-    const todayDue = kpiTodayList().length;
+    const todayDue = kpiTodayCount();
     const need = kpiReplyList().length;
     const doneAll = kpiDoneList();
     const done = doneAll.length;
@@ -1570,7 +1584,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         '<div class="val">' + val + '<small>건</small></div><div class="cap">' + cap + "</div></button>";
     $("kpi").innerHTML =
       card("p1", "k1", "🔴 즉시 확인", p1.length, "미완료 " + p1Open + " · VIP 발신 · 본문 지목", "🔴 즉시 확인 목록으로 이동") +
-      card("today", "k2", "⏰ 오늘 마감", todayDue, "🔴·🟡 오늘 기한 · 임박", "🔴·🟡 중 오늘 기한·임박한 건만 모아 보기 (다시 누르면 해제)") +
+      card("today", "k2", "⏰ 오늘 마감", todayDue, "🔴·🟡·📌 기한 + 📅 오늘 일정", "🔴·🟡·📌 기한·임박 메일과 📅 오늘 일정만 모아 보기 (다시 누르면 해제)") +
       card("reply", "k3", "✉️ 회신 필요", need, "🔴·🟡 답장 대기", "🔴·🟡 중 답장이 필요한 건만 모아 보기 (다시 누르면 해제)") +
       card("fu", "k5", "⏳ 미회신 대기", fu.length, (fuMax ? "최장 " + fuMax + "일째 · 보낸 요청" : "보낸 요청 회신 대기"), "⏳ 미회신 추적 탭으로 이동") +
       card("done", "k4", "✅ 완료", done, (done ? "🔴 " + doneAll.filter((i) => priorityOf(i) === 1).length + " · 🟡 " + doneAll.filter((i) => priorityOf(i) === 2).length + " · ⚪ " + doneAll.filter((i) => priorityOf(i) === 3).length : "✅ 확인을 누르면 여기로"), "✅ 확인 처리한 메일만 모아 보기 (다시 누르면 해제)");
@@ -1587,7 +1601,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     else if (k === "fu") { view.kpi = ""; view.tab = "fu"; Object.assign(view, reset); msg = "⏳ 미회신 추적 탭으로 이동했습니다"; }
     else if (k === "today") {
       view.kpi = view.kpi === "today" ? "" : "today"; Object.assign(view, reset);
-      msg = view.kpi ? "⏰ 오늘 마감 " + kpiTodayList().length + "건만 모아 봅니다" : "⏰ 오늘 마감 필터를 해제했습니다";
+      msg = view.kpi ? "⏰ 오늘 마감 " + kpiTodayCount() + "건 (오늘 일정 " + kpiTodayCusList().length + " · 마감 메일 " + kpiTodayMailList().length + ")만 모아 봅니다" : "⏰ 오늘 마감 필터를 해제했습니다";
     } else if (k === "reply") {
       view.kpi = view.kpi === "reply" ? "" : "reply"; Object.assign(view, reset);
       view.replyOnly = !!view.kpi;
@@ -2113,8 +2127,49 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const m = KPI_META[view.kpi]; if (!m) return [];
     return pinFirst(sortList(m.list().filter(matches)));
   }
+  /* ⏰ 오늘 마감 모아 보기 — 오늘 날짜 수기 일정과 오늘 마감·임박 메일을 한 화면에 */
+  function sortTodayMails(list) {
+    const key = (it) => {
+      const ms = deadlineMs(it);
+      if (ms !== null) return ms;
+      const d = dueOf(it), t = d ? Date.parse(d + "T23:59:59") : NaN;
+      return isNaN(t) ? Number.MAX_SAFE_INTEGER : t;
+    };
+    return list.slice().sort((a, b) => key(a) - key(b) || rank(a) - rank(b));
+  }
+  /* 오늘 일정 카드 — 누르면 그 일정과 관련된 메일을 바로 모아 본다 */
+  function cusRowToday(c) {
+    const rel = relatedMails(c).list.length;
+    return '<div class="row cus" data-kpi-cus="' + esc(c.id) + '" role="button" tabindex="0" title="누르면 이 일정과 관련된 메일을 모아 봅니다">' +
+      '<span class="rank cus">📅</span>' +
+      '<span class="rmain"><span class="rt"><span class="rtitle">' + esc(c.title) + '</span><span class="badge b-cus">📌 개인/구두</span></span>' +
+        '<span class="rmeta">' + esc(c.date) + (c.memo ? " · " + esc(c.memo) : "") + (rel ? " · 🔗 관련 메일 " + rel + "건" : "") + "</span></span>" +
+      '<span class="rside"><button type="button" class="badge tog b-del" data-cus-del="' + esc(c.id) + '" title="일정 삭제" aria-label="일정 삭제">✕</button></span></div>';
+  }
+  function renderTodayKpi() {
+    const q = view.q.trim(), ql = q.toLowerCase();
+    const cusAll = kpiTodayCusList();
+    const cus = ql ? cusAll.filter((c) => (c.title + " " + (c.memo || "")).toLowerCase().indexOf(ql) >= 0) : cusAll;
+    const mails = pinFirst(sortTodayMails(kpiTodayMailList().filter(matches)));
+    const total = cus.length + mails.length;
+    let html = '<div class="kpi-focus"><span>⏰</span><b>오늘 마감</b>' +
+      '<span class="kf-sub">' + todayY() + ' · 🔴·🟡·📌 기한 + 📅 오늘 일정 · ' + total + '건' + (q ? ' · “' + esc(q) + '” 검색' : '') + '</span>' +
+      '<button type="button" class="kf-x" data-kpi-clear="1" title="이 필터를 해제하고 이전 목록으로 돌아갑니다">✕ 필터 해제</button></div>';
+    html += '<div class="banner" style="border-color:#ffd9c8;background:#fff8f3">⏰ <div><b>오늘 일정 ' + cus.length + '건 · 마감 메일 ' + mails.length + '건</b> — 오늘 날짜로 넣어 둔 <b>📅 내 캘린더</b> 일정과, 🔴·🟡·<b>📌</b> 고정·<b>📅</b> 등록 메일 중 오늘 기한·임박한 건을 한꺼번에 모았습니다.' +
+      (cus.length ? ' 위쪽 일정 카드를 누르면 그 일정과 관련된 메일이 바로 열립니다.' : '') + '</div></div>';
+    if (cus.length) {
+      html += '<div class="sec-title">📅 오늘 내 캘린더 일정 <span class="hint">' + cus.length + '건 · 누르면 관련 메일 보기</span></div>' +
+        '<div class="rows">' + cus.map(cusRowToday).join('') + '</div>';
+    }
+    html += '<div class="sec-title"' + (cus.length ? ' style="margin-top:12px"' : '') + '>✉️ 오늘 마감 · 임박 메일 (🔴·🟡·📌·📅) <span class="hint">' + mails.length + '건 · 마감순</span></div>';
+    html += mails.length ? rowsBlock(mails)
+      : '<div class="empty">' + (q ? '검색어에 맞는 오늘 마감 메일이 없습니다.' : '오늘 기한·임박한 🔴·🟡·📌·📅 메일이 없습니다.<br>⚪ 단순 공유 메일이라도 <b>📌</b>으로 고정하면 오늘 마감·임박일 때 여기에 들어옵니다.') + '</div>';
+    $("listWrap").innerHTML = html;
+    $("dayChip").classList.remove("on");
+  }
   function renderKpiList() {
     const m = KPI_META[view.kpi]; if (!m) return false;
+    if (view.kpi === "today") { renderTodayKpi(); return true; }
     const list = kpiListForView();
     let html = '<div class="kpi-focus"><span>' + m.ico + '</span><b>' + m.title + '</b>' +
       '<span class="kf-sub">' + m.sub + ' · ' + list.length + '건' + (view.q.trim() ? ' · “' + esc(view.q.trim()) + '” 검색' : '') + '</span>' +
@@ -2877,6 +2932,16 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     if (bk) { e.preventDefault(); e.stopPropagation(); view.cusId = null; view.day = null; renderCalendar(); renderList(); return; }
     const cd = e.target.closest("[data-cus-del]");
     if (cd) { e.preventDefault(); e.stopPropagation(); cusDel(cd.dataset.cusDel); return; }
+    /* ⏰ 오늘 마감의 오늘 일정 카드 — 그 일정의 관련 메일 보기로 바로 이동 */
+    const kc = e.target.closest("[data-kpi-cus]");
+    if (kc) {
+      e.preventDefault(); e.stopPropagation();
+      view.kpi = ""; view.replyOnly = false; view.showDone = false; view.day = null;
+      view.cusId = kc.dataset.kpiCus;
+      syncTogs(); renderKpi(); renderSeg(); renderCalendar(); renderList();
+      const lw = $("listWrap"); if (lw) lw.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     const ct = e.target.closest("[data-cal-tog]");
     if (ct) { e.preventDefault(); e.stopPropagation(); calToggle(ct.dataset.calTog); return; }
     const dt = e.target.closest("[data-done-tog]");
@@ -2895,6 +2960,14 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   $("listWrap").addEventListener("keydown", (e) => {
     if (e.key !== "Enter" && e.key !== " ") return;
     if (e.target.closest("[data-reply-tog]") || e.target.closest("[data-cal-tog]") || e.target.closest("[data-done-tog]") || e.target.closest("[data-sel-tog]") || e.target.closest("[data-pin-tog]")) return;
+    const kc = e.target.closest("[data-kpi-cus]");
+    if (kc) {
+      e.preventDefault();
+      view.kpi = ""; view.replyOnly = false; view.showDone = false; view.day = null;
+      view.cusId = kc.dataset.kpiCus;
+      syncTogs(); renderKpi(); renderSeg(); renderCalendar(); renderList();
+      return;
+    }
     const r = e.target.closest("[data-open]"); if (!r) return;
     e.preventDefault(); openDrawer(r.dataset.open);
   });
