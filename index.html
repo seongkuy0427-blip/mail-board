@@ -3773,15 +3773,28 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     $("userBtn").setAttribute("aria-expanded", "false");
   }
   function userMenuToggle() {
-    const m = $("userMenu"), on = !m.classList.contains("on");
-    m.classList.toggle("on", on); m.setAttribute("aria-hidden", on ? "false" : "true");
-    $("userBtn").setAttribute("aria-expanded", on ? "true" : "false");
+    const m = $("userMenu"), btn = $("userBtn"), on = !m.classList.contains("on");
+    if (on) {
+      /* 헤더 안쪽 .wrap 이 clip-path 로 잘려 있어 메뉴가 가려진다 → body 로 옮겨 버튼 아래에 고정 */
+      if (m.parentElement !== document.body) document.body.appendChild(m);
+      const r = btn.getBoundingClientRect();
+      m.style.position = "fixed";
+      m.style.top = Math.round(r.bottom + 7) + "px";
+      m.style.right = Math.max(8, Math.round(window.innerWidth - r.right)) + "px";
+      m.style.left = "auto";
+      m.style.zIndex = "9999";
+    }
+    m.classList.toggle("on", on);
+    m.setAttribute("aria-hidden", on ? "false" : "true");
+    btn.setAttribute("aria-expanded", on ? "true" : "false");
   }
   $("userBtn").addEventListener("click", (e) => { e.stopPropagation(); userMenuToggle(); });
   $("userMenu").addEventListener("click", (e) => e.stopPropagation());
   $("logoutBtn").addEventListener("click", () => { userMenuClose(); logout(); });
   document.addEventListener("click", () => userMenuClose());
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") userMenuClose(); });
+  window.addEventListener("resize", () => userMenuClose());
+  window.addEventListener("scroll", () => userMenuClose(), true);
 
   /* 로그인 화면 — 아이디는 기억(선택), 잠금 해제는 기존과 같이 비밀번호로 data.enc.json을 복호화한다.
      사내 메일 서버 인증은 아직 연동 전이므로, 지금은 비밀번호(개인 암호화 키)만 실제로 검사된다. */
