@@ -477,7 +477,8 @@
   .dr-sec{padding:10px 14px; border-bottom:1px solid var(--line-2)}
   .dr-sec:last-child{border-bottom:none}
   .sec-h{display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; color:var(--ink-2); margin-bottom:6px}
-  .sec-h .cnt{font-weight:500; color:var(--ink-3); font-size:10.5px}
+  .sec-h .cnt{font-weight:500; color:var(--ink-3); font-size:10.5px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .sec-h .sec-t{flex:none; white-space:nowrap}
   .sec-h .act{margin-left:auto; flex:none}
   .sec-h .act.on{background:var(--green-weak); border-color:#bfe6d3; color:var(--green)}
   .sub-h{display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:var(--ink-3);
@@ -1072,6 +1073,8 @@
     .body-text, .draft-body{font-size:11.9px; overflow-wrap:anywhere; word-break:break-word}
     .tone-tabs{gap:3px}
     .tone-btn{font-size:10.2px; padding:5px 2px; letter-spacing:-.2px}
+    .dr-sec .sec-h .act{margin-left:auto}
+    .dr-sec .sec-h .cnt{flex:1 1 0}
     .tone-note{font-size:9.8px}
     .dr-table{font-size:11.2px; min-width:0}
     .dr-table th, .dr-table td{padding:4px 6px}
@@ -3422,7 +3425,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const toneBtns = TONES.map((t) => '<button type="button" class="tone-btn' + (t.k === tk ? " on" : "") +
       '" data-tone="' + t.k + '" data-tone-id="' + esc(it.id) + '" aria-pressed="' + (t.k === tk ? "true" : "false") +
       '" title="' + esc(t.hint) + '">' + t.label + "</button>").join("");
-    const draft = '<div class="dr-sec"><div class="sec-h">✉️ 답장 메일 문구 제안 <span class="cnt">· ' + esc(toAddr || "수신인 미상") + "</span>" +
+    const draft = '<div class="dr-sec"><div class="sec-h"><span class="sec-t">✉️ 답장 메일 문구 제안</span> <span class="cnt">· ' + esc(toAddr || "수신인 미상") + "</span>" +
       '<button type="button" class="mini act" data-copy="' + esc(it.id) + '" title="지금 선택·수정한 문구를 복사해 웹메일 답장에 붙여넣으세요">📋 답장 문구 복사</button></div>' +
       '<div class="tone-tabs" role="group" aria-label="답장 톤 선택">' + toneBtns + "</div>" +
       '<div class="draft"><div class="draft-h"><div class="to">' + esc(subj) + "</div>" +
