@@ -100,7 +100,6 @@
   .hd h1{font-size:14.5px; font-weight:700; margin:0; letter-spacing:-.1px; color:#fff; white-space:nowrap}
   .hd h1 .brand-a{letter-spacing:1.2px; font-weight:800}
   .hd h1 .brand-b{font-weight:600; letter-spacing:.1px; color:rgba(255,255,255,.95)}
-  .hd h1 .t-short{display:none}
   .hd .sub{font-size:11px; color:rgba(255,255,255,.58); margin-top:1px}
   .hd-right{margin-left:auto; display:flex; align-items:center; gap:7px}
   /* ---------- 사용자 메뉴 (헤더 맨 오른쪽) ---------- */
@@ -1039,10 +1038,11 @@
     .hd-home > div{min-width:0}
     .hd .mark{width:26px; height:26px; border-radius:8px}
     .hd .mark .co-logo{width:19px; height:19px}
+    /* 모바일에서는 아이콘 7개가 한 줄을 다 차지해 브랜드 타이틀이 잘린다.
+       새로고침은 1분마다 자동이고 분류 규칙은 PC에서 쓰는 설정이라 이 둘만 접는다. */
+    #refreshBtn, #rulesBtn{display:none}
     .hd h1{font-size:12.5px; letter-spacing:-.1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
     .hd h1 .brand-a{letter-spacing:1px}
-    .hd h1 .t-long{display:none}
-    .hd h1 .t-short{display:inline}
     .hd .sub{display:none}
     .sync{display:none}
     .hd-right{flex:none; gap:4px; margin-left:auto}
@@ -1228,7 +1228,7 @@
       <div class="hd-home" id="homeBtn" role="button" tabindex="0" title="홈으로 (첫 화면·필터 초기화)" aria-label="홈으로 (첫 화면·필터 초기화)">
         <div class="mark" aria-hidden="true"><span class="co-logo"></span></div>
         <div>
-          <h1><span class="brand-a">CHUNIL</span> <span class="brand-b t-long">Smart Mail Portal</span><span class="brand-b t-short">Mail Portal</span></h1>
+          <h1><span class="brand-a">CHUNIL</span> <span class="brand-b">Smart Mail Portal</span></h1>
           <div class="sub" id="who">환영합니다, 김성규 과장님 · 천일정기화물자동차 납입1팀</div>
         </div>
       </div>
