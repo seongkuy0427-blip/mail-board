@@ -651,7 +651,12 @@
     background:#fff; color:var(--ink-2); font-size:13px; cursor:pointer}
   .bf-x:hover{background:#f1f5fb}
   .bf-sum{padding:9px 18px; font-size:12.4px; color:var(--ink-2); background:#fff; border-bottom:1px solid var(--line-2);
-    display:flex; align-items:center; gap:6px; flex-wrap:wrap; line-height:1.5}
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap; line-height:1.5}
+  .bf-sum .bf-sumt{flex:1 1 auto; min-width:0}
+  .bf-sumwx{margin-left:auto; flex:none; display:inline-flex; align-items:center; gap:4px; cursor:pointer; font-family:inherit;
+    border:1px solid var(--line); background:#f8fafc; border-radius:999px; padding:2px 10px;
+    font-size:11.4px; font-weight:600; color:var(--ink-2); white-space:nowrap}
+  .bf-sumwx:hover{border-color:var(--brand); background:var(--brand-weak); color:var(--brand)}
   .bf-body{flex:1; min-height:0; overflow-y:auto; padding:11px 16px 13px; background:var(--bg)}
   .bf-sec{background:#fff; border:1px solid var(--line); border-radius:9px; margin-bottom:8px; overflow:hidden; box-shadow:var(--shadow)}
   .bf-sec-h{display:flex; align-items:center; gap:6px; padding:9px 12px; border-bottom:1px solid var(--line-2); background:#fbfcfe; flex-wrap:wrap}
@@ -691,13 +696,6 @@
   .bf-mini span{font-size:11.8px; font-weight:700; color:var(--ink-2)}
   .bf-mini i{font-size:10.4px; color:var(--ink-3); font-style:normal}
   .bf-none{padding:10px 12px; font-size:11.6px; color:var(--ink-3)}
-  .bf-wx{display:flex; align-items:center; gap:9px; width:100%; padding:11px 13px; border:1px solid var(--line);
-    border-radius:9px; background:#fff; cursor:pointer; font-family:inherit; text-align:left; box-shadow:var(--shadow)}
-  .bf-wx:hover{background:#f7fbff; border-color:#cfd8e6}
-  .bf-wx .bf-wx-ico{font-size:17px; flex:none}
-  .bf-wx .bf-wx-t{font-size:13px; font-weight:800; color:var(--ink); white-space:nowrap}
-  .bf-wx .bf-wx-s{font-size:11.4px; color:var(--ink-3); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-  .bf-wx .bf-wx-go{margin-left:auto; font-size:10.6px; font-weight:800; color:var(--brand); white-space:nowrap; flex:none}
   .bf-empty{background:#fff; border:1px solid var(--line); border-radius:9px; padding:24px 16px; text-align:center; margin-bottom:10px}
   .bf-empty .bf-e-ico{font-size:24px}
   .bf-empty .bf-e-t{font-size:13.5px; font-weight:800; color:var(--ink); margin-top:6px}
@@ -1884,8 +1882,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       '<span class="bf-when">어제 18시 이후 수신 · 오늘 ' + ovToday + '건' +
         (overnight.length ? " · 🔴 " + ovP[0] + " · 🟡 " + ovP[1] + " · ⚪ " + ovP[2] : "") + "</span></div>" +
       (overnight.length
-        ? overnight.slice(0, BRIEF_NEW_MAX).map((it) => bfMailRow(it, true)).join("") +
-          (overnight.length > BRIEF_NEW_MAX ? '<div class="bf-note-row">…외 ' + (overnight.length - BRIEF_NEW_MAX) + "건은 아래 대시보드 목록과 검색에서 볼 수 있습니다.</div>" : "")
+        ? overnight.slice(0, BRIEF_NEW_MAX).map((it) => bfMailRow(it, true)).join("")
         : '<div class="bf-none">어제 18시 이후 새로 들어온 메일이 없습니다.</div>') +
       "</div>";
 
@@ -1922,15 +1919,20 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         "</div></div>";
     }
 
-    /* 4) 🌤️ 부평 날씨 한 줄 */
-    const w = briefWxParts();
-    html += '<button type="button" class="bf-wx" data-bf-go="wx" title="눌러서 시간별·7일 예보 보기">' +
-      '<span class="bf-wx-ico">' + (w ? w.ico : "🌤️") + '</span>' +
-      '<span class="bf-wx-t">' + (w ? w.t + "°C · " + esc(w.name) : "인천 부평") + '</span>' +
-      '<span class="bf-wx-s">' + (w ? "체감 " + w.feels + "°C" + (w.wet ? " · " + esc(w.wet) : "")
-        : (WX_FAIL ? "날씨를 불러오지 못했습니다 · 잠시 후 자동 재시도" : "날씨 불러오는 중…")) + '</span>' +
-      '<span class="bf-wx-go">예보 ▸</span></button>';
+    /* 4) 🌤️ 부평 날씨 — 헤더 바로 아래 한 줄(브리핑을 열면 늘 보이게) */
     return html;
+  }
+
+  /* 요약줄 우측의 🌤️ 날씨 칩 — 누르면 헤더의 시간별·7일 예보가 열린다 */
+  function briefWxChip() {
+    const w = briefWxParts();
+    return '<button type="button" class="bf-sumwx" data-bf-go="wx" title="눌러서 시간별·7일 예보 보기">' +
+      '<span>🌤️</span><span>' + (w ? "인천 부평 " + w.t + "°C · " + esc(w.name) + (w.wet ? " · " + esc(w.wet) : "")
+        : (WX_FAIL ? "날씨 불러오지 못함 · 잠시 후 재시도" : "날씨 불러오는 중…")) + "</span></button>";
+  }
+
+  function briefSumHtml() {
+    return '<span class="bf-sumt">' + esc(briefSumText()) + "</span>" + briefWxChip();
   }
 
   function briefSumText() {
@@ -1956,7 +1958,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     const st = b.scrollTop, html = briefBodyHtml();
     if (b.dataset.sig !== html) { b.innerHTML = html; b.dataset.sig = html; b.scrollTop = st; }
     if ($("bfDate")) $("bfDate").textContent = briefDateLabel();
-    if ($("bfSum")) $("bfSum").textContent = briefSumText();
+    if ($("bfSum")) $("bfSum").innerHTML = briefSumHtml();
     if ($("bfNote")) $("bfNote").textContent = briefHiddenToday()
       ? "오늘은 ‘보지 않기’를 선택하셨습니다 — 상단 ☀️ 브리핑으로 언제든 다시 열 수 있습니다."
       : "✕ · 나중에는 30분 뒤 1분 자동 동기화 때 다시 뜨고, [오늘 하루 보지 않기]를 누르면 오늘은 자동으로 뜨지 않습니다.";
