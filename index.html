@@ -1091,15 +1091,18 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     alertTargetId = null;
     stopTitleFlash();
   }
-  /* 새 즉시 확인 건 → 탭 제목 깜빡임 + 상단 카드. 돌려주는 값은 알림 제목 */
+  /* 새 즉시 확인(🔴) 또는 직접 수신(🟡+To) 건 → 탭 제목 깜빡임 + 상단 카드. 돌려주는 값은 아이콘 포함 알림 제목 */
   function alertP1(freshIds) {
     const titles = freshIds.map((id) => { const it = byId(id); return it ? it.title : id; });
+    const hasP1 = freshIds.some((id) => { const it = byId(id); return it && priorityOf(it) === 1; });
+    const icon = hasP1 ? "🔴" : "🟡";
+    const label = hasP1 ? "새 즉시 확인 메일" : "새 수신(To) 메일";
     const more = freshIds.length > 1 ? " 외 " + (freshIds.length - 1) + "건" : "";
-    const head = freshIds.length === 1 ? "새 즉시 확인 메일" : "새 즉시 확인 메일 " + freshIds.length + "건";
+    const head = freshIds.length === 1 ? label : label + " " + freshIds.length + "건";
     startTitleFlash(titles[0] + more);
-    showAlertBanner("🔴 " + head, titles[0] + more +
+    showAlertBanner(icon + " " + head, titles[0] + more +
       " — 확인하러 가려면 ‘메일 보기’를 누르세요. (오른쪽 ✕ 로 닫을 수 있습니다)", freshIds[0]);
-    return head;
+    return icon + " " + head;
   }
 
   /* ---------------- 암호 ---------------- */
@@ -1179,7 +1182,11 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     } catch (e) { return null; }
   }
   function saveSeen(set) { try { localStorage.setItem(LS.seen, JSON.stringify([...set])); } catch (e) {} }
-  function liveP1Ids() { return new Set(liveItems().filter((i) => priorityOf(i) === 1).map((i) => i.id)); }
+  function isAlertable(i) {
+    const p = priorityOf(i);
+    return p === 1 || (p === 2 && String(i.recipientRole || "").toLowerCase() === "to");
+  }
+  function liveP1Ids() { return new Set(liveItems().filter(isAlertable).map((i) => i.id)); }
   function bellOn() { try { return localStorage.getItem(LS.bell) === "1"; } catch (e) { return false; } }
   function notifReady() { return ("Notification" in window) && Notification.permission === "granted"; }
   function paintBell() {
@@ -1208,7 +1215,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
     toast(head + " · " + titles[0] + (fresh.length > 1 ? " 외 " + (fresh.length - 1) + "건" : ""));
     if (bellOn() && notifReady()) {
       try {
-        const n = new Notification("🔴 " + head, { body: titles.join("\n").slice(0, 200), tag: "mb-p1-new", renotify: true });
+        const n = new Notification(head, { body: titles.join("\n").slice(0, 200), tag: "mb-p1-new", renotify: true });
         n.onclick = () => { try { window.focus(); } catch (e) {} n.close(); };
       } catch (e) {}
     }
