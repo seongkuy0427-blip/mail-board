@@ -1,0 +1,176 @@
+  const DECK_ORG = "㈜천일정기화물자동차 SCM 사업본부 자동차물류사업부";
+  const COVER = {
+    title: "업무 메일 관리의 새로운 기준,<br><em>자동화 대시보드</em>",
+    sub: "납입1팀 업무 효율화 및 전사 확산 프로토타입 보고"
+  };
+  const BODY = [
+    {
+      title: "운영 개요 및 목적",
+      prefix: "핵심 목적",
+      cards: [
+        { t: "확인할 것만 남기는 분류", d: "출하·납입·고객사·사내 공유 메일을 성격별로 나눠, 중요한 요청이 반복 리스트 사이에 묻히지 않게 합니다." },
+        { t: "마감과 회신을 한 화면에", d: "본문에서 기한과 회신 필요 여부를 함께 뽑아, 오늘 처리할 일을 위에서부터 바로 보여줍니다." },
+        { t: "현장 판단까지 함께", d: "일정·중요 메일·날씨를 같은 화면에 두어, 하루의 판단을 한 곳에서 끝냅니다." }
+      ],
+      sum: [
+        "<b>업무 메일 확인에 쓰는 시간은 줄이고</b>, 놓치던 요청과 마감 기한은 놓치지 않게 합니다",
+        "<b>별도 설치 없이 브라우저에서 열리는 구조</b>라, 담당자 누구나 같은 기준으로 메일을 확인합니다"
+      ]
+    },
+    {
+      title: "3단계 메일 자동 분류",
+      prefix: "핵심 기능",
+      cards: [
+        { t: "🔴 즉시 — 지금 확인", d: "최우선·주요 발신자, 본인이 직접 지목된 메일, 직접 수신(To) 메일을 목록 최상단에 고정합니다." },
+        { t: "🟡 숙지 — 흐름 파악", d: "고객사(GM) 왕복과 사내 주요 이슈를 모아, 진행 상황만 빠르게 확인합니다." },
+        { t: "⚪ 열람 — 자동 분리", d: "반복되는 출하·납입 리스트는 자동으로 분리해 기본 화면을 가볍게 유지합니다." }
+      ],
+      sum: [
+        "<b>상단 KPI에 등급별 건수</b>가 보이고, 카드를 누르면 그 등급만 모아 봅니다",
+        "분류 기준은 <b>화면에서 담당자가 직접</b> 조정할 수 있어 업무 변화에 바로 대응합니다"
+      ]
+    },
+    {
+      title: "스레드 통합 · 미회신 추적",
+      prefix: "핵심 기능",
+      cards: [
+        { t: "🧵 한 건으로 묶는 스레드", d: "며칠에 걸친 왕복 메일을 최초 요청부터 최신 회신까지 1건으로 묶어 시간순으로 보여줍니다." },
+        { t: "⏳ 미회신만 추적", d: "내가 회신을 받아야 하는 요청만 모아, 아직 답이 없는 건을 자동으로 표시합니다." },
+        { t: "✉️ 답장 문구까지", d: "상황에 맞는 답장·독촉 문구를 함께 제안해 바로 복사해 쓸 수 있습니다." }
+      ],
+      sum: [
+        "<b>“그 건 어떻게 됐지?”</b>를 확인하려고 보낸편지함을 뒤지지 않습니다",
+        "완료 보고·자료 제출 메일은 <b>자동으로 제외</b>해 추적 목록의 정확도를 유지합니다"
+      ]
+    },
+    {
+      title: "캘린더 · 기상 · 맞춤 규칙",
+      prefix: "핵심 기능",
+      cards: [
+        { t: "📅 일정과 메일 자동 연결", d: "수기 일정 제목만 등록하면 같은 키워드의 받은·보낸 메일이 그 일정 아래에 자동으로 모입니다." },
+        { t: "🌤️ 현장 날씨", d: "부평 기준 시간별·주간 예보를 같은 화면에 두어 출하·납입 일정 판단에 참고합니다." },
+        { t: "⚙️ 화면에서 직접 규칙", d: "발신자·제목 키워드별 등급을 화면에서 지정하고, 저장하면 즉시 다시 분류됩니다." }
+      ],
+      sum: [
+        "중요 메일은 <b>📌로 고정</b>해 분류·완료 여부와 무관하게 계속 확인합니다",
+        "규칙은 <b>사용자별로 저장</b>되어 담당 업무가 바뀌어도 그대로 활용할 수 있습니다"
+      ]
+    },
+    {
+      title: "전사 확장 및 보안 구조",
+      prefix: "확장 단계",
+      cta: true,
+      cards: [
+        { t: "개인 프로토타입 검증 완료", d: "실제 업무 메일로 분류·미회신 추적·일정 연결을 운영하며 기준을 다듬었습니다." },
+        { t: "사내 서버·웹메일 연동", d: "메일 조회 권한을 연결하면 수집과 분류가 자동으로 갱신됩니다." },
+        { t: "전 부서·임직원 적용", d: "각자 계정과 규칙으로 즉시 사용하고, 부서별 분류 기준을 공유합니다." }
+      ],
+      sum: [
+        "화면은 <b>PIN으로 잠그고</b>, 데이터는 브라우저에서 <b>AES-256으로 복호화</b>합니다",
+        "<b>서버에 메일 내용을 남기지 않아</b> 사내 보안 기준을 그대로 지킵니다"
+      ]
+    }
+  ];
+  const WAVE_BASE = "M-40,230 C120,140 250,300 390,232 C520,168 640,286 780,212 C900,148 1030,208 1160,146";
+  const WAVE = '<defs><path id="cvw1" d="' + WAVE_BASE + '"/></defs>' +
+    '<path d="' + WAVE_BASE + ' L1160,420 L-40,420 Z" fill="#eff5fe"/>' +
+    [-34, -26, -18, -10, -2, 6].map((y) => '<use href="#cvw1" transform="translate(0,' + y + ')" fill="none" stroke="#b6d1fa" stroke-width=".9" opacity=".85"/>').join("") +
+    [14, 22, 30, 38, 46].map((y) => '<use href="#cvw1" transform="translate(0,' + y + ')" fill="none" stroke="#9dc0f6" stroke-width=".9" opacity=".55"/>').join("");
+
+  let DECK_I = 0, DECK_TX = null;
+  const deckLen = () => 1 + BODY.length;
+  function deckCoverHtml() {
+    return '<section class="slide cv" data-sl="0" aria-label="1번째 슬라이드 — 표지">' +
+      '<svg class="cv-wave" viewBox="0 0 1120 420" preserveAspectRatio="none" aria-hidden="true">' + WAVE + '</svg>' +
+      '<h2 class="cv-title">' + COVER.title + '</h2>' +
+      '<p class="cv-sub">' + COVER.sub + '</p>' +
+      '<img class="cv-logo" src="' + DECK_LOGO + '" alt="천일정기화물 로고">' +
+      '</section>';
+  }
+  function deckBodyHtml(s, n) {
+    const cards = s.cards.map((c, i) =>
+      '<div class="sl-card"><div class="lbl">' + s.prefix + " " + (i + 1 < 10 ? "0" : "") + (i + 1) + "</div>" +
+      "<h3>" + c.t + "</h3><p>" + c.d + "</p></div>").join("");
+    return '<section class="slide" data-sl="' + (n - 1) + '" aria-hidden="true" aria-label="' + n + '번째 슬라이드 — ' + s.title + '">' +
+      '<div class="sl-head"><div><div class="sl-org">' + DECK_ORG + "</div>" +
+        '<h2 class="sl-title">' + s.title + "</h2></div>" +
+        '<span class="sl-logo"><img src="' + DECK_LOGO + '" alt="천일정기화물 로고"></span></div>' +
+      '<div class="sl-cards">' + cards + "</div>" +
+      '<div class="sl-links"><span></span><span></span><span></span></div>' +
+      '<div class="sl-sum">' + s.sum.map((x) => "<div>" + x + "</div>").join("") + "</div>" +
+      (s.cta ? '<div class="sl-cta-row"><button type="button" class="sl-cta" data-deck-demo>🚀 라이브 대시보드 시연하기</button></div>' : "") +
+      '<span class="sl-pg">' + n + "</span></section>";
+  }
+  function deckIsOpen() { const d = $("deck"); return !!d && d.classList.contains("on"); }
+  function deckBuild() {
+    $("deckStage").innerHTML = [deckCoverHtml()].concat(BODY.map((s, i) => deckBodyHtml(s, i + 2))).join("");
+    $("deckDots").innerHTML = BODY.concat([COVER]).map((s, i) =>
+      '<button type="button" class="dk-dot" data-dot="' + i + '" aria-label="' + (i + 1) + '번 슬라이드로 이동"></button>').join("");
+  }
+  function deckPaint() {
+    const slides = $("deckStage").querySelectorAll(".slide");
+    for (let i = 0; i < slides.length; i++) {
+      const on = i === DECK_I;
+      slides[i].classList.toggle("on", on);
+      slides[i].setAttribute("aria-hidden", on ? "false" : "true");
+      if (on) slides[i].scrollTop = 0;
+    }
+    const dots = $("deckDots").querySelectorAll(".dk-dot");
+    for (let i = 0; i < dots.length; i++) dots[i].classList.toggle("on", i === DECK_I);
+    $("deckInd").textContent = (DECK_I + 1) + " / " + deckLen();
+    $("deckBar").style.width = (((DECK_I + 1) / deckLen()) * 100) + "%";
+    $("deckPrev").disabled = DECK_I === 0;
+    $("deckNext").disabled = DECK_I === deckLen() - 1;
+  }
+  function deckGo(i) {
+    const n = Math.max(0, Math.min(deckLen() - 1, i));
+    if (n === DECK_I) return;
+    DECK_I = n; deckPaint();
+  }
+  function deckOpen() {
+    if (!$("deckStage").querySelector(".slide")) deckBuild();
+    DECK_I = 0; deckPaint();
+    $("deck").classList.add("on");
+    $("deck").setAttribute("aria-hidden", "false");
+    document.body.classList.add("locked");
+    try { const b = $("deckNext"); if (b) b.focus({ preventScroll: true }); } catch (e) {}
+  }
+  function deckClose() {
+    const d = $("deck"); if (!d) return;
+    d.classList.remove("on");
+    d.setAttribute("aria-hidden", "true");
+    if (!$("drawer").classList.contains("on") && !$("lightbox").classList.contains("on") && !rmIsOpen()) {
+      document.body.classList.remove("locked");
+    }
+  }
+  $("deckBtn").addEventListener("click", deckOpen);
+  $("deckClose").addEventListener("click", deckClose);
+  $("deckPrev").addEventListener("click", () => deckGo(DECK_I - 1));
+  $("deckNext").addEventListener("click", () => deckGo(DECK_I + 1));
+  $("deckDots").addEventListener("click", (e) => {
+    const d = e.target.closest("[data-dot]"); if (d) deckGo(Number(d.dataset.dot));
+  });
+  $("deck").addEventListener("click", (e) => {
+    if (!e.target.closest("[data-deck-demo]")) return;
+    deckClose();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    toast("대시보드로 돌아왔습니다 — 바로 시연하실 수 있습니다", 2600);
+  });
+  /* 키보드 ← → · PageUp/Down · Home/End · Esc (발표 중에만 가로챈다) */
+  document.addEventListener("keydown", (e) => {
+    if (!deckIsOpen()) return;
+    if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); deckClose(); return; }
+    if (e.key === "ArrowRight" || e.key === "PageDown") { e.preventDefault(); e.stopPropagation(); deckGo(DECK_I + 1); return; }
+    if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); e.stopPropagation(); deckGo(DECK_I - 1); return; }
+    if (e.key === "Home") { e.preventDefault(); deckGo(0); return; }
+    if (e.key === "End") { e.preventDefault(); deckGo(deckLen() - 1); }
+  }, true);
+  /* 모바일 좌우 스와이프 */
+  $("deck").addEventListener("touchstart", (e) => { DECK_TX = e.touches[0].clientX; }, { passive: true });
+  $("deck").addEventListener("touchend", (e) => {
+    if (DECK_TX == null) return;
+    const dx = e.changedTouches[0].clientX - DECK_TX;
+    DECK_TX = null;
+    if (Math.abs(dx) > 45) deckGo(DECK_I + (dx < 0 ? 1 : -1));
+  }, { passive: true });
+
