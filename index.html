@@ -1703,7 +1703,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         '<div class="lab">' + lab + '<span class="go">' + kpiHint(k) + "</span></div>" +
         '<div class="val">' + val + '<small>건</small></div><div class="cap">' + cap + "</div></button>";
     $("kpi").innerHTML =
-      card("p1", "k1" + (p1Open ? " p1-live" : ""), "🔴 즉시 확인", p1.length, "미완료 " + p1Open + " · VIP 발신 · 본문 지목", "🔴 즉시 확인 목록으로 이동") +
+      card("p1", "k1" + (p1Open ? " p1-live" : ""), "🔴 즉시 확인", p1Open, "전체 " + p1.length + " · VIP 발신 · 본문 지목", "🔴 즉시 확인 목록으로 이동") +
       card("today", "k2", "⏰ 오늘 마감", todayDue, "🔴·🟡·📌 기한 + 📅 오늘 일정", "🔴·🟡·📌 기한·임박 메일과 📅 오늘 일정만 모아 보기 (다시 누르면 해제)") +
       card("reply", "k3", "✉️ 회신 필요", need, "🔴·🟡 답장 대기", "🔴·🟡 중 답장이 필요한 건만 모아 보기 (다시 누르면 해제)") +
       card("fu", "k5", "⏳ 미회신 대기", fu.length, (fuMax ? "최장 " + fuMax + "일째 · 보낸 요청" : "보낸 요청 회신 대기"), "⏳ 미회신 추적 탭으로 이동") +
