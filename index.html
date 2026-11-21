@@ -4011,7 +4011,8 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       const other = items()[j];
       if (!other || other.id !== ix.ids[j]) return;
       if (me && String(other.senderEmail || "").toLowerCase() === me) sc += 1.0;
-      if (sc < 3.0) return;
+      /* 도메인 키워드·제목 키워드가 겹치면 그 하나만으로도 과거 사례다. 그 외에는 더 단단한 근거를 요구한다 */
+      if (sc < ((dom || strongTitle) ? 1.4 : 3.0)) return;
       out.push({ sc, it: other, e });
     });
     out.sort((a, b) => b.sc - a.sc || String(b.it.receivedAt || "").localeCompare(String(a.it.receivedAt || "")));
