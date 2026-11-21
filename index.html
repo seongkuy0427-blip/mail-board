@@ -3846,7 +3846,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   const CASE_PART = "을를이가은는의에과와도만로";
   const CASE_MAX_DF = 1200;   /* 전체의 13%를 넘는 흔한 토큰은 후보에서 제외 */
   const CASE_MAX = 6;         /* 상위 최대 6건 */
-  let CASE_IX = null, CASE_SRC = null;
+  let CASE_IX = null, CASE_SRC = null, CASE_STAMP = "";
   const CASE_CACHE = new Map();
   let caseBack = [];          /* 유사 사례를 따라 이동하기 전에 보던 메일 (뒤로가기용) */
   const FRESH_IDS = new Set();  /* 이번에 새 메일로 열린 건 — 💡 제안 줄 대상 */
@@ -3932,11 +3932,19 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
         const a = ix.cinv.get(c); if (a) a.push(i); else ix.cinv.set(c, [i]);
       });
     }
-    CASE_IX = ix; CASE_SRC = DATA; CASE_CACHE.clear();
+    CASE_IX = ix; CASE_SRC = DATA; CASE_STAMP = String((DATA && DATA.updatedAt) || ""); CASE_CACHE.clear();
     return ix;
   }
+  /* 데이터가 실제로 바뀌었을 때만 색인을 다시 만든다
+     (1분 자동 새로고침은 대개 같은 data.json 이므로 9,183건 색인을 매번 다시 만들지 않는다) */
+  function caseFresh() {
+    if (!CASE_IX) return false;
+    if (CASE_SRC === DATA) return true;
+    const stamp = String((DATA && DATA.updatedAt) || "");
+    return CASE_STAMP === stamp && CASE_IX.n === items().length;
+  }
   function caseWarm() {
-    if (CASE_SRC === DATA) return;
+    if (caseFresh()) return;
     const run = () => { try { caseBuildIndex(); } catch (e) {} };
     if (window.requestIdleCallback) requestIdleCallback(run, { timeout: 2000 });
     else setTimeout(run, 250);
@@ -3959,7 +3967,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
   /* 지금 열린 메일에 대한 유사 사례 (최대 6건). 결과는 메일별로 기억해 드로어를 다시 그려도 재계산하지 않는다 */
   function caseResults(it) {
     if (!it) return [];
-    if (!CASE_IX || CASE_SRC !== DATA) caseBuildIndex();
+    if (!caseFresh()) caseBuildIndex();
     if (CASE_CACHE.has(it.id)) return CASE_CACHE.get(it.id);
     const ix = CASE_IX, i0 = ix.at.get(it.id), out = [];
     CASE_CACHE.set(it.id, out);
@@ -4001,6 +4009,7 @@ try { view.calOpen = localStorage.getItem(LS.cal) === "1"; } catch (e) {}
       if (!nc && !(strongTitle || (dom && nk >= 2) || (nk >= 3 && e.kw >= 3.5))) return;
       let sc = sc0;
       const other = items()[j];
+      if (!other || other.id !== ix.ids[j]) return;
       if (me && String(other.senderEmail || "").toLowerCase() === me) sc += 1.0;
       if (sc < 3.0) return;
       out.push({ sc, it: other, e });
