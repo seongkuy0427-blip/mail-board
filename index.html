@@ -174,7 +174,7 @@
   @keyframes p1Dot{0%,100%{opacity:.4; transform:scale(1)} 50%{opacity:1; transform:scale(1.8)}}
   @keyframes p1Label{0%,100%{color:var(--ink-2)} 50%{color:var(--red)}}
   @keyframes p1Ring{0%,100%{box-shadow:inset 0 0 0 1.5px rgba(229,72,77,0); background:transparent}
-    50%{box-shadow:inset 0 0 0 1.5px rgba(229,72,77,.65); background:rgba(229,72,77,.09)}}
+    50%{box-shadow:inset 0 0 0 1.5px rgba(229,72,77,.45); background:rgba(229,72,77,.06)}}
   @keyframes p1Badge{0%,100%{background:var(--gray-weak); color:var(--ink-2)} 50%{background:var(--red); color:#fff}}
   button.kpi-card.p1-live{animation:p1Pulse 1.2s ease-in-out infinite}
   button.kpi-card.p1-live .lab{animation:p1Label 1.2s ease-in-out infinite}
@@ -471,7 +471,7 @@
   .b-replied{background:var(--green-weak); color:var(--green)}
   .b-noreply{background:var(--gray-weak); color:var(--ink-3)}
   /* 행 안에서 바로 누르는 회신 상태 토글 */
-  .badge.reply-tog{display:inline-flex; align-items:center; gap:3px; font-family:inherit; cursor:pointer;
+  .badge.reply-tog{display:inline-flex; align-items:center; gap:3px; font-family:inherit; cursor:pointer; border:0;
     padding:2px 6px 2px 7px; line-height:1.35; transition:background .12s, transform .06s}
   .badge.reply-tog:hover{filter:brightness(.96)}
   .badge.reply-tog:active{transform:scale(.96)}
@@ -483,7 +483,7 @@
   .b-st{background:#fff; border:1px solid var(--line); color:var(--ink-2)}
   .b-arch{background:#f6f5f2; color:#6b6455; border:1px dashed #ded9cc}
   /* 행에서 바로 누르는 캘린더 등록 · 확인(완료) 토글 */
-  .badge.tog{cursor:pointer; font-family:inherit; line-height:1.35; transition:background .12s, transform .06s}
+  .badge.tog{cursor:pointer; font-family:inherit; border:0; line-height:1.35; transition:background .12s, transform .06s}
   .badge.tog:hover{filter:brightness(.96)}
   .badge.tog:active{transform:scale(.96)}
   .badge.tog:focus-visible{outline:2px solid var(--brand); outline-offset:1px}
